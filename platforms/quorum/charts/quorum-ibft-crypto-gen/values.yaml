@@ -6,21 +6,22 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 ---
+nameOverride: ""
 # The following are for overriding global values
 global:
   vault:
-    # Provide the type of vault
+    # Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported.
     type: hashicorp
-    # Provide the vault address
+    # URL of the Vault server
     address: 
-    # Provide the vault role used
+    # Role used for authentication with Vault
     role: vault-role
-    # Provide the vault authPath configured to be used
-    authPath: supplychain
-    # Provide the service account name which will be created
+    # Authentication path for Vault
+    authPath: carrier
+    # Serviceaccount name that will be created for Vault Auth and k8S Secret management
     serviceAccountName: vault-auth
-    # Provide the vault path where the secrets will be stored
-    secretPrefix: "data/supplychain"
+    # The value for vault secret prefix which must start with `data/`
+    secretPrefix: "data/carrier"
     # Number of retries to check contents from vault
     retries: 30
     # Sleep time after every retry in seconds
@@ -34,8 +35,7 @@ peer:
 
 
 image:
-  # Alpine utils image 
-  # NOTE: The alpine image used is the base alpine image with CURL installed
+  # The alpine image used is the base alpine image with CURL installed
   initContainerName: ghcr.io/hyperledger/bevel-alpine:latest
   # Pull policy to be used for the Docker image
   pullPolicy: IfNotPresent

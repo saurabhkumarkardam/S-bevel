@@ -52,12 +52,12 @@ The command removes all the Kubernetes components associated with the chart and 
 These parameters are refered to as same in each parent or child chart
 | Name | Description | Default Value |
 |-|-|-|
+| `global.vault.type` | Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported. | `hashicorp` |
 | `global.vault.address` | URL of the Vault server | `""` |
 | `global.vault.role`| Role used for authentication with Vault | `vault-role` |
-| `global.vault.authPath` | Authentication path for Vault | `supplychain` |
+| `global.vault.authPath` | Authentication path for Vault | `carrier` |
 | `global.vault.serviceAccountName` | Serviceaccount name that will be created for Vault Auth and k8S Secret management | `vault-auth` |
-| `global.vault.secretPrefix` | The value for vault secret engine name | `secretsv2` |
-| `global.vault.type` | Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported. | `hashicorp` |
+| `global.vault.secretPrefix` | The value for vault secret prefix which must start with `data/` | `data/carrier` |
 | `global.vault.retries` | Number of retries to check contents from vault | `30` |
 | `sleepTime` | Sleep time after every retry in seconds | `20` |
 

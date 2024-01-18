@@ -3,171 +3,80 @@
 [//]: # (SPDX-License-Identifier: Apache-2.0)
 [//]: # (##############################################################################################)
 
-<a name = "raft-crypto-goquorum-deployment"></a>
-# RAFT Crypto GoQuorum Deployment
-
-- [RAFT Crypto GoQuorum Deployment Helm Chart](#raft-crypto-goquorum-deployment-helm-chart)
-- [Prerequisites](#prerequisites)
-- [Chart Structure](#chart-structure)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Verification](#verification)
-- [Updating the Deployment](#updating-the-deployment)
-- [Deletion](#deletion)
-- [Contributing](#contributing)
-- [License](#license)
-
-
-<a name = "raft-crypto-goquorum-deployment-helm-chart"></a>
-## RAFT Crypto GoQuorum Deployment Helm Chart
+# quorum-raft-crypto-gen
 ---
-This [Helm chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-raft-crypto-gen) generate the crypto material for raft consensus.
+This chart is a component of Hyperledger Bevel. Generates the crypto material for raft consensus only if they are not already available in the vault. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
 
+## TL;DR
 
-<a name = "prerequisites"></a>
-## Prerequisites
----
-Before deploying the Helm chart, make sure to have the following prerequisites:
-
-- Kubernetes cluster up and running.
-- The GoQuorum network is set up and running.
-- A HashiCorp Vault instance is set up and configured to use Kubernetes service account token-based authentication.
-- The Vault is unsealed and initialized.
-- Helm installed.
-
-<a name = "chart-structure"></a>
-## Chart Structure
----
-The structure of the Helm chart is as follows:
-
-```
-quorum-raft-crypto-gen/
-    |- templates/
-            |- helpers.tpl
-            |- job.yaml
-    |- Chart.yaml
-    |- README.md
-    |- values.yaml
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install member-node bevel/quorum-member-node
 ```
 
-- `templates/`: This directory contains the template files for generating Kubernetes resources.
-- `helpers.tpl`: A template file used for defining custom labels in the Helm chart.
-- `job.yaml`: Interacting with a Vault server to fetch and validate secrets, as well as generating and saving cryptographic materials in the vault.
-- `Chart.yaml`: Provides metadata about the chart, such as its name, version, and description.
-- `README.md`: This file provides information and instructions about the Helm chart.
-- `values.yaml`: Contains the default configuration values for the chart. It includes settings for the metadata, peer, image, and Vault configurations.
+## Prerequisitess
 
+- Kubernetes 1.19+
+- Helm 3.2.0+
 
-<a name = "configuration"></a>
-## Configuration
----
-The [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-raft-crypto-gen/values.yaml) file contains configurable values for the Helm chart. We can modify these values according to the deployment requirements. Here are some important configuration options:
+If Hashicorp Vault is used, then
+- HashiCorp Vault Server 1.13.1+
+
+> **Important**: Also check the dependent charts.
+
+## Installing the Chart
+
+To install the chart with the release name `raft-crypto-gen`:
+
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install raft-crypto-gen bevel/quorum-raft-crypto-gen
+```
+
+The command deploys the chart on the Kubernetes cluster with the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
+
+## Uninstalling the Chart
+
+To uninstall/delete the `raft-crypto-gen` deployment:
+
+```bash
+helm uninstall raft-crypto-gen
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Parameters
 ---
 
-### Metadata
+### global
 
-| Name            | Description                                                                             | Default Value         |
-| ----------------| --------------------------------------------------------------------------------------- | --------------------- |
-| namespace       | Provide the namespace for organization's peer                                           | default               |
-| name            | Provide the name for quorum-raft-crypto job release                                     | quorum-crypto-raft    |
+| Name | Description | Default Value |
+|-|-|-|
+| `global.vault.type` | Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported. | `hashicorp` |
+| `global.vault.address` | URL of the Vault server | `""` |
+| `global.vault.role` | Role used for authentication with Vault | `vault-role` |
+| `global.vault.authPath` | Authentication path for Vault | `carrier` |
+| `global.vault.serviceAccountName` | Serviceaccount name that will be created for Vault Auth and k8S Secret management | `vault-auth` |
+| `global.vault.secretPrefix` | The value for vault secret prefix which must start with `data/` | `data/carrier` |
+| `global.vault.retries` | Number of retries to check contents from vault | `30` |
+| `sleepTime` | Sleep time after every retry in seconds | `20` |
 
-### Peer
+### peer
 
-| Name            | Description                                                                             | Default Value |
-| ----------------| --------------------------------------------------------------------------------------- | ------------- |
-| name            | Provide the name of the peer                                                            | carrier       |
-| gethPassphrase  | Provide the passphrase for building the crypto files                                    | 12345         |
+| Name | Description | Default Value |
+|-|-|-|
+| `peer.name` | Name of the peer | `carrier` |
+| `peer.gethPassphrase` | Passphrase for building the crypto files | `12345` |
 
-### Image
+### image
 
-| Name               | Description                                                                                  | Default Value                     |
-| -------------------| -------------------------------------------------------------------------------------------- | --------------------------------- |
-| initContainerName  | Provide the alpine utils image, which is used for all init-containers of deployments/jobs    | ghcr.io/hyperledger/bevel-alpine:latest  |
-| pullPolicy         | Pull policy to be used for the Docker image                                                  | IfNotPresent                      |
-| node               | Pull quorum Docker image                                                                     | ""                                |
-
-### Vault
-
-| Name                | Description                                                             | Default Value |
-| ------------------- | ------------------------------------------------------------------------| ------------- |
-| address             | Provide the vault address/URL                                           | ""            |
-| role                | Provide the vault role used                                             | vault-role    |
-| authpath            | Provide the authpath configured to be used                              | ""            |
-| serviceAccountName  | Provide the already created service account name autheticated to vault  | vault-auth    |
-| certSecretPrefix    | Provide the vault path where the certificates are stored                | ""            |
-| retries             | Number of retries to check contents from vault                          | 30            |
-
-### Sleep
-
-| Name                      | Description                                              | Default Value |
-| ------------------------- | -------------------------------------------------------  | ------------- |
-| sleepTimeAfterError       | Sleep time in seconds when error while registration      | 120           |
-| sleepTime                 | custom sleep time in seconds                             | 20            |
-
-### Healthcheck
-
-| Name                        | Description                                                                                                 | Default Value |
-| ----------------------------| ----------------------------------------------------------------------------------------------------------- | ------------- |
-| readinesscheckinterval      | Provide the wait interval in seconds in fetching certificates from vault                                    | 5             |
-| readinessthreshold          | Provide the threshold number of retries in fetching certificates from vault                                 | 2             |
-
-
-<a name = "deployment"></a>
-## Deployment
----
-
-To deploy the quorum-raft-crypto-gen Helm chart, follow these steps:
-
-1. Modify the [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-raft-crypto-gen/values.yaml) file to set the desired configuration values.
-2. Run the following Helm command to install the chart:
-    ```
-    $ helm repo add bevel https://hyperledger.github.io/bevel/
-    $ helm install <release-name> ./quorum-raft-crypto-gen
-    ```
-Replace `<release-name>` with the desired name for the release.
-
-This will deploy the raft node to the Kubernetes cluster based on the provided configurations.
-
-
-<a name = "verification"></a>
-## Verification
----
-
-To verify the deployment, we can use the following command:
-```
-$ kubectl get jobs -n <namespace>
-```
-Replace `<namespace>` with the actual namespace where the Job was created. This command will display information about the Job, including the number of completions and the current status of the Job's pods.
-
-
-<a name = "updating-the-deployment"></a>
-## Updating the Deployment
----
-
-If we need to update the deployment with new configurations or changes, modify the same [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-raft-crypto-gen/values.yaml) file with the desired changes and run the following Helm command:
-```
-$ helm upgrade <release-name> ./quorum-raft-crypto-gen
-```
-Replace `<release-name>` with the name of the release. This command will apply the changes to the deployment, ensuring the raft node is up to date.
-
-
-<a name = "deletion"></a>
-## Deletion
----
-
-To delete the deployment and associated resources, run the following Helm command:
-```
-$ helm uninstall <release-name>
-```
-Replace `<release-name>` with the name of the release. This command will remove all the resources created by the Helm chart.
-
-
-<a name = "contributing"></a>
-## Contributing
----
-If you encounter any bugs, have suggestions, or would like to contribute to the [RAFT Crypto GoQuorum Deployment Helm chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-raft-crypto-gen), please feel free to open an issue or submit a pull request on the [project's GitHub repository](https://github.com/hyperledger/bevel).
+| Name | Description | Default Value |
+|-|-|-|
+| `image.initContainerName` | Alpine utils image, which is used for all init-containers of deployments/jobs | `ghcr.io/hyperledger/bevel-alpine:latest` | 
+| `image.pullPolicy` | Pull policy to be used for the Docker image | `IfNotPresent` |
+| `image.node`| Pull quorum Docker image | `""` |
 
 
 <a name = "license"></a>

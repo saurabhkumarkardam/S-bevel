@@ -16,22 +16,21 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
+    nameOverride: {{ component_name }}
+    global:
+      vault:
+        type: {{ vault.type | default("hashicorp") }}
+        address: {{ vault.url }}
+        role: vault-role
+        authPath: quorum{{ org_name }}
+        serviceAccountName: vault-auth
+        secretPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org.name | lower }}
+        retries: 30
+        sleepTime: 10
     peer:
       name: {{ peer.name }}
       gethPassphrase: {{ peer.geth_passphrase }}
-    metadata:
-      name: {{ component_name }}
-      namespace: {{ component_ns }}
     image:
       initContainerName: ghcr.io/hyperledger/bevel-alpine:latest
       node: quorumengineering/quorum:{{ network.version }}
       pullPolicy: IfNotPresent
-    vault:
-      address: {{ vault.url }}
-      role: vault-role
-      authpath: quorum{{ org_name }}
-      serviceaccountname: vault-auth
-      certsecretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org.name | lower }}
-      retries: 30
-      type: {{ vault.type | default("hashicorp") }}
-    sleepTime: 10

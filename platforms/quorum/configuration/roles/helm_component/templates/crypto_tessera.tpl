@@ -16,20 +16,19 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
+    nameOverride: {{ component_name }}
+    global:
+      vault:
+        type: {{ vault.type | default("hashicorp") }}
+        address: {{ vault.url }}
+        secretEngine: {{ vault.secret_path | default('secretsv2') }}
+        authPath: quorum{{ org_name }}
+        role: vault-role
+        serviceAccountName: vault-auth
+        tmPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org_name }}/crypto
+        keyPrefix: {{ org_name }}/crypto
     peer:
       name: {{ peer.name }}
-    metadata:
-      name: {{ component_name }}
-      namespace: {{ component_ns }}
     image:
       repository: quorumengineering/tessera:hashicorp-{{ network.config.tm_version }}
       pullSecret: regcred
-    vault:
-      address: {{ vault.url }}
-      secretengine: {{ vault.secret_path | default('secretsv2') }}
-      authpath: quorum{{ org_name }}
-      keyprefix: {{ org_name }}/crypto
-      role: vault-role
-      serviceaccountname: vault-auth
-      tmprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org_name }}/crypto
-      type: {{ vault.type | default("hashicorp") }}

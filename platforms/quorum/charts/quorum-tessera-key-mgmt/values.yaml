@@ -7,52 +7,35 @@
 # Default values for tessera-key-mgmt.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+nameOverride:
+
+global:
+  vault:
+    # Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported
+    type: hashicorp
+    # URL of the Vault server
+    address:
+    # Authentication path for Vault
+    authPath: node
+    # Role used for authentication with Vault
+    role: vault-role
+    # The value for vault secret engine name
+    secretEngine: secretsv2
+    # serviceaccount name that will be created for Vault Auth and k8S Secret management
+    # NOTE: Make sure that the service account is already created and autheticated to use the vault.
+    serviceAccountName: vault-auth
+    # Vault path where the tm secrets are stored
+    tmPrefix: data/node/crypto/tm
+    # Vault path where the keys are stored
+    keyPrefix: data/node/crypto/key
+
 peer:
   #Provide the name for organization's peer
-  #Eg. namespace: supplychain-quo1
-  name: node_1
-
-metadata:
-  #Provide the namespace for organization's peer
-  #Eg. namespace: supplychain-quo
-  namespace: default
-
-  #Provide the name for tessera-key-mgmt release
-  #Eg. name: tessera-key-mgmt
-  name: tessera-key-mgmt
+  name: node
 
 image:
-  #Provide the image repository for the tessera-key-mgmt container
-  #Eg. repository: quorumengineering/tessera:hashicorp-21.7.3
+  # Image repository for the tessera-key-mgmt container
   repository: quorumengineering/tessera:hashicorp-21.7.3
-
-  #Provide the image pull secret of image
-  #Eg. pullSecret: regcred
+  # Image pull secret of image
   pullSecret: regcred
-
-
-vault:
-  #Provide the vault server address
-  #Eg. address: http://54.226.163.39:8200
-  address:
-
-  #Provide the key path for vault
-  #Eg. authpath: provider.stewards
-  authpath:
-
-  #Provide the identity for vault
-  #Eg. role: my-identity
-  role: vault-role
-
-  # Provide the service account name autheticated to vault.
-  # NOTE: Make sure that the service account is already created and autheticated to use the vault.
-  # Eg. serviceAccountName: vault-auth
-  serviceaccountname: vault-auth
-
-  # Provide the vault path where the tm secrets are stored
-  # Eg. tmprefix: secret/warehouse-quo/crypto/warehouse/tm
-  tmprefix: secret/node_1-quo/crypto/node_1/tm
-
-  # Provide the vault path where the keys are stored
-  # Eg. tmprefix: secret/warehouse-quo/crypto/warehouse/key
-  keyprefix: secret/node_1-quo/crypto/node_1/key

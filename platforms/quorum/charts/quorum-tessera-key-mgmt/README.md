@@ -3,159 +3,82 @@
 [//]: # (SPDX-License-Identifier: Apache-2.0)
 [//]: # (##############################################################################################)
 
-<a name = "ibft-crypto-goquorum-deployment"></a>
 # RAFT Crypto GoQuorum Deployment
 
-- [Tessera Key Management Deployment Helm Chart](#tessera-key-management-deployment-helm-chart)
-- [Prerequisites](#prerequisites)
-- [Chart Structure](#chart-structure)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Verification](#verification)
-- [Updating the Deployment](#updating-the-deployment)
-- [Deletion](#deletion)
-- [Contributing](#contributing)
-- [License](#license)
-
-
-<a name = "tessera-key-management-deployment-helm-chart"></a>
-## Tessera Key Management Deployment Helm Chart
 ---
-This [Helm chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tessera-key-mgmt) helps in generating Tessera crypto.
+<!-- This [Helm chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tessera-key-mgmt) helps in generating Tessera crypto. -->
 
+This chart is a component of Hyperledger Bevel. Generates certificates and keys required by Tessera transaction manager.. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
 
-<a name = "prerequisites"></a>
-## Prerequisites
----
-Before deploying the Helm chart, make sure to have the following prerequisites:
+## TL;DR
 
-- Kubernetes cluster up and running.
-- The GoQuorum network is set up and running.
-- A HashiCorp Vault instance is set up and configured to use Kubernetes service account token-based authentication.
-- The Vault is unsealed and initialized.
-- Helm installed.
-
-
-<a name = "chart-structure"></a>
-## Chart Structure
----
-The structure of the Helm chart is as follows:
-
-```
-quorum-tessera-key-mgmt/
-    |- templates/
-            |- helpers.tpl
-            |- job.yaml
-    |- Chart.yaml
-    |- README.md
-    |- values.yaml
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install tessera-key-mgmt bevel/quorum-tessera-key-mgmt
 ```
 
-- `templates/`: This directory contains the template files for generating Kubernetes resources.
-- `helpers.tpl`: A template file used for defining custom labels in the Helm chart.
-- `job.yaml`: The job.yaml file defines a Kubernetes Job that runs the "tessera-crypto" container. This container interacts with a Vault server to retrieve secrets and generate tessera keys.
-- `Chart.yaml`: Provides metadata about the chart, such as its name, version, and description.
-- `README.md`: This file provides information and instructions about the Helm chart.
-- `values.yaml`: Contains the default configuration values for the chart. It includes settings for the peer, metadata, image, and Vault configurations.
+## Prerequisitess
 
+- Kubernetes 1.19+
+- Helm 3.2.0+
 
-<a name = "configuration"></a>
-## Configuration
----
-The [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-ibft-crypto-gen/values.yaml) file contains configurable values for the Helm chart. We can modify these values according to the deployment requirements. Here are some important configuration options:
+If Hashicorp Vault is used, then
+- HashiCorp Vault Server 1.13.1+
+
+> **Important**: Also check the dependent charts.
+
+## Installing the Chart
+
+To install the chart with the release name `tessera-key-mgmt`:
+
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install tessera-key-mgmt bevel/quorum-tessera-key-mgmt
+```
+
+The command deploys the chart on the Kubernetes cluster with the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
+
+## Uninstalling the Chart
+
+To uninstall/delete the `tessera-key-mgmt` deployment:
+
+```bash
+helm uninstall tessera-key-mgmt
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Parameters
 ---
 
-### Peer
+### global
 
-| Name            | Description                                                                             | Default Value |
-| ----------------| --------------------------------------------------------------------------------------- | ------------- |
-| name            | Provide the name of the peer                                                            | node_1        |
+| Name | Description | Default Value |
+|-|-|-|
+| `global.vault.type` | Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported | `hashicorp` |
+| `global.vault.address` | URL of the Vault server | `""` |
+| `global.vault.secretEngine` | The value for vault secret engine name | `secretsv2` |
+| `global.vault.authPath` | Authentication path for Vault | `supplychain` |
+| `global.vault.role` |  Role used for authentication with Vault | `vault-role` |
+| `global.vault.serviceAccountName` | Serviceaccount name that will be created for Vault Auth and k8S Secret management | `vault-auth` |
+| `global.vault.tmPrefix` | Vault path where the tm secrets are stored | `node/node/tm` |
+| `global.vault.keyPrefix` | Vault path where the keys are stored | `node/node/key` |
 
-### Metadata
+### peer
 
-| Name            | Description                                                                             | Default Value         |
-| -------------   | --------------------------------------------------------------------------------------- | --------------------- |
-| namespace       | Provide the namespace for organization's peer                                           | default               |
-| name            | Provide the name for indy-key-mgmt release                                              | indy-key-mgmt         |
+| Name| Description | Default  |
+|-|-|-|
+| `peer.name` | Name of the peer | `node` |
 
-### Image
+### image
 
-| Name               | Description                                                   | Default Value                              |
-| ----------------   | ------------------------------------------------------------- | ------------------------------------------ |
-| pullSecret         | Pull policy to be used for the Docker image                   | regcred                                    |
-| repository         | Provide the image repository for the indy-key-mgmt container  | quorumengineering/tessera:hashicorp-21.7.3 |
+| Name | Description | Default Value |
+|-|-|-|
+| `image.repository` | Image repository for the indy-key-mgmt container | `quorumengineering/tessera:hashicorp-21.7.3` |
+| `image.pullSecret` | Pull policy to be used for the Docker image | `regcred` |
 
-### Vault
-
-| Name                | Description                                                             | Default Value                       |
-| ------------------- | ------------------------------------------------------------------------| ----------------------------------- |
-| address             | Provide the vault address/URL                                           | ""                                  |
-| authpath            | Provide the authpath configured to be used                              | ""                                  |
-| role                | Provide the vault role used                                             | vault-role                          |
-| serviceAccountName  | Provide the already created service account name autheticated to vault  | vault-auth                          |
-| tmprefix            | Provide the vault path where the tm secrets are stored                  | secret/node_1-quo/crypto/node_1/tm  |
-| keyprefix           | Provide the vault path where the keys are stored                        | secret/node_1-quo/crypto/node_1/key |
-
-
-<a name = "deployment"></a>
-## Deployment
----
-
-To deploy the quorum-ibft-crypto-gen Helm chart, follow these steps:
-
-1. Modify the [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tessera-key-mgmt/values.yaml) file to set the desired configuration values.
-2. Run the following Helm command to install the chart:
-    ```
-    $ helm repo add bevel https://hyperledger.github.io/bevel/
-    $ helm install <release-name> ./quorum-tessera-key-mgmt
-    ```
-Replace `<release-name>` with the desired name for the release.
-
-This will deploy the tessera-key-management node to the Kubernetes cluster based on the provided configurations.
-
-
-<a name = "verification"></a>
-## Verification
----
-
-To verify the deployment, we can use the following command:
-```
-$ kubectl get jobs -n <namespace>
-```
-Replace `<namespace>` with the actual namespace where the Job was created. This command will display information about the Job, including the number of completions and the current status of the Job's pods.
-
-
-<a name = "updating-the-deployment"></a>
-## Updating the Deployment
----
-
-If we need to update the deployment with new configurations or changes, modify the same [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tessera-key-mgmt/values.yaml) file with the desired changes and run the following Helm command:
-```
-$ helm upgrade <release-name> ./quorum-tessera-key-mgmt
-```
-Replace `<release-name>` with the name of the release. This command will apply the changes to the deployment, ensuring the tessera-key-management node is up to date.
-
-
-<a name = "deletion"></a>
-## Deletion
----
-
-To delete the deployment and associated resources, run the following Helm command:
-```
-$ helm uninstall <release-name>
-```
-Replace `<release-name>` with the name of the release. This command will remove all the resources created by the Helm chart.
-
-
-<a name = "contributing"></a>
-## Contributing
----
-If you encounter any bugs, have suggestions, or would like to contribute to the [Tessera Key Management Deployment Helm Chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tessera-key-mgmt), please feel free to open an issue or submit a pull request on the [project's GitHub repository](https://github.com/hyperledger/bevel).
-
-
-<a name = "license"></a>
 ## License
 
 This chart is licensed under the Apache v2.0 license.

@@ -1,0 +1,46 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "quorum-member-node.name" . }}-cleanup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: quorum-member-node-sts-cleanup
+    app.kubernetes.io/component: member-node-sts-cleanup
+    app.kubernetes.io/part-of: {{ include "quorum-member-node.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    helm.sh/hook-weight: "0"
+    helm.sh/hook: "pre-delete"
+    helm.sh/hook-delete-policy: "hook-succeeded"
+spec:
+  backoffLimit: 3
+  completions: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: quorum-member-node-sts-cleanup
+        app.kubernetes.io/component: member-node-sts-cleanup
+        app.kubernetes.io/part-of: {{ include "quorum-member-node.fullname" . }}
+        app.kubernetes.io/namespace: {{ .Release.Namespace }}
+        app.kubernetes.io/managed-by: helm
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccountName }}      
+      restartPolicy: "Never"
+      containers:
+        - name: delete-member-node
+          image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
+          securityContext:
+            runAsUser: 0
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
+
+{{- if .Values.settings.removeGenesisOnDelete }}
+              echo "Deleting genesis configmap in k8s ..."
+              kubectl delete configmap --namespace {{ .Release.Namespace }} genesis-{{ .Values.node.name }}
+{{- end}} 

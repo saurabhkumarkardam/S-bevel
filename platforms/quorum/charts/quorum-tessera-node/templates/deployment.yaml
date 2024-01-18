@@ -7,15 +7,14 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  namespace: {{ .Values.metadata.namespace }}
+  name: {{ .Values.node.name }}-tessera
+  namespace: {{ .Release.Namespace }}
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: {{ .Values.node.name }}-tessera
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }} 
-    {{- include "labels.custom" . | nindent 2 }}
-  name: {{ .Values.node.name }}-tessera
 spec:
   serviceName: {{ .Values.node.name }}-tessera
   replicas: {{ .Values.replicaCount }}
@@ -26,8 +25,7 @@ spec:
       app.kubernetes.io/name: {{ .Values.node.name }}-tessera
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
-      app.kubernetes.io/instance: {{ .Release.Name }} 
-      {{- include "labels.custom" . | nindent 2 }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       creationTimestamp: null
@@ -38,10 +36,9 @@ spec:
         app.kubernetes.io/name: {{ .Values.node.name }}-tessera
         helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/instance: {{ .Release.Name }} 
-        {{- include "labels.custom" . | nindent 2 }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Values.vault.serviceaccountname }}
+      serviceAccountName: {{ .Values.global.vault.serviceaccountname }}
       hostname: {{ .Values.node.name }}-tessera
       imagePullSecrets:
           - name: {{ .Values.node.imagePullSecret }}
@@ -70,17 +67,17 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: VAULT_ADDR
-          value: {{ .Values.vault.address }}
+          value: {{ .Values.global.vault.address }}
         - name: VAULT_SECRET_PREFIX
-          value: {{ .Values.vault.secretprefix }}
+          value: {{ .Values.global.vault.secretprefix }}
         - name: KUBERNETES_AUTH_PATH
-          value: {{ .Values.vault.authpath }}
+          value: {{ .Values.global.vault.authpath }}
         - name: VAULT_APP_ROLE
-          value: {{ .Values.vault.role }}
+          value: {{ .Values.global.vault.role }}
         - name: MOUNT_PATH
           value: "/secret"
         - name: VAULT_TYPE
-          value: "{{ $.Values.vault.type }}"
+          value: "{{ $.Values.global.vault.type }}"
         command: ["sh", "-c"]
         args:
         - |-
@@ -90,7 +87,7 @@ spec:
           # Calling a function to retrieve the vault token.
           vaultBevelFunc "init"
           # Calling a function to retrieve secrets from Vault only if they exist.
-          vaultBevelFunc "readJson" "${VAULT_SECRET_PREFIX}/{{ .Values.vault.keyname }}"
+          vaultBevelFunc "readJson" "${VAULT_SECRET_PREFIX}/{{ .Values.global.vault.keyname }}"
 
           username=$(echo ${VAULT_SECRET} | jq -r '.["db_user"]')
           password=$(echo ${VAULT_SECRET} | jq -r '.["db_password"]')
@@ -147,9 +144,9 @@ spec:
         - name: "MYSQL_ROOT_PASSWORD"
           value: ""
         - name: MYSQL_DATABASE
-          value: "{{ .Values.node.dbname }}"
+          value: "{{ .Values.node.dbName }}"
         - name: MYSQL_USER
-          value: "{{ .Values.node.mysqluser }}"
+          value: "{{ .Values.node.mySqlUser }}"
         - name: MYSQL_PASSWORD
           value: /secret/keys/password
         ports:
@@ -205,13 +202,13 @@ spec:
           - name: QHOME
             value: {{ .Values.node.mountPath }}
           - name: VAULT_ADDR
-            value: {{ $.Values.vault.address }}          
+            value: {{ $.Values.global.vault.address }}          
           - name: KUBERNETES_AUTH_PATH
-            value: {{ $.Values.vault.authpath }}
+            value: {{ $.Values.global.vault.authpath }}
           - name: VAULT_APP_ROLE
-            value: {{ $.Values.vault.role }}
+            value: {{ $.Values.global.vault.role }}
           - name: VAULT_TYPE
-            value: "{{ $.Values.vault.type }}"
+            value: "{{ $.Values.global.vault.type }}"
         volumeMounts:
           - name: certificates
             mountPath: {{ .Values.node.mountPath }}/crypto/
@@ -231,15 +228,15 @@ spec:
     - metadata:
         name: {{ .Values.node.name }}-tessera-pv
       spec:
-        storageClassName: {{ .Values.storage.storageclassname }}
+        storageClassName: {{ .Values.storage.storageClassName }}
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: {{ .Values.storage.storagesize }}
+            storage: {{ .Values.storage.storageSize }}
     - metadata:
         name: {{ .Values.node.name }}-mysql     
       spec:
-        storageClassName: {{ .Values.storage.storageclassname }}    
+        storageClassName: {{ .Values.storage.storageClassName }}    
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:

@@ -7,25 +7,31 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ $.Values.metadata.name }}"
-  namespace: "{{ $.Values.metadata.namespace }}"
+  name: {{ include "quorum-raft-crypto-gen.name" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app: "{{ $.Values.metadata.name }}"
-    app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: {{ include "quorum-raft-crypto-gen.name" . }}
+    app.kubernetes.io/name: quorum-raft-crypto-gen-job
+    app.kubernetes.io/component: raft-crypto-gen-job
+    app.kubernetes.io/part-of: {{ include "quorum-raft-crypto-gen.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
 spec:
   backoffLimit: 6
   template:
     metadata:
       labels:
-        app: "{{ $.Values.metadata.name }}"
-        app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        app: {{ include "quorum-raft-crypto-gen.name" . }}
+        app.kubernetes.io/name: quorum-raft-crypto-gen-job
+        app.kubernetes.io/component: raft-crypto-gen-job
+        app.kubernetes.io/part-of: {{ include "quorum-raft-crypto-gen.fullname" . }}
+        app.kubernetes.io/namespace: {{ .Release.Namespace }}
+        app.kubernetes.io/release: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: helm
     spec:
       restartPolicy: OnFailure
-      serviceAccountName: {{ $.Values.vault.serviceaccountname }}
+      serviceAccountName: {{ $.Values.global.vault.serviceAccountName }}
       securityContext:
         fsGroup: 1000
       initContainers:
@@ -34,19 +40,19 @@ spec:
         imagePullPolicy: {{ $.Values.image.pullPolicy }}
         env:
         - name: VAULT_ADDR
-          value: {{ $.Values.vault.address }}
+          value: {{ $.Values.global.vault.address }}
         - name: KUBERNETES_AUTH_PATH
-          value: {{ $.Values.vault.authpath }}
+          value: {{ $.Values.global.vault.authPath }}
         - name: VAULT_APP_ROLE
-          value: {{ $.Values.vault.role }}
+          value: {{ $.Values.global.vault.role }}
         - name: CERTS_SECRET_PREFIX
-          value: {{ .Values.vault.certsecretprefix }}
+          value: {{ .Values.global.vault.certsecretprefix }}
         - name: MOUNT_PATH
           value: "/certcheck"
         - name: PEER_NAME
           value: "{{ $.Values.peer.name }}"
         - name: VAULT_TYPE
-          value: "{{ $.Values.vault.type }}"
+          value: "{{ $.Values.global.vault.type }}"
         volumeMounts:
         - name: certcheck
           mountPath: /certcheck
@@ -93,15 +99,15 @@ spec:
             subPath: package-manager.sh
         env:
         - name: VAULT_ADDR
-          value: {{ $.Values.vault.address }}
+          value: {{ $.Values.global.vault.address }}
         - name: KUBERNETES_AUTH_PATH
-          value: {{ $.Values.vault.authpath }}
+          value: {{ $.Values.global.vault.authPath }}
         - name: VAULT_APP_ROLE
-          value: {{ $.Values.vault.role }}
+          value: {{ $.Values.global.vault.role }}
         - name: MOUNT_PATH
           value: "/certcheck"
         - name: CERTS_SECRET_PREFIX
-          value: {{ .Values.vault.certsecretprefix }}
+          value: {{ .Values.global.vault.secretPrefix }}
         - name: GETH_PASSPHRASE
           value: "{{ $.Values.peer.gethPassphrase }}"
         - name: PEER_NAME
@@ -111,7 +117,7 @@ spec:
         - name: DB_PASSWORD
           value: "password"
         - name: VAULT_TYPE
-          value: "{{ $.Values.vault.type }}"
+          value: "{{ $.Values.global.vault.type }}"
         command: ["sh", "-c"]
         args:
         - |-
@@ -176,8 +182,8 @@ spec:
           if [ "$nodekey" == "null" ] || [ "$cat base64_keystore" == "null" ] || [ "$nodekey" == "parse error"* ] || [ "$cat base64_keystore" == "parse error"* ]
           then
             echo "certificates write or read fail"
-            sleep {{ $.Values.sleepTime }}
-            if [ "$COUNTER" -ge {{ $.Values.vault.retries }} ]
+            sleep {{ $.Values.global.vault.sleepTime }}
+            if [ "$COUNTER" -ge {{ $.Values.global.vault.retries }} ]
             then
               echo "Retry attempted $COUNTER times, certificates have not been saved"
               exit 1

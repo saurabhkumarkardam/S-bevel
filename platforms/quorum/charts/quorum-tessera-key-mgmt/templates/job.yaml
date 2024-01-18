@@ -7,29 +7,32 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ $.Values.metadata.name }}"
-  namespace: "{{ $.Values.metadata.namespace }}"
+  name: {{ include "quorum-tessera-key-mgmt.name" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app: "{{ $.Values.metadata.name }}"
-    app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: {{ include "quorum-tessera-key-mgmt.name" . }}
+    app.kubernetes.io/name: quorum-tessera-key-mgmt-job
+    app.kubernetes.io/component: tessera-key-mgmt-job
+    app.kubernetes.io/part-of: {{ include "quorum-tessera-key-mgmt.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
 spec:
   backoffLimit: 6
   template:
     metadata:
       labels:
-        app: "{{ $.Values.metadata.name }}"
-        app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
-        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/instance: {{ .Release.Name }} 
+        app: {{ include "quorum-tessera-key-mgmt.name" . }}
+        app.kubernetes.io/name: quorum-tessera-key-mgmt-job
+        app.kubernetes.io/component: tessera-key-mgmt-job
+        app.kubernetes.io/part-of: {{ include "quorum-tessera-key-mgmt.fullname" . }}
+        app.kubernetes.io/namespace: {{ .Release.Namespace }}
+        app.kubernetes.io/managed-by: helm
     spec:
       restartPolicy: OnFailure
       imagePullSecrets:
         - name: "{{ $.Values.image.pullSecret }}"
-      serviceAccountName: "{{ $.Values.vault.serviceaccountname }}"
+      serviceAccountName: "{{ $.Values.global.vault.serviceAccountName }}"
       volumes:
         - name: scripts-volume
           configMap:
@@ -43,21 +46,21 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
           - name: VAULT_ADDR
-            value: {{ $.Values.vault.address }}
+            value: {{ $.Values.global.vault.address }}
           - name: VAULT_SECRET_ENGINE
-            value: {{ $.Values.vault.secretengine }}            
+            value: {{ $.Values.global.vault.secretEngine }}            
           - name: VAULT_KEY_PREFIX
-            value: "{{ $.Values.vault.keyprefix }}"     
+            value: "{{ $.Values.global.vault.keyPrefix }}"     
           - name: PEER_NAME
             value: {{ $.Values.peer.name }}
           - name: KUBERNETES_AUTH_PATH
-            value: {{ $.Values.vault.authpath }}
+            value: {{ $.Values.global.vault.authPath }}
           - name: VAULT_APP_ROLE
-            value: {{ $.Values.vault.role }}
+            value: {{ $.Values.global.vault.role }}
           - name: VAULT_SECRET_PREFIX
-            value: "{{ $.Values.vault.tmprefix }}"
+            value: "{{ $.Values.global.vault.tmPrefix }}"
           - name: VAULT_TYPE
-            value: "{{ $.Values.vault.type }}"
+            value: "{{ $.Values.global.vault.type }}"
           command: ["/bin/bash", "-c"]
           args:
             - |-

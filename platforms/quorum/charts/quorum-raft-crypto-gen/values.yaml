@@ -3,39 +3,47 @@
 #
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
-
-# Default values for Crypto IBFT chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-#############################################################
-#                   Basic Configuration                     #
-#############################################################
 # Default values for indy-key-mgmt.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
-metadata:
-  #Provide the namespace for organization's peer
-  #Eg. namespace: supplychain-quo
-  namespace: default
-
-  #Provide the name for quorum-raft-crypto job release
-  #Eg. name: quorum-crypto-raft
-  name: quorum-crypto-raft
+---
+nameOverride: ""
+# The following are for overriding global values
+global:
+  #############################################################
+  #               HashiCorp Vault Configuration               #
+  #############################################################
+  # NOTE: Make sure that the vault is already unsealed, intialized and configured to
+  # use Kubernetes service account token based authentication.
+  # For more info, see https://www.vaultproject.io/docs/auth/kubernetes
+  vault:
+    # Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported.
+    type: hashicorp
+    # URL of the Vault server
+    address: 
+    # Role used for authentication with Vault
+    role: vault-role
+    # Authentication path for Vault
+    authPath: carrier
+    # Serviceaccount name that will be created for Vault Auth and k8S Secret management
+    # NOTE: Make sure that the service account is already created and autheticated to use the vault.
+    serviceAccountName: vault-auth
+    # The value for vault secret prefix which must start with `data/`
+    secretPrefix: data/carrier
+    # Number of retries to check contents from vault
+    retries: 30
+    # Sleep time after every retry in seconds
+    sleepTime: 20
 
 peer:
-  # Provide the name of the peer
-  # Eg. name: carrier
+  # Name of the peer
   name: carrier
-  # Provide the passphrase for building the crypto files
-  # Eg. 12345
+  # Passphrase for building the crypto files
   gethPassphrase: 12345
-# This section contains the Quorum Crypto IBFT metadata.
 
 # Provide information regarding the Docker images used.
 image:
-  # Provide the alpine utils image, which is used for all init-containers of deployments/jobs.
+  # Alpine-utils image, which is used for all init-containers of deployments/jobs.
   # NOTE: The alpine image used is the base alpine image with CURL installed.
   # Eg. initContainerName: ghcr.io/hyperledger/bevel-alpine:latest
   initContainerName: ghcr.io/hyperledger/bevel-alpine:latest
@@ -45,34 +53,3 @@ image:
   # Pull quorum Docker image
   node: quorumengineering/quorum:21.4.2
 
-#############################################################
-#               HashiCorp Vault Configuration               #
-#############################################################
-# NOTE: Make sure that the vault is already unsealed, intialized and configured to
-# use Kubernetes service account token based authentication.
-# For more info, see https://www.vaultproject.io/docs/auth/kubernetes
-
-vault:
-  # Provide the vault address
-  # Eg. address: http://vault.example.com:8200
-  address:
-  # Provide the vault role used.
-  # Eg. role: vault-role
-  role: vault-role
-  # Provide the authpath configured to be used.
-  authpath:
-  # Provide the service account name autheticated to vault.
-  # NOTE: Make sure that the service account is already created and autheticated to use the vault.
-  # Eg. serviceaccountname: vault-auth
-  serviceAccountName: vault-auth
-  # Provide the vault path where the certificates are stored
-  # Eg. certsecretprefix: secret/cenm-org-name
-  certSecretPrefix:
-  # Number of retries to check contents from vault
-  retries: 30
-
-#############################################################
-#                       Settings                            #
-#############################################################
-# custom sleep time in seconds
-sleepTime: 20

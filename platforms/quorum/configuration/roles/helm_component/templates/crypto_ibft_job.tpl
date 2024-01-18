@@ -16,6 +16,7 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
+    nameOverride: {{ component_name }}
     global:
       vault:
         type: {{ vault.type | default("hashicorp") }}
@@ -26,7 +27,6 @@ spec:
         secretPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org.name | lower }}
         retries: 30
         sleepTime: 10
-    nameOverride: {{ component_name }}
     peer:
       name: {{ peer.name }}
       gethPassphrase: {{ peer.geth_passphrase }}

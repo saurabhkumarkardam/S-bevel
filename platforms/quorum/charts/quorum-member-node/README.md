@@ -3,232 +3,160 @@
 [//]: # (SPDX-License-Identifier: Apache-2.0)
 [//]: # (##############################################################################################)
 
-<a name = "quorum-member-node-deployment"></a>
-# Quorum Member Node Deployment
 
-- [Quorum Member Node Deployment Helm Chart](#quorum-member-node-deployment-helm-chart)
-- [Prerequisites](#prerequisites)
-- [Chart Structure](#chart-structure)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Verification](#verification)
-- [Updating the Deployment](#updating-the-deployment)
-- [Deletion](#deletion)
-- [Contributing](#contributing)
-- [License](#license)
+# bevel/quorum-member-node
+This chart is a component of Hyperledger Bevel. The chart deploys an Quorum member (non-validator) node with or without the integration of Tessera transaction manager. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
 
-<a name = "quorum-member-node-deployment-helm-chart"></a>
-## Quorum Member Node Deployment Helm Chart
----
-This [Helm chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-member-node) helps to deploy Quorum Member (non-validator) nodes with tessera transaction manager.
+## TL;DR
 
-
-<a name = "prerequisites"></a>
-## Prerequisites
----
-Before deploying the Helm chart, make sure to have the following prerequisites:
-
-- Kubernetes cluster up and running.
-- The GoQuorum network is set up and running.
-- A HashiCorp Vault instance is set up and configured to use Kubernetes service account token-based authentication.
-- The Vault is unsealed and initialized.
-- Either HAproxy or Ambassador is required as ingress controller.
-- Helm installed.
-
-
-<a name = "chart-structure"></a>
-## Chart Structure
----
-The structure of the Helm chart is as follows:
-
-```
-quorum-member-node/
-    |- templates/
-            |- _helpers.yaml
-            |- configmap.yaml
-            |- deployment.yaml
-            |- ingress.yaml
-            |- service.yaml
-    |- Chart.yaml
-    |- README.md
-    |- values.yaml
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install member-node bevel/quorum-member-node
 ```
 
-- `templates/`: This directory contains the template files for generating Kubernetes resources.
-- `helpers.tpl`: A template file used for defining custom labels in the Helm chart.
-- `configmap.yaml`: The file defines a ConfigMap that stores the base64-encoded content of the "genesis.json" file under the key "genesis.json.base64" in the specified namespace.
-- `deployment.yaml`: This file is a configuration file for deploying a StatefulSet in Kubernetes. It creates a StatefulSet with a specified number of replicas and defines various settings for the deployment. It includes initialization containers for fetching secrets from a Vault server, an init container for initializing the Quorum blockchain network, and a main container for running the Quorum member node. It also specifies volume mounts for storing certificates and data. The StatefulSet ensures stable network identities for each replica.
-- `ingress.yaml`: This file is a Kubernetes configuration file for setting up an Ingress resource with HAProxy as the provider. It includes annotations for SSL passthrough and specifies rules for routing traffic based on the host and path.
-- `service.yaml`: This file defines a Kubernetes Service with multiple ports for different protocols and targets, and supports Ambassador proxy annotations for specific configurations when using the "ambassador" proxy provider.
-- `Chart.yaml`: Provides metadata about the chart, such as its name, version, and description.
-- `README.md`: This file provides information and instructions about the Helm chart.
-- `values.yaml`: Contains the default configuration values for the chart. It includes configuration for the metadata, image, node, Vault, etc.
+## Prerequisitess
 
+- Kubernetes 1.19+
+- Helm 3.2.0+
 
-<a name = "configuration"></a>
-## Configuration
----
-The [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-member-node/values.yaml) file contains configurable values for the Helm chart. We can modify these values according to the deployment requirements. Here are some important configuration options:
+If Hashicorp Vault is used, then
+- HashiCorp Vault Server 1.13.1+
+
+> **Important**: Also check the dependent charts.
+
+## Installing the Chart
+
+To install the chart with the release name `member-node`:
+
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install member-node bevel/quorum-member-node
+```
+
+The command deploys the chart on the Kubernetes cluster with the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
+
+## Uninstalling the Chart
+
+To uninstall/delete the `ibft-crypto-gen` deployment:
+
+```bash
+helm uninstall member-node
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Parameters
 ---
 
 ### replicaCount
 
-| Name                     | Description                          | Default Value |
-| ------------------------ | ------------------------------------ | ------------- |
-| replicaCount             | Number of replicas                   | 1             |
+| Name | Description | Default Value |
+|-|-|-|
+| `replicaCount` | Number of replicas | `1` |
 
-### metadata
-
-| Name            | Description                                                                  | Default Value |
-| ----------------| ---------------------------------------------------------------------------- | ------------- |
-| namespace       | Provide the namespace for the Quorum node                                    | default       |
-| labels          | Provide any additional labels                                                | ""            |
+### Global parameters
+These parameters are refered to as same in each parent or child chart
+| Name | Description | Default Value |
+|-|-|-|
+| `global.vault.type` | Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported. | `hashicorp` |
+| `global.vault.address` | URL of the Vault server | `""` |
+| `global.vault.secretPrefix` | The value for vault secret prefix which must start with `data/` | `data/node` |
+| `global.vault.serviceAccountName` | Serviceaccount name that will be created for Vault Auth and k8S Secret management | `vault-auth` |
+| `global.vault.keyName` | key name from where quorum secrets will be read | `quorum` |
+| `global.vault.tm_keyName` | key name from where transaction-manager secrets will be read | `tm` |
+| `global.vault.role` | Role used for authentication with Vault | `vault-role` |
+| `global.vault.authPath` | Authentication path for Vault | `node` |
 
 ### image
 
-| Name           | Description                                                                          | Default Value                         |
-| ---------------| ------------------------------------------------------------------------------------ | ------------------------------------- |
-| node           | Provide the valid image name and version for quorum node                             | quorumengineering/quorum:2.1.1        |
-| alpineutils    | Provide the valid image name and version to read certificates from vault server      | ghcr.io/hyperledger/bevel-alpine:latest      |
-| tessera        | Provide the valid image name and version for quorum tessera                          | quorumengineering/tessera:0.9.2       |
-| busybox        | Provide the valid image name and version for busybox                                 | busybox                               |
-| mysql          | Provide the valid image name and version for MySQL. This is used as the DB for TM    | mysql/mysql-server:5.7                |
+| Name | Description | Default Value |
+|-|-|-|
+| `image.node` | Valid image name and version for quorum node | `quorumengineering/quorum:2.1.1` |
+| `image.alpineutils` | Valid image name and version to read certificates from vault server | `ghcr.io/hyperledger/bevel-alpine:latest` |
+<!-- | `image.tessera` | Valid image name and version for quorum tessera | `quorumengineering/tessera:0.9.2` | -->
+<!-- | `image.busybox` | Valid image name and version for busybox | `busybox` | -->
+<!-- | `image.mysql` | Valid image name and version for MySQL. This is used as the DB for TM | `mysql/mysql-server:5.7` | -->
 
 ### node
 
-| Name                     | Description                                                                    | Default Value     |
-| ------------------------ | ------------------------------------------------------------------------------ | -------------     |
-| name                     | Provide the name for Quorum node                                               | node-1            |
-| status                   | Provide the status of the node as default,additional                           | default           |
-| peer_id                  | Provide the id which is obtained when the new peer is added for raft consensus | 5                 |
-| consensus                | Provide the consesus for the Quorum network, values can be 'raft' or 'ibft'    | ibft              |
-| mountPath                | Provide the mountpath for Quorum pod                                           | /etc/quorum/qdata |
-| imagePullSecret          | Provide the docker secret name in the namespace                                | regcred           |
-| keystore                 | Provide the keystore file name                                                 | keystore_1        |
-| servicetype              | Provide the k8s service type                                                   | ClusterIP         |
-| ports.rpc                | Provide the rpc service ports                                                  | 8546              |
-| ports.raft               | Provide the raft service ports                                                 | 50401             |
-| ports.tm                 | Provide the Tessera Transaction Manager service ports                          | 15013             |
-| ports.quorum             | Provide the Quorum port                                                        | 21000             |
-| ports.db                 | Provide the DataBase port                                                      | 3306              |
-| dbname                   | Provide the mysql DB name                                                      | demodb            |
-| mysqluser                | Provide the mysql username                                                     | demouser          |
-| mysqlpassword            | Provide the mysql user password                                                | password          |
+| Name | Description | Default Value |
+|-|-|-|
+| `node.name` | Name for Quorum node | `node` |
+| `node.status` | Status of the node as default,additional | `default` |
+| `node.peer_id` | Id which is obtained when the new peer is added for raft consensus | `5` |
+| `node.consensus` | Consesus for the Quorum network, values can be 'raft' or 'ibft' | `ibft` |
+| `node.mountPath` | mountpath for Quorum pod | `/etc/quorum/qdata` |
+| `node.imagePullSecret` | Docker secret name in the namespace | `regcred` |
+| `node.keyStore` | keystore file name | `keystore_1` |
+| `node.serviceType` | K8s service type | `ClusterIP` |
+| `node.ports.rpc` | Rpc service ports | `8546` |
+| `node.ports.raft` | Raft service ports | `50401` |
+<!-- | `node.ports.tm` | Tessera Transaction Manager service ports | `15013` | -->
+| `node.ports.quorum` | Quorum port | `21000` |
+<!-- | `node.ports.db` | DataBase port | `3306` | -->
+<!-- | `node.dbName` | Mysql DB name | `demodb` | -->
+<!-- | `node.mysqlUser` | Mysql username | `demouser` | -->
+<!-- | `node.mysqlPassword` | Mysql user password |  | -->
 
-### vault
+### tm
 
-| Name               | Description                                                              | Default Value             |
-| ----------------   | -------------------------------------------------------------------------| -------------             |
-| address            | Address/URL of the Vault server.                                         | ""                        |
-| secretprefix       | Provide the Vault secret path from where secrets will be read            | secret/org1/crypto/node_1 |
-| serviceaccountname | Provide the service account name verified with Vault                     | vault-auth                |
-| keyname            | Provide the key name from where Quorum secrets will be read              | quorum                    |
-| tm_keyname         | Provide the key name from where transaction manager secrets will be read | tm                        |
-| role               | Provide the service role verified with Vault                             | vault-role                |
-| authpath           | Provide the Vault auth path created for the namespace                    | quorumorg1                |
+| Name | Description | Default Value |
+|-|-|-|
+| `tm.type` |  | `none` |
 
 ### tessera
 
-| Name          | Description                                                                                                       | Default Value                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------- | -------------                     |
-| dburl         | Provide the Database URL                                                                                          | jdbc:mysql://localhost:3306/demodb|
-| dbusername    | Provide the Database username                                                                                     | demouser                          |
-| dbpassword    | Provide the Database password                                                                                     | ""                                |
-| url           | Provide the tessera node's own url. This should be local. Use http if tls is OFF                                  | ""                                |
-| othernodes    | Provide the list of tessera nodes to connect in `url: <value>` format. This should be reachable from this node    | ""                                |
-| tls           | Provide if tessera will use tls                                                                                   | STRICT                            |
-| trust         | Provide the server/client  trust configuration for transaction manager nodes                                            | TOFU                              |
+| Name | Description | Default Value |
+|-|-|-|
+<!-- | `tessera.dbUrl` | Database URL | `jdbc:mysql://localhost:3306/demodb` | -->
+<!-- | `tessera.dbUsername` | Database username | `demouser` | -->
+<!-- | `tessera.dbPassword` | Database password | `""` | -->
+| `tessera.url` | Tessera node's own url. This should be local. Use http if tls is OFF | `""` |
+| `tessera.clienturl` |  | `""` |
+<!-- | `tessera.othernodes` | List of tessera nodes to connect in `url: <value>` format. This should be reachable from this node | `""` | -->
+<!-- | `tessera.tls` | If tessera will use tls | `STRICT` | -->
+<!-- | `tessera.trust` | Server/client trust configuration for transaction manager nodes | `TOFU` | -->
 
 
 ### genesis
 
-| Name    | Description                                    | Default Value |
-| --------| ---------------------------------------------- | ------------- |
-| genesis | Provide the genesis.json file in base64 format | ""            |
+| Name | Description | Default Value |
+|-|-|-|
+| `genesis` | genesis.json file in base64 format | `""` |
 
 
 ### staticnodes
 
-| Name            | Description                           | Default Value |
-| ----------------| --------------------------------------| ------------- |
-| staticnodes     | Provide the static nodes as an array  | ""            |
+| Name | Description | Default Value |
+|-|-|-|
+| `staticNodes` | Provide the static nodes as an array  | `""` |
 
 ### proxy
 
-| Name                  | Description                                                           | Default Value |
-| --------------------- | --------------------------------------------------------------------- | ------------- |
-| provider              | The proxy/ingress provider (ambassador, haproxy)                      | ambassador    |
-| external_url          | This field contains the external URL of the node                      | ""            |
-| portTM                | The TM port exposed externally via the proxy                          | 15013         |
-| rpcport               | The RPC port exposed externally via the proxy                         | 15030         |
-| quorumport            | The Quorum port exposed externally via the proxy                      | 15031         |
-| portRaft              | The Raft port exposed externally via the proxy                        | 15032         |
+| Name | Description | Default Value |
+|-|-|-|
+| `proxy.provider` | The proxy/ingress provider (ambassador, haproxy) | `ambassador` |
+| `proxy.external_url` | This field contains the external URL of the node | `""` |
+<!-- | `proxy.portTM` | The TM port exposed externally via the proxy | `15013` | -->
+<!-- | `proxy.rpcPort` | The RPC port exposed externally via the proxy | `15030` | -->
+| `proxy.quorumPort` | The Quorum port exposed externally via the proxy | `15031` |
+| `proxy.portRaft` | The Raft port exposed externally via the proxy | `15032` |
 
 ### storage
 
-| Name                  | Description                               | Default Value   |
-| --------------------- | ------------------------------------------| -------------   |
-| storageclassname      | The Kubernetes storage class for the node | awsstorageclass |
-| storagesize           | The memory for the node                   | 1Gi             |
-| dbstorage             | Provide the memory for database           | 1Gi             |
+| Name | Description | Default Value |
+|-|-|-|
+| `storage.storageClassName` | The Kubernetes storage class for the node | `awsstorageclass` |
+| `storage.storageSize` | The memory for the node | `1Gi` |
+| `storage.dbStorage` | Provide the memory for database | `1Gi` |
 
-<a name = "deployment"></a>
-## Deployment
----
+### settings
 
-To deploy the quorum-member-node Helm chart, follow these steps:
-
-1. Modify the [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-member-node/values.yaml) file to set the desired configuration values.
-2. Run the following Helm command to install the chart:
-    ```
-    $ helm repo add bevel https://hyperledger.github.io/bevel/
-    $ helm install <release-name> ./quorum-member-node
-    ```
-Replace `<release-name>` with the desired name for the release.
-
-This will deploy the quorum member node to the Kubernetes cluster based on the provided configurations.
-
-
-<a name = "verification"></a>
-## Verification
----
-
-To verify the deployment, we can use the following command:
-```
-$ kubectl get statefulsets -n <namespace>
-```
-Replace `<namespace>` with the actual namespace where the StatefulSet was created. This command will display information about the StatefulSet, including the number of replicas and their current status.
-
-
-<a name = "updating-the-deployment"></a>
-## Updating the Deployment
----
-
-If we need to update the deployment with new configurations or changes, modify the same [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-member-node/values.yaml) file with the desired changes and run the following Helm command:
-```
-$ helm upgrade <release-name> ./quorum-member-node
-```
-Replace `<release-name>` with the name of the release. This command will apply the changes to the deployment, ensuring the quorum member node is up to date.
-
-
-<a name = "deletion"></a>
-## Deletion
----
-
-To delete the deployment and associated resources, run the following Helm command:
-```
-$ helm uninstall <release-name>
-```
-Replace `<release-name>` with the name of the release. This command will remove all the resources created by the Helm chart.
-
-
-<a name = "contributing"></a>
-## Contributing
----
-If you encounter any bugs, have suggestions, or would like to contribute to the [Quorum Member Node Deployment Helm Chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-member-node), please feel free to open an issue or submit a pull request on the [project's GitHub repository](https://github.com/hyperledger/bevel).
-
+| Name | Description | Default Value |
+|-|-|-|
+| `settings.removeGenesisOnDelete` |  | `true` |
 
 <a name = "license"></a>
 ## License

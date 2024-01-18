@@ -9,3 +9,19 @@ appVersion: "2.0"
 description: "Quorum: This Helm chart generates certificates and keys required by Tessera transaction manager."
 name: quorum-tessera-key-mgmt
 version: '0.15.1'
+appVersion: latest
+keywords:
+  - bevel
+  - ethereum
+  - quorum
+  - hyperledger
+  - enterprise
+  - blockchain
+  - deployment
+  - accenture
+home: https://hyperledger-bevel.readthedocs.io/en/latest/
+sources:
+  - https://github.com/hyperledger/bevel
+maintainers:
+  - name: Hyperledger Bevel maintainers
+    email: bevel@lists.hyperledger.org
