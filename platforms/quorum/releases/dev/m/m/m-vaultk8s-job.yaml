@@ -25,7 +25,7 @@ spec:
       vault:
         type: hashicorp
         role: vault-role
-        address: dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
+        address: http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
         authPath: quodltm
         network: quorum
         secretEngine: secretsv2
