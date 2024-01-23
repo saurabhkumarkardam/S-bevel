@@ -39,7 +39,7 @@ The command deploys the chart on the Kubernetes cluster with the default configu
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `ibft-crypto-gen` deployment:
+To uninstall/delete the `member-node` deployment:
 
 ```bash
 helm uninstall member-node

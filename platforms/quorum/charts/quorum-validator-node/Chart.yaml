@@ -9,3 +9,19 @@ appVersion: "2.0"
 description: "Quorum: This Helm chart deploys a validator Quorum node."
 name: quorum-validator-node
 version: '0.15.0'
+# appVersion: latest
+keywords:
+  - bevel
+  - ethereum
+  - quorum
+  - hyperledger
+  - enterprise
+  - blockchain
+  - deployment
+  - accenture
+home: https://hyperledger-bevel.readthedocs.io/en/latest/
+sources:
+  - https://github.com/hyperledger/bevel
+maintainers:
+  - name: Hyperledger Bevel maintainers
+    email: bevel@lists.hyperledger.org

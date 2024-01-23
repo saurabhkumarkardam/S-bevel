@@ -25,7 +25,7 @@ spec:
         secretEngine: {{ vault.secret_path | default('secretsv2') }}
         serviceAccountName: vault-auth
         role: vault-role
-        authpath: quorum{{ name }}
+        authpath: {{ network.env.type }}{{ name }}
         secretPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
         keyName: quorum
         tmSecretPath: {{ name }}/crypto/{{ peer.name }}/tm

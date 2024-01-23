@@ -7,7 +7,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
   annotations:
     app: consortiumchain
     version: '1'
@@ -27,7 +27,7 @@ spec:
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "labels.custom" . | nindent 2 }}
     service.rpc: {{ .Values.node.name }}
-  type: {{ .Values.node.servicetype }}
+  type: {{ .Values.node.serviceType }}
   ports:
   - name: wsrpc-listener
     protocol: TCP
@@ -50,7 +50,7 @@ apiVersion: getambassador.io/v3alpha1
 kind: Listener
 metadata:
   name: {{ .Values.node.name }}-rlpx
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   port: {{ .Values.proxy.quorumport }}
   protocol: TCP
@@ -64,30 +64,30 @@ apiVersion: getambassador.io/v3alpha1
 kind: Mapping
 metadata:
   name: {{ .Values.node.name }}-json-rpc
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   hostname: '{{ .Values.node.name }}rpc.{{ .Values.proxy.external_url }}'
   prefix: /
-  service: http://{{ .Values.node.name }}.{{ .Values.metadata.namespace }}:{{ .Values.node.ports.rpc }}
+  service: http://{{ .Values.node.name }}.{{ .Release.Namespace }}:{{ .Values.node.ports.rpc }}
 ## TCPMapping for rlpx
 ---
 apiVersion: getambassador.io/v3alpha1
 kind: TCPMapping
 metadata:
   name: {{ .Values.node.name }}-rlpx
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   port: {{ .Values.proxy.quorumport }}
-  service: {{ .Values.node.name }}.{{ .Values.metadata.namespace }}:{{ .Values.node.ports.quorum }}
+  service: {{ .Values.node.name }}.{{ .Release.Namespace }}:{{ .Values.node.ports.quorum }}
   {{- if eq $.Values.node.consensus "raft" }}
 ---
 apiVersion: getambassador.io/v3alpha1
 kind: TCPMapping
 metadata:
   name: {{ .Values.node.name }}-raft
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   port: {{ .Values.proxy.portRaft }}
-  service: {{ .Values.node.name }}.{{ .Values.metadata.namespace }}:{{ .Values.node.ports.raft }}
+  service: {{ .Values.node.name }}.{{ .Release.Namespace }}:{{ .Values.node.ports.raft }}
   {{- end }}
 {{- end }}

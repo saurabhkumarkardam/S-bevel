@@ -17,8 +17,16 @@ spec:
       namespace: flux-{{ network.env.type }}
   values:
     replicaCount: 1
+    global:
+      vault:
+        type: {{ vault.type | default("hashicorp") }}
+        address: {{ vault.url }}
+        role: vault-role
+        authPath: {{ network.env.type }}{{ name }}
+        serviceAccountName: vault-auth
+        secretPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
+        keyName: quorum
     metadata:
-      namespace: {{ component_ns }}
       labels:
     images:
       node: quorumengineering/quorum:{{ network.version }}
@@ -35,11 +43,11 @@ spec:
       subject: {{ peer.subject }}
       mountPath: /etc/quorum/qdata
       imagePullSecret: regcred
-      keystore: keystore_1
+      keyStore: keystore_1
 {% if org.cloud_provider == 'minikube' %}
-      servicetype: NodePort
+      serviceType: NodePort
 {% else %}
-      servicetype: ClusterIP
+      serviceType: ClusterIP
 {% endif %}
       lock: {{ peer.lock | lower }}
       ports:
@@ -48,21 +56,13 @@ spec:
         raft: {{ peer.raft.port }}
 {% endif %}
         quorum: {{ peer.p2p.port }}
-    vault:
-      address: {{ vault.url }}
-      secretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
-      serviceaccountname: vault-auth
-      keyname: quorum
-      role: vault-role
-      authpath: quorum{{ name }}
-      type: {{ vault.type | default("hashicorp") }}
     genesis: {{ genesis }}
     staticnodes: {{ staticnodes }}
 {% if network.env.proxy == 'ambassador' %}
     proxy:
       provider: "ambassador"
       external_url: {{ external_url }}
-      quorumport: {{ peer.p2p.ambassador }}
+      quorumPort: {{ peer.p2p.ambassador }}
 {% if network.config.consensus == 'raft' %}
       portRaft: {{ peer.raft.ambassador }}
 {% endif %}
@@ -70,12 +70,13 @@ spec:
     proxy:
       provider: none
       external_url: {{ name }}.{{ component_ns }}
-      quorumport: {{ peer.p2p.port }}
+      quorumPort: {{ peer.p2p.port }}
 {% if network.config.consensus == 'raft' %}
       portRaft: {{ peer.raft.port }}
 {% endif %}
 {% endif %}
     storage:
-      storageclassname: {{ sc_name }}
-      storagesize: 1Gi
-      dbstorage: 1Gi
+      storageClassName: {{ sc_name }}
+      storageSize: 1Gi
+settings:
+  removeGenesisOnDelete: true

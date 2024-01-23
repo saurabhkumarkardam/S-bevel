@@ -3,172 +3,95 @@
 [//]: # (SPDX-License-Identifier: Apache-2.0)
 [//]: # (##############################################################################################)
 
-<a name = "deploy-quorum-tlscerts-gen"></a>
-# Ambassador Certs GoQuorum Deployment
+# quorum-tlscerts-gen
+This chart is a component of Hyperledger Bevel. Generates SSL/TLS certificates using OpenSSL, including a root CA certificate and node certificates, and storing them in a Vault server. These certificates enable secure communication and authentication between servers and clients in a system.. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
 
-- [Ambassador Certs GoQuorum Deployment Helm Chart](#ambassador-certs-goquorum-deployment-helm-chart)
-- [Prerequisites](#prerequisites)
-- [Chart Structure](#chart-structure)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Verification](#verification)
-- [Updating the Deployment](#updating-the-deployment)
-- [Deletion](#deletion)
-- [Contributing](#contributing)
-- [License](#license)
+## TL;DR
 
-
-<a name = "ambassador-certs-goquorum-deployment-helm-chart"></a>
-## Ambassador Certs GoQuorum Deployment Helm Chart
----
-This [Helm chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tlscerts-gen) facilitates the deployment of Ambassador certificates using Kubernetes Jobs and stores them securely in HashiCorp Vault.
-
-
-<a name = "prerequisites"></a>
-## Prerequisites
----
-Before deploying the Helm chart, make sure to have the following prerequisites:
-
-- Kubernetes cluster up and running.
-- The GoQuorum network is set up and running.
-- A HashiCorp Vault instance is set up and configured to use Kubernetes service account token-based authentication.
-- The Vault is unsealed and initialized.
-- Helm installed.
-
-
-<a name = "chart-structure"></a>
-## Chart Structure
----
-The structure of the Helm chart is as follows:
-
-```
-quorum-tlscerts-gen/
-  |- templates/
-      |- helpers.tpl
-      |- configmap.yaml
-      |- job.yaml
-  |- Chart.yaml
-  |- README.md
-  |- values.yaml
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install tlscerts-gen bevel/quorum-tlscerts-gen
 ```
 
-- `templates/`: This directory contains the Kubernetes manifest templates that define the resources to be deployed.
-- `helpers.tpl`: A template file used for defining custom labels in the Helm chart.
-- `configmap.yaml`: A Kubernetes ConfigMap resource that holds the OpenSSL configuration file.
-- `job.yaml`: This file defines the Kubernetes Job resource for generating ambassador certificates and storing them in the Hashicorp Vault.
-- `Chart.yaml`: This file contains the metadata for the Helm chart, such as the name, version, and description.
-- `README.md`: This file provides information and instructions about the Helm chart.
-- `values.yaml`: This file contains the default configuration values for the Helm chart.
+## Prerequisitess
 
+- Kubernetes 1.19+
+- Helm 3.2.0+
 
-<a name = "configuration"></a>
-## Configuration
----
-The [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tlscerts-gen/values.yaml) file contains configurable values for the Helm chart. We can modify these values according to the deployment requirements. Here are some important configuration options:
+If Hashicorp Vault is used, then
+- HashiCorp Vault Server 1.13.1+
+
+> **Important**: Also check the dependent charts.
+
+## Installing the Chart
+
+To install the chart with the release name `tlscerts-gen`:
+
+```bash
+helm repo add bevel https://hyperledger.github.io/bevel
+helm install tlscerts-gen bevel/quorum-tlscerts-gen
+```
+
+The command deploys the chart on the Kubernetes cluster with the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
+
+## Uninstalling the Chart
+
+To uninstall/delete the `tlscerts-gen` deployment:
+
+```bash
+helm uninstall tlscerts-gen
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Parameters
 ---
 
-### Name
+### global
 
-| Name       | Description                                        | Default Value |
-| -----------| -------------------------------------------------- | ------------- |
-| name       | Provide the name of the node                       | node_1        |
+| Name | Description | Default Value |
+|-|-|-|
+| `global.vault.type` | Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported | `hashicorp` |
+| `global.vault.address` | URL of the Vault server | `""` |
+| `global.vault.role` | Role used for authentication with Vault | `vault-role` |
+| `global.vault.authPath` | Authentication path for Vault | `quorumNode` |
+| `global.vault.serviceAccountName` | Serviceaccount name that will be created for Vault Auth and k8S Secret management | `vault-auth` |
+| `global.vault.secretPrefix` | The value for vault secret prefix which must start with `data/` | `data/quorumNode` |
 
-### Metadata
+### name
 
-| Name            | Description                                                                  | Default Value |
-| ----------------| ---------------------------------------------------------------------------- | ------------- |
-| namespace       | Provide the namespace for the quorum Certs Generator.                        | default       |
-| labels          | Provide any additional labels for the quorum Certs Generator                 | ""            |
+| Name | Description | Default Value |
+|-|-|-|
+| `name` | Provide the name of the node | `node` |
 
-### Image
+### image
 
-| Name                     | Description                                                                                | Default Value   |
-| ------------------------ | -------------------------------------------------------                                    | --------------- |
-| initContainerName        | Provide the alpine utils image, which is used for all init-containers of deployments/jobs  | ""              |
-| certsContainerName       | Provide the image for the certs container                                                  | ""              |
-| imagePullSecret          | Provide the docker-registry secret created and stored in kubernetes cluster as a secret    | regcred         |
-| pullPolicy               | Pull policy to be used for the Docker image                                                | IfNotPresent    |
+| Name | Description | Default Value   |
+|-|-|-|
+| `image.initContainerName` | Alpine-utils as base image with curl package already installed | `ghcr.io/hyperledger/bevel-alpine:latest` |
+| `image.certsContainerName` | Image for the certs container | `ghcr.io/hyperledger/bevel-build:jdk8-latest` |
+| `image.imagePullSecret` | Docker-registry secret stored in kubernetes cluster as a secret | `regcred` |
+| `image.pullPolicy` | Pull policy to be used for the Docker image | `IfNotPresent` |
 
-### Vault
 
-| Name                      | Description                                                               | Default Value |
-| ------------------------- | --------------------------------------------------------------------------| ------------- |
-| address                   | Address/URL of the Vault server.                                          | ""            |
-| role                      | Role used for authentication with Vault                                   | vault-role    |
-| authpath                  | Authentication path for Vault                                             | quorumnode_1  |
-| serviceaccountname        | Provide the already created service account name autheticated to vault    | vault-auth    |
-| certsecretprefix          | Provide the vault path where the certificates are stored                  | ""            |
-| retries                   | Number of retries to check contents from vault                            | 30            |
-| type                  | The type of Vault used | hashicorp |
+### subjects
 
-### Subjects
+| Name | Description | Default Value |
+|-|-|-|
+| `subjects.root_subject` | Mention the subject for rootca | `CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB` |
+| `subjects.cert_subject` | Mention the subject for cert | `CN=DLT Root CA/OU=DLT/O=DLT/L=London/C=GB` |
 
-| Name                      | Description                        | Default Value |
-| ------------------------- | ---------------------------------- | ------------- |
-| root_subject              | Mention the subject for rootca     | "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"            |
-| cert_subject              | Mention the subject for cert       | "CN=DLT Root CA/OU=DLT/O=DLT/L=London/C=GB"            |
+### opensslVars
 
-### OpenSSL Vars
-
-| Name                      | Description                                               | Default Value |
-| --------------------------| ----------------------------------------------------------| ------------- |
-| domain_name               | Provides the name for domain                              | ""            |
-| domain_name_api           | Provides the name for domain_name api endpoint            | ""            |
-| domain_name_web           | provides the name for domain_name web endpoint            | ""            |
-| domain_name_tessera       | provides the name for domain domain_name tessera endpoint | ""            |
-
-<a name = "deployment"></a>
-## Deployment
----
-
-To deploy the quorum-tlscerts-gen Helm chart, follow these steps:
-
-1. Modify the [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tlscerts-gen/values.yaml) file to set the desired configuration values.
-2. Run the following Helm command to install the chart:
-    ```
-    $ helm repo add bevel https://hyperledger.github.io/bevel/
-    $ helm install <release-name> ./quorum-tlscerts-gen
-    ```
-Replace `<release-name>` with the desired name for the release.
-
-This will deploy the Quorum Connector to the Kubernetes cluster based on the provided configurations.
-
-<a name = "verification"></a>
-## Verification
----
-
-To verify the deployment, we can use the following command:
-```
-$ kubectl get jobs -n <namespace>
-```
-Replace `<namespace>` with the actual namespace where the Job was created. This command will display information about the Job, including the number of completions and the current status of the Job's pods.
-
-<a name = "updating-the-deployment"></a>
-## Updating the Deployment
----
-
-If we need to update the deployment with new configurations or changes, modify the same [values.yaml](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tlscerts-gen/values.yaml) file with the desired changes and run the following Helm command:
-```
-$ helm upgrade <release-name> ./quorum-tlscerts-gen
-```
-Replace `<release-name>` with the name of the release. This command will apply the changes to the deployment, ensuring the quorum-tlscerts-gen node is up to date.
-
-<a name = "deletion"></a>
-## Deletion
----
-
-To delete the deployment and associated resources, run the following Helm command:
-```
-$ helm uninstall <release-name>
-```
-Replace `<release-name>` with the name of the release. This command will remove all the resources created by the Helm chart.
-
-<a name = "contributing"></a>
-## Contributing
----
-If you encounter any bugs, have suggestions, or would like to contribute to the [Ambassador Certs GoQuorum Deployment Helm Chart](https://github.com/hyperledger/bevel/blob/develop/platforms/quorum/charts/quorum-tlscerts-gen), please feel free to open an issue or submit a pull request on the [project's GitHub repository](https://github.com/hyperledger/bevel).
+| Name | Description | Default Value |
+|-|-|-|
+| `opensslVars.domain_name` | Domain name | "" |
+| `opensslVars.domain_name_api` | Domain name for api endpoint | "" |
+| `opensslVars.domain_name_web` | Domain name for web endpoint | "" |
+| `opensslVars.domain_name_tessera` | Domain name for tessera endpoint | "" |
+| `opensslVars.clientPort` | Transaction manager client port | 8888 |
 
 <a name = "license"></a>
 ## License

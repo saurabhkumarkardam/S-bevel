@@ -15,7 +15,7 @@ metadata:
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }} 
-    {{- include "labels.custom" . | nindent 2 }}
+    # {{- include "labels.custom" . | nindent 2 }}
 spec:
   serviceName: {{ .Values.node.name }}
   replicas: {{ .Values.replicaCount }}
@@ -27,7 +27,7 @@ spec:
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/instance: {{ .Release.Name }} 
-      {{- include "labels.custom" . | nindent 2 }}
+      # {{- include "labels.custom" . | nindent 2 }}
   template:
     metadata:
       creationTimestamp: null
@@ -38,8 +38,8 @@ spec:
         app.kubernetes.io/name: {{ .Values.node.name }}
         helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/instance: {{ .Release.Name }} 
-        {{- include "labels.custom" . | nindent 2 }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        # {{- include "labels.custom" . | nindent 2 }}
     spec:
       serviceAccountName: "{{ $.Values.global.vault.serviceAccountName }}"
       hostname: {{ .Values.node.name }}

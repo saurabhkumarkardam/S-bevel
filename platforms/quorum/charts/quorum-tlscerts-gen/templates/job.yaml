@@ -8,7 +8,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ $.Values.name }}-generate-ambassador-certs-job
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ $.Values.name }}-generate-ambassador-certs-job
     app.kubernetes.io/name: {{ $.Values.name }}-generate-ambassador-certs-job
@@ -26,7 +26,7 @@ spec:
           app.kubernetes.io/instance: {{ .Release.Name }}
       spec:
         restartPolicy: "OnFailure"
-        serviceAccountName: {{ $.Values.vault.serviceaccountname }}
+        serviceAccountName: {{ $.Values.global.vault.serviceAccountName }}
         securityContext:
           fsGroup: 1000
         initContainers:
@@ -35,17 +35,17 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: VAULT_ADDR
-              value: {{ $.Values.vault.address }}
+              value: {{ $.Values.global.vault.address }}
             - name: VAULT_APP_ROLE
-              value: {{.Values.vault.role}}
+              value: {{.Values.global.vault.role}}
             - name: KUBERNETES_AUTH_PATH
-              value: {{ $.Values.vault.authpath }}
+              value: {{ $.Values.global.vault.authPath }}
             - name: CERTS_SECRET_PREFIX
-              value: {{ $.Values.vault.certsecretprefix }}
+              value: {{ $.Values.global.vault.secretPrefix }}
             - name: MOUNT_PATH
               value: "/certcheck"
             - name: VAULT_TYPE
-              value: "{{ $.Values.vault.type }}"              
+              value: "{{ $.Values.global.vault.type }}"              
           command: ["sh", "-c"]
           args:
           - |-
@@ -92,19 +92,19 @@ spec:
             - name: DOMAIN_NAME_TESSERA
               value: "{{ .Values.opensslVars.domain_name_tessera }}"
             - name: TM_CLIENT_PORT
-              value: "{{ .Values.opensslVars.clientport }}"
+              value: "{{ .Values.opensslVars.clientPort }}"
             - name: NODE_NAME
               value: "{{ $.Values.name }}"
             - name: CERTS_SECRET_PREFIX
-              value: {{ $.Values.vault.certsecretprefix }}
+              value: {{ $.Values.global.vault.secretPrefix }}
             - name: VAULT_ADDR
-              value: {{ $.Values.vault.address }}
+              value: {{ $.Values.global.vault.address }}
             - name: VAULT_APP_ROLE
-              value: {{.Values.vault.role}}
+              value: {{.Values.global.vault.role}}
             - name: KUBERNETES_AUTH_PATH
-              value: {{ $.Values.vault.authpath }}
+              value: {{ $.Values.global.vault.authPath }}
             - name: CERTS_SECRET_PREFIX
-              value: {{ $.Values.vault.certsecretprefix }}
+              value: {{ $.Values.global.vault.secretPrefix }}
             - name: ROOT_SUBJECT
               value: "{{ .Values.subjects.root_subject }}"
             - name: CERT_SUBJECT
@@ -181,19 +181,19 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
              - name: VAULT_ADDR
-               value: {{ $.Values.vault.address }}
+               value: {{ $.Values.global.vault.address }}
              - name: VAULT_APP_ROLE
-               value: {{ $.Values.vault.role}}
+               value: {{ $.Values.global.vault.role}}
              - name: NODE_NAME
                value: "{{ $.Values.name }}"
              - name: KUBERNETES_AUTH_PATH
-               value: {{ $.Values.vault.authpath }}
+               value: {{ $.Values.global.vault.authPath }}
              - name: CERTS_SECRET_PREFIX
-               value: {{ $.Values.vault.certsecretprefix }}
+               value: {{ $.Values.global.vault.secretPrefix }}
              - name: MOUNT_PATH
                value: "/certcheck"
              - name: VAULT_TYPE
-               value: "{{ $.Values.vault.type }}"
+               value: "{{ $.Values.global.vault.type }}"
           command: ["/bin/bash", "-c"]
           args:
           - |-

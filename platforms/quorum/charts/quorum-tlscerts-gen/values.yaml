@@ -8,19 +8,37 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+---
+global:
+  #############################################################
+  #               HashiCorp Vault Configuration               #
+  #############################################################
+  # NOTE: Make sure that the vault is already unsealed, intialized and configured to
+  # use Kubernetes service account token based authentication.
+  # For more info, see https://www.vaultproject.io/docs/auth/kubernetes
+  vault:
+    # Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported
+    type: hashicorp
+    # URL of the Vault server
+    # Eg. address: http://vault.example.com:8200
+    address:
+    # Role used for authentication with Vault
+    role: vault-role
+    # Authentication path for Vault
+    authPath: quorumNode
+    # Serviceaccount name that will be created for Vault Auth and k8S Secret management
+    # NOTE: Make sure that the service account is already created and autheticated to use the vault.
+    serviceAccountName: vault-auth
+    # The value for vault secret prefix which must start with `data/`
+    secretPrefix: data/quorumNode
+
 #############################################################
 #                   Basic Configuration                     #
 #############################################################
+
 # Provide the name of the node
 # Eg. name:
 name: node_1
-# This section contains the quorum metadata.
-metadata:
-  # Provide the namespace for the quorum Certs Generator.
-  # Eg. namespace: cenm
-  namespace: default
-  # Provide any additional labels for the quorum Certs Generator.
-  labels:
 
 # Provide information regarding the Docker images used.
 image:
@@ -31,39 +49,12 @@ image:
   # Provide the image for the certs container.
   # Eg. certsContainerName: ghcr.io/hyperledger/bevel-build:jdk8-latest
   certsContainerName: ghcr.io/hyperledger/bevel-build:jdk8-latest
-  # Provide the docker-registry secret created and stored in kubernetes cluster as a secret.
+  # Docker-registry secret stored in kubernetes cluster as a secret
   # Eg. imagePullSecret: regcred
   imagePullSecret: regcred
   # Pull policy to be used for the Docker image
   # Eg. pullPolicy: Always
   pullPolicy: IfNotPresent
-
-#############################################################
-#               HashiCorp Vault Configuration               #
-#############################################################
-# NOTE: Make sure that the vault is already unsealed, intialized and configured to
-# use Kubernetes service account token based authentication.
-# For more info, see https://www.vaultproject.io/docs/auth/kubernetes
-
-vault:
-  # Provide the vault address
-  # Eg. address: http://vault.example.com:8200
-  address:
-  # Provide the vault role used.
-  # Eg. role: vault-role
-  role: vault-role
-  # Provide the authpath configured to be used.
-  authpath: quorumnode_1
-  # Provide the service account name autheticated to vault.
-  # NOTE: Make sure that the service account is already created and autheticated to use the vault.
-  # Eg. serviceaccountname: vault-auth
-  serviceaccountname: vault-auth
-  # Provide the vault path where the certificates are stored
-  # Eg. certsecretprefix: secret/cenm-org-name
-  certsecretprefix: secretsv2/node_1
-  # Number of retries to check contents from vault
-  retries: 30
-  type: hashicorp
 
 #############################################################
 #                  SUBJECT Details                          #
@@ -75,25 +66,29 @@ subjects:
   # Eg. rootca: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"
   root_subject: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"
   # Mention the subject for cert
-  #Eg. cert_subject: "CN=DLT Root CA/OU=DLT/O=DLT/L=London/C=GB"
+  # Eg. cert_subject: "CN=DLT Root CA/OU=DLT/O=DLT/L=London/C=GB"
   cert_subject: "CN=DLT Root CA/OU=DLT/O=DLT/L=London/C=GB"
+
 #############################################################
 #                  Opensslvars Details                      #
 #############################################################
 # This section details of the Openssl used in domain creation
 
 opensslVars:
-  #provides the name for domain.
-  #Eg. domain_name: nodename.rc.dev2.aws.example.com
+  # Provides the domain name
+  # Eg. domain_name: nodename.rc.dev2.aws.example.com
   domain_name:
-  #provides the name for domain_name api endpoint.
-  #Eg. domain_name_api: nodenameapi.rc.dev2.aws.example.com
+  # Domain name for api endpoint
+  # Eg. domain_name_api: nodenameapi.rc.dev2.aws.example.com
   domain_name_api:
-  #provides the name for domain_name web endpoint.
-  #Eg. domain_name_web: nodenameweb.rc.dev2.aws.example.com
+  # Domain name for web endpoint 
+  # Eg. domain_name_web: nodenameweb.rc.dev2.aws.example.com
   domain_name_web:
-  #provides the name for domain domain_name tessera endpoint.
-  #Eg. domain_name_tessera: nodename-tessera.nodename-quo
+  # Domain name for tessera endpoint
+  # Eg. domain_name_tessera: nodename-tessera.nodename-quo
   domain_name_tessera:
-  #Provide tm client port
+  # Transaction manager client port
   clientport: 8888
+
+settings:
+  removeGenesisOnDelete: true

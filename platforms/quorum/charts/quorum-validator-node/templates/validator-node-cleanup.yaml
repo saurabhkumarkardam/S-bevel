@@ -1,13 +1,14 @@
+{{- if eq .Values.global.vault.type "hashicorp" }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "quorum-member-node.name" . }}-cleanup
+  name: {{ include "quorum-validator-node.name" . }}-cleanup
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: quorum-member-node-sts-cleanup
-    app.kubernetes.io/component: member-node-sts-cleanup
-    app.kubernetes.io/part-of: {{ include "quorum-member-node.fullname" . }}
+    app.kubernetes.io/name: quorum-validator-node-job-cleanup
+    app.kubernetes.io/component: job-cleanup
+    app.kubernetes.io/part-of: {{ include "quorum-validator-node.fullname" . }}
     app.kubernetes.io/namespace: {{ .Release.Namespace }}
     app.kubernetes.io/managed-by: helm
   annotations:
@@ -20,9 +21,9 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: quorum-member-node-sts-cleanup
-        app.kubernetes.io/component: member-node-sts-cleanup
-        app.kubernetes.io/part-of: {{ include "quorum-member-node.fullname" . }}
+        app.kubernetes.io/name: quorum-validator-node-job-cleanup
+        app.kubernetes.io/component: job-cleanup
+        app.kubernetes.io/part-of: {{ include "quorum-validator-node.fullname" . }}
         app.kubernetes.io/namespace: {{ .Release.Namespace }}
         app.kubernetes.io/managed-by: helm
     spec:
@@ -33,7 +34,7 @@ spec:
           image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
           securityContext:
             runAsUser: 0
-          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          imagePullPolicy: IfNotPresent # Check spelling
           command:
             - /bin/bash
             - -c
@@ -42,4 +43,5 @@ spec:
 {{- if .Values.settings.removeGenesisOnDelete }}
               echo "Deleting genesis configmap in k8s ..."
               kubectl delete configmap --namespace {{ .Release.Namespace }} genesis-{{ .Values.node.name }}
-{{- end }} 
+{{- end }}
+{{- end }}

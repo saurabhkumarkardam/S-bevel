@@ -80,7 +80,7 @@ spec:
               validateVaultResponse ${response_status}
 
           volumeMounts:
-          {{ if .Values.global.vault.tls  }}
+          {{ if .Values.global.vault.tls }}
             - name: vaultca
               mountPath: "/etc/ssl/certs/"
               readOnly: true

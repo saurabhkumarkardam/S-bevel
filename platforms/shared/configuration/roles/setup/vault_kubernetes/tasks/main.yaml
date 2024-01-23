@@ -70,7 +70,7 @@
   vars:
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing vault_kubernetes files"
-   
+
 # Check if vault_kubernetes is completed
 - name: Check if vault_kubernetes job is completed
   include_role:

@@ -9,7 +9,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.node.name }}
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
   annotations:
     kubernetes.io/ingress.class: "haproxy"
     ingress.kubernetes.io/ssl-passthrough: "true"  

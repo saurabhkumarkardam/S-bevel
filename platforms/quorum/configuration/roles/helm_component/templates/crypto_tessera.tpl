@@ -22,7 +22,7 @@ spec:
         type: {{ vault.type | default("hashicorp") }}
         address: {{ vault.url }}
         secretEngine: {{ vault.secret_path | default('secretsv2') }}
-        authPath: quorum{{ org_name }}
+        authPath: {{ network.env.type }}{{ org_name }}
         role: vault-role
         serviceAccountName: vault-auth
         tmPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org_name }}/crypto

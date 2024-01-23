@@ -27,7 +27,7 @@ spec:
         keyName: quorum
         tm_keyName: tm
         role: vault-role
-        authPath: quorum{{ name }}
+        authPath: {{ network.env.type }}{{ name }}
     images:
       node: quorumengineering/quorum:{{ network.version }}
       alpineutils: ghcr.io/hyperledger/bevel-alpine:latest

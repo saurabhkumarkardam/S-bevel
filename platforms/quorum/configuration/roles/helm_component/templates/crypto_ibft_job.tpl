@@ -22,7 +22,7 @@ spec:
         type: {{ vault.type | default("hashicorp") }}
         address: {{ vault.url }}
         role: vault-role
-        authPath: quorum{{ org_name }}
+        authPath: {{ network.env.type }}{{ org_name }}
         serviceAccountName: vault-auth
         secretPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org.name | lower }}
         retries: 30

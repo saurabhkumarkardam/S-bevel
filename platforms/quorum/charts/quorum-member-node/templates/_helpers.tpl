@@ -1,3 +1,9 @@
+{{- define "labels.custom" }}
+  {{ range $key, $val := $.Values.metadata.labels }}
+  {{ $key }}: {{ $val }}
+  {{ end }}
+{{- end }}
+
 {{/*
 Expand the name of the chart.
 */}}
