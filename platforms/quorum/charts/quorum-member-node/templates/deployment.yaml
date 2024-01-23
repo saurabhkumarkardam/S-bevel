@@ -82,9 +82,9 @@ spec:
         - name: VAULT_TYPE
           value: "{{ $.Values.vault.type }}"
         command: ["sh", "-c"]
-        # Ignore !/bin/bash
         args:
         - |-
+          #!/bin/bash
           . /scripts/bevel-vault.sh
 
           # Calling a function to retrieve the vault token.
