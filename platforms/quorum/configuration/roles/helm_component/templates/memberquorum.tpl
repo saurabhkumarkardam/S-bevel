@@ -71,6 +71,9 @@ spec:
       tm_keyname: tm
       role: vault-role
       authpath: {{ network.env.type }}{{ name }}
+<<<<<<< HEAD
+>>>>>>> upstream/develop
+=======
 >>>>>>> upstream/develop
       
 {% if network.config.transaction_manager != "none" %}

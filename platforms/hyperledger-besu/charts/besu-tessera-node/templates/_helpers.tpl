@@ -70,5 +70,8 @@ Client URL is defaulted to http; tls certificates need to be checked for using h
 =======
 {{- printf "http://%s.%s:%d" $fullname .Release.Namespace $port | quote }}
 {{- end -}}
+<<<<<<< HEAD
 {{- end -}}
+>>>>>>> upstream/develop
+=======
 >>>>>>> upstream/develop

@@ -7,9 +7,13 @@ apiVersion: v1
 name: besu-node
 description: Hyperledger Besu nodes for a POA network
 <<<<<<< HEAD
+<<<<<<< HEAD
 version: 0.15.2
 =======
 version: 1.0.0
+>>>>>>> upstream/develop
+=======
+version: 1.0.1
 >>>>>>> upstream/develop
 appVersion: latest
 keywords:
