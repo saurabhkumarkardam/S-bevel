@@ -41,3 +41,4 @@ image:
   pullPolicy: IfNotPresent
   # Pull quorum Docker image
   node: quorumengineering/quorum:21.4.2
+labels:

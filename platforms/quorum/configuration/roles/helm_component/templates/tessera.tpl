@@ -87,3 +87,5 @@ spec:
 
     settings:
       removeGenesisOnDelete: true
+
+    labels:

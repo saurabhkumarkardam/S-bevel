@@ -34,4 +34,5 @@ spec:
       initContainerName: ghcr.io/hyperledger/bevel-alpine:latest
       node: quorumengineering/quorum:{{ network.version }}
       pullPolicy: IfNotPresent
+    labels:
 

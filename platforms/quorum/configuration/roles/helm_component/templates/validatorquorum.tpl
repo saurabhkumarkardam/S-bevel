@@ -80,3 +80,4 @@ spec:
       storageSize: 1Gi
 settings:
   removeGenesisOnDelete: true
+labels:

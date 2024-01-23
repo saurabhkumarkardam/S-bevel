@@ -109,3 +109,5 @@ storage:
 
 settings:
   removeGenesisOnDelete: true
+
+labels:
