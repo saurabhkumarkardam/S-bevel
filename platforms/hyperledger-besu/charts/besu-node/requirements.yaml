@@ -1,21 +1,36 @@
 dependencies:
   - name: bevel-storageclass
     alias: storage
+<<<<<<< HEAD
     repository: "https://sownak.github.io/bevel"
     tags:
       - storage
     version: ~0.15.0
+=======
+    repository: "file://../../../shared/charts/bevel-storageclass"
+    tags:
+      - storage
+    version: ~1.0.0
+>>>>>>> upstream/develop
   - name: besu-tessera-node
     alias: tessera
     repository: "file://../besu-tessera-node"
     tags:
       - tessera
+<<<<<<< HEAD
     version: ~0.15.0
+=======
+    version: ~1.0.0
+>>>>>>> upstream/develop
     condition: tessera.enabled
   - name: besu-tlscert-gen
     alias: tls
     repository: "file://../besu-tlscert-gen"
     tags:
       - bevel
+<<<<<<< HEAD
     version: ~0.15.0
+=======
+    version: ~1.0.0
+>>>>>>> upstream/develop
     condition: tls.enabled

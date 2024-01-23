@@ -23,7 +23,12 @@ storage:
   size: "2Gi"
 tessera:
   enabled: false
+<<<<<<< HEAD
 
+=======
+tls:
+  enabled: false
+>>>>>>> upstream/develop
 node:
   removeKeysOnDelete: false # this will erase keys - so be careful with this on validators
   isBootnode: false    # set this to true if this node is a bootnode
@@ -37,6 +42,11 @@ node:
       cpuRequest: 0.05
       memLimit: "1G"
       memRequest: "300M"
+<<<<<<< HEAD
+=======
+    p2p:
+      discovery: false
+>>>>>>> upstream/develop
 image:
   besu:
     repository: hyperledger/besu

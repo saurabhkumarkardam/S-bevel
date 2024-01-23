@@ -19,6 +19,7 @@
   tags:
     - notest
 
+<<<<<<< HEAD
 # Setup Vault-Kubernetes accesses and Regcred for docker registry
 - name: "Setup vault for nms"
   include_role:
@@ -34,6 +35,8 @@
     vault: "{{ item.vault }}"
     gitops: "{{ item.gitops }}"
 
+=======
+>>>>>>> upstream/develop
 # generate NMS certificates
 - name: "Create certificates for nms" 
   include_role: 
@@ -56,8 +59,8 @@
     helm_lint: "true"
     charts_dir: "{{ gitops.chart_source}}"
     nodename: "{{ services.nms.name | lower }}"
-    component_auth: "corda{{ services.nms.name | lower }}"
     org_name: "{{ item.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-mongodb"
@@ -74,7 +77,7 @@
     helm_lint: "true"
     charts_dir: "{{ gitops.chart_source}}"
     nodename: "{{ services.nms.name | lower }}"
-    component_auth: "corda{{ services.nms.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-mongodb-tls"
@@ -90,7 +93,7 @@
     org_name: "{{ item.name | lower }}" 
     helm_lint: "true"
     charts_dir: "{{ gitops.chart_source }}"
-    component_auth: "corda{{ services.nms.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-networkmap"
@@ -107,7 +110,7 @@
     org_name: "{{ item.name | lower }}" 
     helm_lint: "true"
     charts_dir: "{{ gitops.chart_source }}"
-    component_auth: "corda{{ services.nms.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-networkmap-tls"

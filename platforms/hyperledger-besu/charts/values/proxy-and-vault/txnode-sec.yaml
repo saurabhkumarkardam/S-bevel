@@ -17,6 +17,10 @@ global:
   proxy:
     provider: ambassador
     externalUrlSuffix: test.yourdomain.com
+<<<<<<< HEAD
+=======
+    tmport: 443
+>>>>>>> upstream/develop
 
 storage:
   size: "2Gi"
@@ -26,12 +30,21 @@ tessera:
   tessera:
     port: 443
     peerNodes: 
+<<<<<<< HEAD
       - url: "https://member-1.test.yourdomain.com"
   resources:
     cpuLimit: 0.25
     cpuRequest: 0.05
     memLimit: "2G"
     memRequest: "1G"
+=======
+      - url: "https://supplychain.test.yourdomain.com"
+    resources:
+      cpuLimit: 0.25
+      cpuRequest: 0.05
+      memLimit: "2G"
+      memRequest: "1G"
+>>>>>>> upstream/develop
     password: 'password'
   storage:
     enabled: false
@@ -61,6 +74,11 @@ node:
       memRequest: "300M"
     account:
       password: 'password'
+<<<<<<< HEAD
+=======
+    p2p:
+      discovery: false
+>>>>>>> upstream/develop
 image:
   besu:
     repository: hyperledger/besu

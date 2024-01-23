@@ -9,7 +9,7 @@
 ##############################################################################################
 
 # Wait for namespace creation
-- name: "Wait for namespace creation for {{ organisation }}"
+- name: "Wait for namespace creation for {{ name }}"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/k8_component"
   vars:
@@ -17,6 +17,7 @@
     component_name: "{{ component_ns }}"
     type: "retry"
 
+<<<<<<< HEAD
 # Setup Vault-Kubernetes accesses and Regcred for docker registry
 - name: "Setup vault for doorman"
   include_role:
@@ -32,6 +33,8 @@
     vault: "{{ item.vault }}"
     gitops: "{{ item.gitops }}"
 
+=======
+>>>>>>> upstream/develop
 # Generate Doorman certificates
 - name: "Create certificates for doorman" 
   include_role: 
@@ -55,7 +58,7 @@
     helm_lint: "true"
     nodename: "{{ services.doorman.name }}"
     charts_dir: "{{ gitops.chart_source }}"
-    component_auth: "corda{{ services.doorman.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-mongodb"
@@ -72,7 +75,7 @@
     helm_lint: "true"
     nodename: "{{ services.doorman.name }}"
     charts_dir: "{{ gitops.chart_source }}"
-    component_auth: "corda{{ services.doorman.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-mongodb-tls"
@@ -88,7 +91,7 @@
     component_type: "doorman"
     helm_lint: "true"
     charts_dir: "{{ gitops.chart_source }}"
-    component_auth: "corda{{ services.doorman.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-doorman"
@@ -105,7 +108,7 @@
     component_type: "doorman"
     helm_lint: "true"
     charts_dir: "{{ gitops.chart_source }}"
-    component_auth: "corda{{ services.doorman.name | lower }}"
+    component_auth: "{{ network.env.type }}{{ org_name }}"
     org: "{{ item }}"
     release_dir: "{{ playbook_dir }}/../../../{{ gitops.release_dir }}"
     chart: "corda-doorman-tls"

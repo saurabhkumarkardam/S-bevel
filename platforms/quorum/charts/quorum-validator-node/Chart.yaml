@@ -8,6 +8,7 @@ apiVersion: v1
 appVersion: "2.0"
 description: "Quorum: This Helm chart deploys a validator Quorum node."
 name: quorum-validator-node
+<<<<<<< HEAD
 version: '0.15.0'
 # appVersion: latest
 keywords:
@@ -25,3 +26,6 @@ sources:
 maintainers:
   - name: Hyperledger Bevel maintainers
     email: bevel@lists.hyperledger.org
+=======
+version: 1.0.0
+>>>>>>> upstream/develop

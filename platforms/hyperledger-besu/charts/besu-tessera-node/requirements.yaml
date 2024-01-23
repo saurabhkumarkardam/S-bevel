@@ -1,8 +1,15 @@
 dependencies:
   - name: bevel-storageclass
     alias: storage
+<<<<<<< HEAD
     repository: "https://sownak.github.io/bevel"
     tags:
       - storage
     version: ~0.15.0
+=======
+    repository: "file://../../../shared/charts/bevel-storageclass"
+    tags:
+      - storage
+    version: ~1.0.0
+>>>>>>> upstream/develop
     condition: storage.enabled

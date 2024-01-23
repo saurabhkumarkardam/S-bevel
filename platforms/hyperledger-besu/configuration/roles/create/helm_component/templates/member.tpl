@@ -128,6 +128,11 @@ spec:
           enabled: {{ peer.metrics.enabled | default(false) }}
           port: {{ peer.metrics.port | default(9545) }}
           serviceMonitorEnabled: {{ network.prometheus.enabled | default(false)}}
+<<<<<<< HEAD
+=======
+        privacy:
+          clientport: {{ peer.tm_clientport.port }}
+>>>>>>> upstream/develop
         permissions:
           enabled: {{ network.permissioning.enabled | default(false) }} #Add other permissioning params below this
 {% if network.env.labels is defined %}

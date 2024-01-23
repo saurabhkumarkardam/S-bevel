@@ -3,11 +3,18 @@
 #
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
+<<<<<<< HEAD
 
 apiVersion: v2
 name: bevel-vault-mgmt
 description: "Shared: Vault and Kubernetes configuration"
 version: 0.15.2
+=======
+apiVersion: v2
+name: bevel-vault-mgmt
+description: "Shared: Vault and Kubernetes configuration"
+version: 1.0.0
+>>>>>>> upstream/develop
 appVersion: "latest"
 keywords:
   - bevel

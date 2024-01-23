@@ -71,7 +71,11 @@ metadata:
 spec:
   hostname: {{ .Values.proxy.external_url }}
   prefix: /
+<<<<<<< HEAD
   service: {{ .Values.node.name }}-tessera.{{ .Release.Namespace }}:{{ .Values.node.ports.tm }}
+=======
+  service: {{ .Values.node.name }}-tessera.{{ .Values.metadata.namespace }}:{{ .Values.node.ports.tm }}
+>>>>>>> upstream/develop
   tls: {{ .Values.node.name }}-tlscontext
 ---
 apiVersion: getambassador.io/v3alpha1
