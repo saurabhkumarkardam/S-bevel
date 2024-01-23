@@ -73,94 +73,94 @@
   #   loop_control:
   #     loop_var: org
 
-  # Generate Ambassador certificate for nodes
-  - name: "Create ambassador certificates for Nodes"
-    include_role:
-      name: create/certificates/ambassador
-    vars:
-      gitops: "{{ org.gitops }}"
-      component_auth: "quorum{{ org.name | lower }}"
-      component_ns: "{{ org.name | lower }}-quo"
-      charts_dir: "{{ org.gitops.chart_source }}"
-      component_name: "{{ org.name | lower }}-ambassador-certs"
-      kubernetes: "{{ org.k8s }}"
-      values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
-      vault: "{{ org.vault }}"
-      peers: "{{ org.services.peers }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
+  # # Generate Ambassador certificate for nodes
+  # - name: "Create ambassador certificates for Nodes"
+  #   include_role:
+  #     name: create/certificates/ambassador
+  #   vars:
+  #     gitops: "{{ org.gitops }}"
+  #     component_auth: "quorum{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #     component_name: "{{ org.name | lower }}-ambassador-certs"
+  #     kubernetes: "{{ org.k8s }}"
+  #     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
+  #     vault: "{{ org.vault }}"
+  #     peers: "{{ org.services.peers }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
 
-  # Generate the crypto material for quorum network based on RAFT consensus and store it in vault
-  - name: "Generate crypto material for RAFT consensus"
-    include_role:
-      name: create/crypto/raft
-    vars:
-      gitops: "{{ org.gitops }}"
-      org_name: "{{ org.name }}"
-      component_name: "{{ org.name | lower }}"
-      component_ns: "{{ org.name | lower }}-quo"
-      values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
-      vault: "{{ org.vault }}"
-      peers: "{{ org.services.peers }}"
-      charts_dir: "{{ org.gitops.chart_source }}"
-      kubernetes: "{{ org.k8s }}"
-    loop: "{{ network['organizations'] }}"
-    when: network.config.consensus == 'raft'
-    loop_control:
-      loop_var: org
+  # # Generate the crypto material for quorum network based on RAFT consensus and store it in vault
+  # - name: "Generate crypto material for RAFT consensus"
+  #   include_role:
+  #     name: create/crypto/raft
+  #   vars:
+  #     gitops: "{{ org.gitops }}"
+  #     org_name: "{{ org.name }}"
+  #     component_name: "{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
+  #     vault: "{{ org.vault }}"
+  #     peers: "{{ org.services.peers }}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #     kubernetes: "{{ org.k8s }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   when: network.config.consensus == 'raft'
+  #   loop_control:
+  #     loop_var: org
 
-  # Build istanbul binary and place it in the bin directory
-  - name: "Setup istanbul-tools"
-    include_role:
-      name: setup/istanbul
-    loop: "{{ network['organizations'] }}"
-    when: network.config.consensus == 'ibft'
+  # # Build istanbul binary and place it in the bin directory
+  # - name: "Setup istanbul-tools"
+  #   include_role:
+  #     name: setup/istanbul
+  #   loop: "{{ network['organizations'] }}"
+  #   when: network.config.consensus == 'ibft'
 
-  # Generate the genesis.json and nodekey/enode for all orgs of the network
-  - name: "Generate genesis and nodekey/enode for the network"
-    include_role:
-      name: create/genesis_nodekey
-    when: network.config.consensus == 'ibft'
+  # # Generate the genesis.json and nodekey/enode for all orgs of the network
+  # - name: "Generate genesis and nodekey/enode for the network"
+  #   include_role:
+  #     name: create/genesis_nodekey
+  #   when: network.config.consensus == 'ibft'
 
-  # Generate the crypto material for quorum network based on ibft consensus and store it in vault
-  - name: "Generate crypto material for IBFT consensus"
-    include_role:
-      name: create/crypto/ibft
-    vars:
-      component_name: "{{ org.name | lower }}"
-      component_ns: "{{ org.name | lower }}-quo"
-      vault: "{{ org.vault }}"
-      org_name: "{{ org.name }}"
-      kubernetes: "{{ org.k8s }}"
-      peers: "{{ org.services.peers }}"
-      values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
-      gitops: "{{ org.gitops }}"
-      charts_dir: "{{ org.gitops.chart_source }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
-    when: network.config.consensus == 'ibft'
+  # # Generate the crypto material for quorum network based on ibft consensus and store it in vault
+  # - name: "Generate crypto material for IBFT consensus"
+  #   include_role:
+  #     name: create/crypto/ibft
+  #   vars:
+  #     component_name: "{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     vault: "{{ org.vault }}"
+  #     org_name: "{{ org.name }}"
+  #     kubernetes: "{{ org.k8s }}"
+  #     peers: "{{ org.services.peers }}"
+  #     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
+  #     gitops: "{{ org.gitops }}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
+  #   when: network.config.consensus == 'ibft'
 
-  # Generate the crypto materials for tessera tm
-  - name: "Generate crypto for the Tessera transaction manager"
-    include_role:
-      name: create/crypto/tessera
-    vars:
-      build_path: "{{ playbook_dir }}/build"
-      component_ns: "{{ org.name | lower }}-quo"
-      kubernetes: "{{ org.k8s }}"
-      vault: "{{ org.vault }}"
-      org_name: "{{ org.name }}"
-      peers: "{{ org.services.peers }}"
-      gitops: "{{ org.gitops }}"
-      charts_dir: "{{ org.gitops.chart_source }}"
-      values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
-    when:
-      - network.config.transaction_manager == 'tessera'
+  # # Generate the crypto materials for tessera tm
+  # - name: "Generate crypto for the Tessera transaction manager"
+  #   include_role:
+  #     name: create/crypto/tessera
+  #   vars:
+  #     build_path: "{{ playbook_dir }}/build"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     kubernetes: "{{ org.k8s }}"
+  #     vault: "{{ org.vault }}"
+  #     org_name: "{{ org.name }}"
+  #     peers: "{{ org.services.peers }}"
+  #     gitops: "{{ org.gitops }}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
+  #   when:
+  #     - network.config.transaction_manager == 'tessera'
 
   # Deploy Tessera transaction manager node
   - name: "Deploy Tessera Transaction Manager"
