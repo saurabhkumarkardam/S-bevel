@@ -41,3 +41,4 @@ spec:
       clientPort: {{ node.transaction_manager.clientport | default("8888") }}
     settings:
       removeGenesisOnDelete: true
+    label:

@@ -1,5 +1,5 @@
 {{- define "labels.custom" }}
-  {{ range $key, $val := $.Values.metadata.labels }}
+  {{ range $key, $val := $.Values.labels }}
   {{ $key }}: {{ $val }}
   {{ end }}
 {{- end }}

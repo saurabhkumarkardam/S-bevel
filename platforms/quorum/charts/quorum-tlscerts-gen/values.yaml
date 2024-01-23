@@ -92,3 +92,5 @@ opensslVars:
 
 settings:
   removeGenesisOnDelete: true
+
+labels:
