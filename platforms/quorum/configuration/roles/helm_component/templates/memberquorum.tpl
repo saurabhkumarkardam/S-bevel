@@ -59,22 +59,6 @@ spec:
 
     tm:
       type: {{ network.config.transaction_manager }}
-<<<<<<< HEAD
-=======
-
-    vault:
-      type: {{ vault.type | default("hashicorp") }}
-      address: {{ vault.url }}
-      secretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
-      serviceaccountname: vault-auth
-      keyname: quorum
-      tm_keyname: tm
-      role: vault-role
-      authpath: {{ network.env.type }}{{ name }}
-<<<<<<< HEAD
->>>>>>> upstream/develop
-=======
->>>>>>> upstream/develop
       
 {% if network.config.transaction_manager != "none" %}
     tessera:

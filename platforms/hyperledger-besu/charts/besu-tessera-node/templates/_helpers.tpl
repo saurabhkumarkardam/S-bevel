@@ -51,27 +51,10 @@ Create tessera url depending on tls mode
 {{- end -}}
 
 {{/*
-<<<<<<< HEAD
-Create client url depending on tls mode
-=======
 Client URL is defaulted to http; tls certificates need to be checked for using https
->>>>>>> upstream/develop
 */}}
 {{- define "besu-tessera-node.clientURL" -}}
 {{- $fullname := include "besu-tessera-node.fullname" . -}}
 {{- $port := .Values.tessera.q2tport | int -}}
-<<<<<<< HEAD
-{{- if eq .Values.tessera.tlsMode "STRICT" -}}
-    {{- printf "https://%s.%s:%d" $fullname .Release.Namespace $port | quote }}
-{{- else -}}
-    {{- printf "http://%s.%s:%d" $fullname .Release.Namespace $port | quote }}
-{{- end -}}
-{{- end -}}
-=======
 {{- printf "http://%s.%s:%d" $fullname .Release.Namespace $port | quote }}
 {{- end -}}
-<<<<<<< HEAD
-{{- end -}}
->>>>>>> upstream/develop
-=======
->>>>>>> upstream/develop

@@ -5,16 +5,8 @@
 ##############################################################################################
 apiVersion: v1
 name: besu-tessera-node
-description: "Hyperledger Besu: Deploys Tessera transaction manager nodes"
-<<<<<<< HEAD
-<<<<<<< HEAD
-version: 0.15.7
-=======
-version: 1.0.0
->>>>>>> upstream/develop
-=======
+description: "Hyperledger Besu: Deploys Tessera transaction manager 
 version: 1.0.1
->>>>>>> upstream/develop
 # Tessera version 
 appVersion: '21.7.3'
 keywords:

@@ -121,11 +121,7 @@ node:
       interval: 15
       prometheusJob: "besu"
     privacy:
-<<<<<<< HEAD
-      scheme: "https" # Must use https when TLS is STRICT
-=======
       scheme: "http" # Must use https when TLS is STRICT
->>>>>>> upstream/develop
       clientport: 9101
       pubkeysPath: "/tessera"
       pubkeyFile: "tm.pub"

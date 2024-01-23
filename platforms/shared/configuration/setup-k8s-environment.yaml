@@ -34,10 +34,10 @@
     with_items: "{{ network.organizations }}"
     when: network.env.type != 'operator'
 
-  - name: Git pull and push 3-r3-2457 branch
+  - name: Git pull and push 21-quo-readme branch
     shell: |
-      git pull origin 3-r3-2457
-      git push origin 3-r3-2457
+      git pull origin 21-quo-readme
+      git push origin 21-quo-readme
 
   # Prepare ports for Indy
   - name: Prepare nodes and clients ports for ambassador

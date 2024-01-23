@@ -34,15 +34,3 @@ spec:
       initContainerName: ghcr.io/hyperledger/bevel-alpine:latest
       node: quorumengineering/quorum:{{ network.version }}
       pullPolicy: IfNotPresent
-<<<<<<< HEAD
-=======
-    vault:
-      address: {{ vault.url }}
-      role: vault-role
-      authpath: {{ network.env.type }}{{ org_name }}
-      serviceaccountname: vault-auth
-      certsecretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org.name | lower }}
-      retries: 30
-      type: {{ vault.type | default("hashicorp") }}
-    sleepTime: 10
->>>>>>> upstream/develop

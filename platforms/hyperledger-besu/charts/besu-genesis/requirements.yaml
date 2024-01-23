@@ -1,19 +1,20 @@
-dependencies:
-  - name: bevel-vault-mgmt
-    repository: "file://../../../shared/charts/bevel-vault-mgmt"
-    tags:
-      - bevel
-<<<<<<< HEAD
-    version: ~0.15.1
-=======
-    version: ~1.0.0
->>>>>>> upstream/develop
-  - name: bevel-scripts
-    repository: "file://../../../shared/charts/bevel-scripts"
-    tags:
-      - bevel
-<<<<<<< HEAD
-    version: ~0.15.1
-=======
-    version: ~1.0.0
->>>>>>> upstream/develop
+apiVersion: v1
+name: besu-genesis
+description: "Hyperledger Besu: Genesis generator"
+version: 1.0.0
+appVersion: latest
+keywords:
+  - bevel
+  - ethereum
+  - besu
+  - hyperledger
+  - enterprise
+  - blockchain
+  - deployment
+  - accenture
+home: https://hyperledger-bevel.readthedocs.io/en/latest/
+sources:
+  - https://github.com/hyperledger/bevel
+maintainers:
+  - name: Hyperledger Bevel maintainers
+    email: bevel@lists.hyperledger.org

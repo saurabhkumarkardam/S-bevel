@@ -204,8 +204,4 @@ spec:
             - name: policies-config
               mountPath: /policies/policies-config.json
               subPath: policies-config.json
-<<<<<<< HEAD
 {{ end }}
-=======
-{{ end }}
->>>>>>> upstream/develop

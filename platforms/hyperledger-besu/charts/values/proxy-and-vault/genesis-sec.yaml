@@ -19,8 +19,3 @@ settings:
   removeGenesisOnDelete: true
   # Flag to copy genesis and static nodes from files for secondary members
   secondaryGenesis: true
-<<<<<<< HEAD
-vault:
-  enabled: true
-=======
->>>>>>> upstream/develop

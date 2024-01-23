@@ -60,18 +60,8 @@ spec:
           - name: VAULT_SECRET_PREFIX
             value: "{{ $.Values.global.vault.tmPrefix }}"
           - name: VAULT_TYPE
-<<<<<<< HEAD
-<<<<<<< HEAD
             value: "{{ $.Values.global.vault.type }}"
-          command: ["/bin/bash", "-c"]
-=======
-            value: "{{ $.Values.vault.type }}"
           command: ["/bin/sh", "-c"]
->>>>>>> upstream/develop
-=======
-            value: "{{ $.Values.vault.type }}"
-          command: ["/bin/sh", "-c"]
->>>>>>> upstream/develop
           args:
             - |-
               #!/usr/bin/env bash
