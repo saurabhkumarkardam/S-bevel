@@ -94,5 +94,5 @@ spec:
       storageSize: 1Gi
       dbStorage: 1Gi # NUA
 
-settings:
-  removeGenesisOnDelete: true
+    settings:
+      removeGenesisOnDelete: true

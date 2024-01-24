@@ -12,7 +12,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: {{ .Values.node.name }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }} 
     # {{- include "labels.custom" . | nindent 2 }}
@@ -24,7 +24,7 @@ spec:
       app: consortiumchain
       service.rpc: {{ .Values.node.name }}
       app.kubernetes.io/name: {{ .Values.node.name }}
-      helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+      # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/instance: {{ .Release.Name }} 
       # {{- include "labels.custom" . | nindent 2 }}

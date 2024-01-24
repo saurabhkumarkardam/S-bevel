@@ -78,6 +78,6 @@ spec:
     storage:
       storageClassName: {{ sc_name }}
       storageSize: 1Gi
-settings:
-  removeGenesisOnDelete: true
-labels:
+    settings:
+      removeGenesisOnDelete: true
+    labels:

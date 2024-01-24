@@ -14,7 +14,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: {{ .Values.node.name }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "labels.custom" . | nindent 2 }}
@@ -52,7 +52,7 @@ metadata:
   name: {{ .Values.node.name }}-rlpx
   namespace: {{ .Release.Namespace }}
 spec:
-  port: {{ .Values.proxy.quorumport }}
+  port: {{ .Values.proxy.quorumPort }}
   protocol: TCP
   securityModel: XFP
   hostBinding:
@@ -77,7 +77,7 @@ metadata:
   name: {{ .Values.node.name }}-rlpx
   namespace: {{ .Release.Namespace }}
 spec:
-  port: {{ .Values.proxy.quorumport }}
+  port: {{ .Values.proxy.quorumPort }}
   service: {{ .Values.node.name }}.{{ .Release.Namespace }}:{{ .Values.node.ports.quorum }}
   {{- if eq $.Values.node.consensus "raft" }}
 ---

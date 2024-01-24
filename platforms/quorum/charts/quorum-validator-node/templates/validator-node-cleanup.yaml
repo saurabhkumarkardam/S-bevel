@@ -3,7 +3,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "quorum-validator-node.name" . }}-cleanup
+  # name: {{ include "quorum-validator-node.name" . }}-cleanup-validator-node
+  name: {{ .Values.node.name }}-cleanup-validator-node
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: quorum-validator-node-job-cleanup
