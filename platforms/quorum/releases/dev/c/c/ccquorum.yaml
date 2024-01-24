@@ -1,0 +1,72 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ccquorum
+  namespace: c-quo
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  releaseName: ccquorum
+  interval: 1m
+  chart:
+   spec:
+    chart: platforms/quorum/charts/quorum-member-node
+    sourceRef:
+      kind: GitRepository
+      name: flux-quodlt
+      namespace: flux-quodlt
+  values:
+    nameOverride: ccquorum
+    replicaCount: 1
+    global:
+      vault:
+        type: hashicorp
+        address: http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
+        secretPrefix: secretsv2/data/c/crypto/c
+        serviceAccountName: vault-auth
+        keyName: quorum
+        tm_keyName: tm
+        role: vault-role
+        authPath: quodltc
+    images:
+      node: quorumengineering/quorum:21.4.2
+      alpineutils: ghcr.io/hyperledger/bevel-alpine:latest
+    node:
+      name: c
+      status: default
+      consensus: ibft
+      subject: O=c,OU=c,L=51.50/-0.13/London,C=GB
+      mountPath: /etc/quorum/qdata
+      imagePullSecret: regcred
+      keyStore: keystore_1
+      serviceType: ClusterIP
+      lock: false
+      ports:
+        rpc: 8546
+        quorum: 21000
+
+    tm:
+      type: tessera
+      
+    tessera:
+      url: "https://c.sau99.dev.aws.blockchaincloudpoc-develop.com:443"
+      clientUrl: "http://c-tessera:8888" #TODO: Enable tls strict for q2t
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDEwLAogICAgImhvbWVzdGVhZEJsb2NrIjogMCwKICAgICJlaXAxNTBCbG9jayI6IDAsCiAgICAiZWlwMTUwSGFzaCI6ICIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLAogICAgImVpcDE1NUJsb2NrIjogMCwKICAgICJlaXAxNThCbG9jayI6IDAsCiAgICAiYnl6YW50aXVtQmxvY2siOiAwLAogICAgImNvbnN0YW50aW5vcGxlQmxvY2siOiAwLAogICAgInBldGVyc2J1cmdCbG9jayI6IDAsCiAgICAiaXN0YW5idWxCbG9jayI6IDAsCiAgICAiaXN0YW5idWwiOiB7CiAgICAgICJlcG9jaCI6IDMwMDAwLAogICAgICAicG9saWN5IjogMCwKICAgICAgImNlaWwyTmJ5M0Jsb2NrIjogMAogICAgfSwKICAgICJ0eG5TaXplTGltaXQiOiAxMjgsCiAgICAicWlwNzE0QmxvY2siOiAwLAogICAgImlzTVBTIjogZmFsc2UsCiAgICAiaXNRdW9ydW0iOiB0cnVlLAogICAgIm1heENvZGVTaXplQ29uZmlnIjogWwogICAgICB7CiAgICAgICAgImJsb2NrIjogMCwKICAgICAgICAic2l6ZSI6IDEyOAogICAgICB9CiAgICBdCiAgfSwKICAibm9uY2UiOiAiMHgwIiwKICAidGltZXN0YW1wIjogIjB4NjViMGY1ZDkiLAogICJleHRyYURhdGEiOiAiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwZjg2ZmVhOTRjOWJlNjg3YzIwZDI5NmJiMTNlNGQ5Yzc0MDQ1MThlM2YwOGRlNzFhOTQ2M2QxYjBlNWMzODM5NWQ1MDE0YTY4YjQ1OWRmZWFlMDdmNjA2NmI5Yjg0MTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBjMCIsCiAgImdhc0xpbWl0IjogIjB4ZTAwMDAwMDAiLAogICJkaWZmaWN1bHR5IjogIjB4MSIsCiAgIm1peEhhc2giOiAiMHg2Mzc0Njk2MzYxNmMyMDYyNzk3YTYxNmU3NDY5NmU2NTIwNjY2MTc1NmM3NDIwNzQ2ZjZjNjU3MjYxNmU2MzY1IiwKICAiY29pbmJhc2UiOiAiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwKICAiYWxsb2MiOiB7CiAgICAiNjNkMWIwZTVjMzgzOTVkNTAxNGE2OGI0NTlkZmVhZTA3ZjYwNjZiOSI6IHsKICAgICAgImJhbGFuY2UiOiAiMHg0NDZjM2IxNWY5OTI2Njg3ZDJjNDA1MzRmZGI1NjQwMDAwMDAwMDAwMDAiCiAgICB9LAogICAgImM5YmU2ODdjMjBkMjk2YmIxM2U0ZDljNzQwNDUxOGUzZjA4ZGU3MWEiOiB7CiAgICAgICJiYWxhbmNlIjogIjB4NDQ2YzNiMTVmOTkyNjY4N2QyYzQwNTM0ZmRiNTY0MDAwMDAwMDAwMDAwIgogICAgfQogIH0sCiAgIm51bWJlciI6ICIweDAiLAogICJnYXNVc2VkIjogIjB4MCIsCiAgInBhcmVudEhhc2giOiAiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIgp9
+    staticNodes:
+      [
+    "enode://d5ebfdce9d1f22f9b188c1bd13a96f4ef936f8c2efdfaeeed97a7b0ec6372ac259568c662b36140385cbada9d5783935d8fc4550f0254bc8c6cd08d5678bfc23@c.sau99.dev.aws.blockchaincloudpoc-develop.com:15010?discport=0",
+    "enode://44aadd4ada2c285921b9a00c737e97018f126a7bcd5cc73d4bc322af5605ede41cca04fda490e6c108e23a5adfc7b7761e29f14abbbb142d615607f0ab4d22a8@v1.sau99.dev.aws.blockchaincloudpoc-develop.com:15014?discport=0",
+    "enode://960bcb4b8e87a073363500319311be7eddc3871beaf8d8fd2d1e1cdb85ff24f7115d66dd9ed4f15372c487652fa00be2a0319dc070bb0ab57b853fb7e03bbc3a@m.sau99.dev.aws.blockchaincloudpoc-develop.com:15020?discport=0",
+    "enode://cbcfab6e2ffd63cecf5b5471ef767e67f12f7d40d9cc5428ed9d6eeea1b5b24fb6f2b0a8f3181454f1a119d947e377e65422d4b9adc1a704c858489f8c0d0a09@v2.sau99.dev.aws.blockchaincloudpoc-develop.com:15024?discport=0"
+]
+    proxy:
+      provider: "ambassador"
+      external_url: sau99.dev.aws.blockchaincloudpoc-develop.com
+      quorumPort: 15010
+    storage:
+      storageClassName: c-bevel-storageclass
+      storageSize: 1Gi
+      dbStorage: 1Gi # NUA
+
+    settings:
+      removeGenesisOnDelete: true
