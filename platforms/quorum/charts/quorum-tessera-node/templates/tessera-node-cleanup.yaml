@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "quorum-tessera-node.name" . }}-cleanup
+  name: {{ include "quorum-tessera-node.name" . }}-cleanup-tessera-node
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: quorum-tessera-node-job
