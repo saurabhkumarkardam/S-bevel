@@ -1,0 +1,113 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+---
+# Number of replicas for pods
+replicaCount: 1
+
+global:
+  vault:
+    # Type of Vault to support other providers. Currently, only `hashicorp` and `kubernetes` is supported
+    type: hashicorp
+    # URL of the Vault server
+    address: 
+    # The value for vault secret engine name
+    secretEngine: secretsv2
+    # Serviceaccount name that will be created for Vault Auth and k8S Secret management
+    serviceAccountName: vault-auth
+    # Role used for authentication with Vault
+    role: vault-role
+    # Authentication path for Vault
+    authPath: node
+    # The value for vault secret prefix which must start with `data/`
+    secretPrefix: data/node
+    # Vault path where the keys are stored
+    keyName: data/node/quorum
+    # Vault path where the tm secrets are stored
+    tmSecretPath: data/node/tm
+
+
+#These are the various docker images being used by this chart. update them as needed
+images:
+  # Valid image name and version to read certificates from vault server
+  alpineutils: ghcr.io/hyperledger/bevel-alpine:latest
+  # Valid image name and version for quorum tessera
+  tessera: quorumengineering/tessera:0.9.2
+  # Valid image name and version for busybox
+  busybox: busybox
+  # Valid image name and version for MySQL. This is used as the DB for TM
+  mysql: mysql/mysql-server:5.7
+
+node:
+  # # Name for Tessera node
+  # name: node # NUA
+
+  # Mountpath for Quorum pod
+  mountPath: /etc/quorum/qdata
+  # K8s secret name in the namespace
+  imagePullSecret: regcred
+  # K8s service type
+  serviceType: ClusterIP
+  # Container and service ports
+  ports:
+    tm: 15013
+    db: 3306
+  # Mysql DB name
+  dbName: demodb
+  # Mysql username
+  mySqlUser: demouser 
+
+
+tessera:
+  # Database URL
+  dbUrl: jdbc:mysql://localhost:3306/demodb
+  # Database username
+  dbUserName: demouser
+  # URL of the tessera node. This should be local. Use http if tls is OFF
+  url: 
+  clienturl: 
+  # List of tessera nodes to connect in url: <value> format. This should be reachable from this node
+  # Eg. othernodes: 
+  #     - url: "https://node1.quo.demo.aws.blockchaincloudpoc.com"
+  #     - url: "https://node2.quo.demo.aws.blockchaincloudpoc.com"
+  otherNodes: 
+  # Provide if tessera will use tls. 
+  # Options:
+  ##   - STRICT: All connections to and from this node must use TLS with mutual
+  ##     authentication. 
+  ##   - OFF: Mutually authenticated TLS is not used for in- and outbound
+  ##     connections, although unauthenticated connections to HTTPS hosts are
+  ##     still possible. This should only be used if another transport security
+  ##     mechanism like WireGuard is in place.
+  tls: STRICT
+  # Server/client  trust configuration for transaction manager nodes. 
+  # options are: "WHITELIST", "CA_OR_TOFU", "CA", "TOFU"
+  trust: TOFU
+
+proxy:
+  # This will be the proxy/ingress provider. Can have values "ambassador" or "haproxy"
+  # TODO "haproxy" has not been tested
+  provider: "ambassador"
+  # External URL of the node
+  external_url: 
+  # Expose a port publically via proxy
+  clientPort: 15032
+
+storage:
+  # Kubernetes storageclass for the node
+  storageClassName: bevelStorageClass
+  # Memory for the node
+  storageSize: 1Gi
+  # Memory for the database
+  dbStorage: 1Gi
+
+settings:
+  removeGenesisOnDelete: true
+
+labels:

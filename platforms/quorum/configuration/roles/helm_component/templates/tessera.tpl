@@ -16,29 +16,16 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
-    nameOverride: {{ peer.name }}
-
-    global:
-      vault:
-        type: {{ vault.type | default("hashicorp") }}
-        address: {{ vault.url }}
-        secretEngine: {{ vault.secret_path | default('secretsv2') }}
-        serviceAccountName: vault-auth
-        role: vault-role
-        authPath: {{ network.env.type }}{{ name }}
-        secretPrefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
-        keyName: quorum
-        tmSecretPath: {{ name }}/crypto/{{ peer.name }}/tm
-
     replicaCount: 1
-
+    metadata:
+      namespace: {{ component_ns }}
+      labels:
     images:
       alpineutils: ghcr.io/hyperledger/bevel-alpine:latest
       tessera: quorumengineering/tessera:hashicorp-{{ network.config.tm_version }}
       busybox: busybox
       mysql: mysql/mysql-server:5.7
       pullPolicy: IfNotPresent
-
     node:
       name: {{ peer.name }}
       mountPath: /etc/quorum/qdata
@@ -51,19 +38,28 @@ spec:
       ports:
         tm: {{ peer.transaction_manager.port }}
         db: {{ peer.db.port }}
-      dbName: demodb
-      mySqlUser: demouser
-    
+      dbname: demodb
+      mysqluser: demouser
+    vault:
+      address: {{ vault.url }}
+      secretengine: {{ vault.secret_path | default('secretsv2') }}
+      tmsecretpath: {{ name }}/crypto/{{ peer.name }}/tm
+      secretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
+      serviceaccountname: vault-auth
+      keyname: quorum
+      role: vault-role
+      authpath: {{ network.env.type }}{{ name }}
+      type: {{ vault.type | default("hashicorp") }}
     tessera:
-      dbUrl: "jdbc:mysql://{{ peer.name }}-tessera:3306/demodb"
-      dbUserName: demouser
+      dburl: "jdbc:mysql://{{ peer.name }}-tessera:3306/demodb"
+      dbusername: demouser
 {% if network.config.tm_tls == 'strict' %}
       url: "https://{{ peer.name }}.{{ external_url }}:{{ peer.transaction_manager.ambassador }}"
 {% else %}
       url: "http://{{ peer.name }}.{{ external_url }}:{{ peer.transaction_manager.ambassador }}"
 {% endif %}
       clienturl: "http://{{ peer.name }}-tessera:{{ peer.transaction_manager.clientport }}" #TODO: Enable tls strict for q2t
-      otherNodes:
+      othernodes:
 {% for tm_node in network.config.tm_nodes %}
         - url: {{ tm_node }}
 {% endfor %}
@@ -78,14 +74,9 @@ spec:
     proxy:
       provider: "none"
       external_url: {{ name }}.{{ component_ns }}
-      clientPort: {{ peer.transaction_manager.clientport }}
+      clientport: {{ peer.transaction_manager.clientport }}
 {% endif %}
     storage:
-      storageClassName: {{ sc_name }}
-      storageSize: 1Gi
-      dbStorage: 1Gi
-
-    settings:
-      removeGenesisOnDelete: true
-
-    labels:
+      storageclassname: {{ sc_name }}
+      storagesize: 1Gi
+      dbstorage: 1Gi
