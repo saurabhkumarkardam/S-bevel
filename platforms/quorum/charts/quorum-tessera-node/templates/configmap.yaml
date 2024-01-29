@@ -9,10 +9,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: tessera-config-{{ .Values.node.name }}
-  namespace: {{ .Values.metadata.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: tessera-config
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 data:
@@ -20,9 +20,9 @@ data:
     {
       "useWhiteList": "false",
       "jdbc": {
-        "username": {{ .Values.tessera.dbusername | quote }},
+        "username": {{ .Values.tessera.dbUserName | quote }},
         "password": "",
-        "url": {{ .Values.tessera.dburl | quote }}
+        "url": {{ .Values.tessera.dbUrl | quote }}
       },
       "serverConfigs": [
         {
@@ -76,20 +76,20 @@ data:
           "communicationType": "REST"
         }
       ],
-      "peer": {{ .Values.tessera.othernodes | toPrettyJson | indent 6 }},
+      "peer": {{ .Values.tessera.otherNodes | toPrettyJson | indent 6 }},
       "keys": {
           "keyVaultConfigs": [
               {
                   "keyVaultType": "HASHICORP",
                   "properties": {
-                      "url": "{{ $.Values.vault.address }}"
+                      "url": "{{ $.Values.global.vault.address }}"
                   }
               }
           ],
           "keyData": [
               {
-                  "hashicorpVaultSecretEngineName": "{{ $.Values.vault.secretengine }}",
-                  "hashicorpVaultSecretName": "{{ $.Values.vault.tmsecretpath }}",
+                  "hashicorpVaultSecretEngineName": "{{ $.Values.global.vault.secretEngine }}",
+                  "hashicorpVaultSecretName": "{{ $.Values.global.vault.tmSecretPath }}",
                   "hashicorpVaultPrivateKeyId": "privateKey",
                   "hashicorpVaultPublicKeyId": "publicKey"
               }
