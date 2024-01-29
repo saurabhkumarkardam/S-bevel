@@ -193,11 +193,7 @@ spec:
              - name: MOUNT_PATH
                value: "/certcheck"
              - name: VAULT_TYPE
-<<<<<<< HEAD
                value: "{{ $.Values.global.vault.type }}"
-=======
-               value: "{{ $.Values.vault.type }}"
->>>>>>> df76a9993380c4d21a2a51473064d1b81edb80ec
           command: ["/bin/sh", "-c"]
           args:
           - |-

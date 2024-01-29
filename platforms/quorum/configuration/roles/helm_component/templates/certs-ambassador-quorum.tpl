@@ -31,17 +31,6 @@ spec:
       certsContainerName: ghcr.io/hyperledger/bevel-build:jdk8-latest
       imagePullSecret: regcred
       pullPolicy: IfNotPresent
-<<<<<<< HEAD
-=======
-    vault:
-      address: {{ vault.url }}
-      role: vault-role
-      authpath: {{ network.env.type }}{{ org_name }}
-      serviceaccountname: vault-auth
-      certsecretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org.name | lower }}
-      retries: 30
-      type: {{ vault.type | default("hashicorp") }}
->>>>>>> df76a9993380c4d21a2a51473064d1b81edb80ec
     subjects:
       root_subject: "{{ network.config.subject }}"
       cert_subject: "{{ network.config.subject | regex_replace(',', '/') }}"
