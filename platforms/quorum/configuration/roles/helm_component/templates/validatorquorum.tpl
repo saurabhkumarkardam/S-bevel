@@ -16,6 +16,7 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
+    nameOverride: {{ peer.name }}
     replicaCount: 1
     global:
       vault:

@@ -7,12 +7,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $.Values.name }}-generate-ambassador-certs-job
+  name: {{ include "quorum-tlscerts-gen.name" . }}-generate-ambassador-certs-job # {{ $.Values.name }}-generate-ambassador-certs-job
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ $.Values.name }}-generate-ambassador-certs-job
-    app.kubernetes.io/name: {{ $.Values.name }}-generate-ambassador-certs-job
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app: {{ include "quorum-tlscerts-gen.name" . }}-generate-ambassador-certs-job # {{ $.Values.name }}-generate-ambassador-certs-job
+    app.kubernetes.io/name: {{ include "quorum-tlscerts-gen.name" . }}-generate-ambassador-certs-job # {{ $.Values.name }}-generate-ambassador-certs-job
+    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "labels.custom" . | nindent 2 }}
@@ -21,8 +21,8 @@ spec:
     template:
       metadata:
         labels:
-          app: {{ $.Values.name }}-generate-ambassador-certs-job
-          app.kubernetes.io/name: {{ $.Values.name  }}-generate-ambassador-certs-job
+          app: {{ include "quorum-tlscerts-gen.name" . }}-generate-ambassador-certs-job # {{ $.Values.name }}-generate-ambassador-certs-job
+          app.kubernetes.io/name: {{ include "quorum-tlscerts-gen.name" . }}-generate-ambassador-certs-job # {{ $.Values.name  }}-generate-ambassador-certs-job
           app.kubernetes.io/instance: {{ .Release.Name }}
       spec:
         restartPolicy: "OnFailure"

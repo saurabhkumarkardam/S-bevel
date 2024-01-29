@@ -7,39 +7,42 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Values.node.name }}-tessera
+  name: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
   namespace: {{ .Release.Namespace }}
   creationTimestamp: null
   labels:
-    app.kubernetes.io/name: {{ .Values.node.name }}-tessera
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/name: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
+    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }} 
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "labels.custom" . | nindent 2 }}
 spec:
   serviceName: {{ .Values.node.name }}-tessera
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: consortiumchain
-      service.rpc: {{ .Values.node.name }}-tessera
-      app.kubernetes.io/name: {{ .Values.node.name }}-tessera
-      helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+      service.rpc: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
+      app.kubernetes.io/name: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
+      # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "labels.custom" . | nindent 2 }}
   template:
     metadata:
       creationTimestamp: null
       labels:
         app: consortiumchain
-        name: {{ .Values.node.name }}-tessera
-        service.rpc: {{ .Values.node.name }}-tessera
-        app.kubernetes.io/name: {{ .Values.node.name }}-tessera
-        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+        name: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
+        service.rpc: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
+        app.kubernetes.io/name: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
+        # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "labels.custom" . | nindent 2 }}
     spec:
       serviceAccountName: {{ .Values.global.vault.serviceAccountName }}
-      hostname: {{ .Values.node.name }}-tessera
+      hostname: {{ include "quorum-tessera-node.name" . }}-tessera # {{ .Values.node.name }}-tessera
       imagePullSecrets:
           - name: {{ .Values.node.imagePullSecret }}
       volumes:

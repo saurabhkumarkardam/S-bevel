@@ -16,6 +16,7 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
+    nameOverride: {{ org.name }}
     global:
       vault:
         type: {{ vault.type | default("hashicorp") }}

@@ -16,7 +16,7 @@ spec:
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
-    nameOverride: {{ component_name }}
+    nameOverride: {{ peer.name }}
     replicaCount: 1
     global:
       vault:
@@ -93,6 +93,8 @@ spec:
       storageClassName: {{ sc_name }}
       storageSize: 1Gi
       dbStorage: 1Gi # NUA
+
+    labels:
 
     settings:
       removeGenesisOnDelete: true

@@ -7,11 +7,11 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Values.node.name }}
+  name: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
   namespace: {{ .Release.Namespace }}
   creationTimestamp: null
   labels:
-    app.kubernetes.io/name: {{ .Values.node.name }}
+    app.kubernetes.io/name: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
     # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }} 
@@ -22,8 +22,8 @@ spec:
   selector:
     matchLabels:
       app: consortiumchain
-      service.rpc: {{ .Values.node.name }}
-      app.kubernetes.io/name: {{ .Values.node.name }}
+      service.rpc: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
+      app.kubernetes.io/name: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
       # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/instance: {{ .Release.Name }} 
@@ -33,16 +33,16 @@ spec:
       creationTimestamp: null
       labels:
         app: consortiumchain
-        name: {{ .Values.node.name }}
-        service.rpc: {{ .Values.node.name }}
-        app.kubernetes.io/name: {{ .Values.node.name }}
+        name: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
+        service.rpc: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
+        app.kubernetes.io/name: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
         # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/instance: {{ .Release.Name }} 
         {{- include "labels.custom" . | nindent 2 }}
     spec:
       serviceAccountName: {{ .Values.global.vault.serviceAccountName }}
-      hostname: {{ .Values.node.name }}
+      hostname: {{ include "quorum-validator-node.name" . }} # {{ .Values.node.name }}
       imagePullSecrets:
           - name: {{ .Values.node.imagePullSecret }}
       volumes:
