@@ -127,10 +127,10 @@ spec:
         image: {{ .Values.images.busybox }}
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh"]
+          #!/bin/bash
         args:
         - "-cx"
         - |-
-          #!/bin/bash
 
           echo "getting username and password from vault"          
           var=$(cat /secret/keys/password)         

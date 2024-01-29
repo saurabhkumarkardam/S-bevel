@@ -51,9 +51,24 @@ spec:
       ports:
         tm: {{ peer.transaction_manager.port }}
         db: {{ peer.db.port }}
+<<<<<<< HEAD
       dbName: demodb
       mySqlUser: demouser
     
+=======
+      dbname: demodb
+      mysqluser: demouser
+    vault:
+      address: {{ vault.url }}
+      secretengine: {{ vault.secret_path | default('secretsv2') }}
+      tmsecretpath: {{ name }}/crypto/{{ peer.name }}/tm
+      secretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
+      serviceaccountname: vault-auth
+      keyname: quorum
+      role: vault-role
+      authpath: {{ network.env.type }}{{ name }}
+      type: {{ vault.type | default("hashicorp") }}
+>>>>>>> df76a9993380c4d21a2a51473064d1b81edb80ec
     tessera:
       dbUrl: "jdbc:mysql://{{ peer.name }}-tessera:3306/demodb"
       dbUserName: demouser

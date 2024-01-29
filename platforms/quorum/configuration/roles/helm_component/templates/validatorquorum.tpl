@@ -57,6 +57,17 @@ spec:
         raft: {{ peer.raft.port }}
 {% endif %}
         quorum: {{ peer.p2p.port }}
+<<<<<<< HEAD
+=======
+    vault:
+      address: {{ vault.url }}
+      secretprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ name }}/crypto/{{ peer.name }}
+      serviceaccountname: vault-auth
+      keyname: quorum
+      role: vault-role
+      authpath: {{ network.env.type }}{{ name }}
+      type: {{ vault.type | default("hashicorp") }}
+>>>>>>> df76a9993380c4d21a2a51473064d1b81edb80ec
     genesis: {{ genesis }}
     staticnodes: {{ staticnodes }}
 {% if network.env.proxy == 'ambassador' %}

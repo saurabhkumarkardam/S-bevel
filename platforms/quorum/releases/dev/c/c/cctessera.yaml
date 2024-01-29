@@ -56,7 +56,7 @@ spec:
       url: "https://c.sau99.dev.aws.blockchaincloudpoc-develop.com:443"
       clienturl: "http://c-tessera:8888" #TODO: Enable tls strict for q2t
       otherNodes:
-        - url: https://carrier.sau99.dev.aws.blockchaincloudpoc-develop.com
+        - url: https://c.sau99.dev.aws.blockchaincloudpoc-develop.com
       tls: "STRICT"
       trust: "TOFU"
     proxy:

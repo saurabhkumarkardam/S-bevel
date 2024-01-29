@@ -32,4 +32,16 @@ spec:
     image:
       repository: quorumengineering/tessera:hashicorp-{{ network.config.tm_version }}
       pullSecret: regcred
+<<<<<<< HEAD
 
+=======
+    vault:
+      address: {{ vault.url }}
+      secretengine: {{ vault.secret_path | default('secretsv2') }}
+      authpath: {{ network.env.type }}{{ org_name }}
+      keyprefix: {{ org_name }}/crypto
+      role: vault-role
+      serviceaccountname: vault-auth
+      tmprefix: {{ vault.secret_path | default('secretsv2') }}/data/{{ org_name }}/crypto
+      type: {{ vault.type | default("hashicorp") }}
+>>>>>>> df76a9993380c4d21a2a51473064d1b81edb80ec
