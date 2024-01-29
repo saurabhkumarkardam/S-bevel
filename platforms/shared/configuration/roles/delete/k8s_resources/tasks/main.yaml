@@ -10,6 +10,10 @@
     KUBECONFIG={{ kubernetes.config_file }} helm ls -drq -n {{ organization_ns }}
   register: helm_info
 
+- name: Print helm_info # NEW
+  debug:
+    var: helm_info
+
 # Remove all Helm releases of organization except genesis
 - name: Delete Helm releases
   kubernetes.core.helm:
