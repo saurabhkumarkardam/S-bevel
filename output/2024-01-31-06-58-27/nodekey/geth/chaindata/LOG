@@ -1,0 +1,49 @@
+=============== Jan 31, 2024 (UTC) ===============
+07:10:29.296965 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+07:10:29.301627 db@open opening
+07:10:29.826595 version@stat F·[] S·0B[] Sc·[]
+07:10:29.829610 db@janitor F·2 G·0
+07:10:29.829636 db@open done T·527.991683ms
+07:10:30.163087 memdb@flush N·21264 S·2MiB
+07:10:30.266471 db@close closing
+07:10:30.316406 memdb@flush created L0@3 N·21264 S·1MiB "\x00\x00\xae..\x82\x88\x11,v9389":"\xff\xfc\x94..\xa5\x05\xa1,v9518"
+07:10:30.316426 memdb@flush exiting
+07:10:30.316437 memdb@flush revert @3
+07:10:30.320187 db@close done T·53.713547ms
+=============== Jan 31, 2024 (UTC) ===============
+07:11:12.152929 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+07:11:12.153068 version@stat F·[] S·0B[] Sc·[]
+07:11:12.153089 db@open opening
+07:11:12.153136 journal@recovery F·2
+07:11:12.633719 journal@recovery recovering @1
+07:11:12.660723 journal@recovery recovering @2
+07:11:12.680919 memdb@flush created L0@3 N·21264 S·1MiB "\x00\x00\xae..\x82\x88\x11,v9389":"\xff\xfc\x94..\xa5\x05\xa1,v9518"
+07:11:12.680953 version@stat F·[1] S·1MiB[1MiB] Sc·[0.25]
+07:11:12.690395 memdb@flush created L0@5 N·1 S·199B "unc..own,v21265":"unc..own,v21265"
+07:11:12.698663 version@stat F·[2] S·1MiB[1MiB] Sc·[0.50]
+07:11:12.700619 db@janitor F·4 G·0
+07:11:12.700666 db@open done T·547.559467ms
+07:11:12.703969 table@compaction range L-1 "a":"b"
+07:11:12.703998 table@compaction L0·2 -> L1·0 S·1MiB Q·21267
+07:11:12.817859 table@build created L1@7 N·21263 S·1MiB "\x00\x00\xae..\x82\x88\x11,v9389":"\xff\xfc\x94..\xa5\x05\xa1,v9518"
+07:11:12.818081 db@close closing
+07:11:12.820406 table@build exiting
+07:11:12.820423 table@build revert @7
+07:11:12.823930 db@close done T·5.847612ms
+=============== Jan 31, 2024 (UTC) ===============
+07:11:30.755633 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+07:11:30.755805 version@stat F·[2] S·1MiB[1MiB] Sc·[0.50]
+07:11:30.755823 db@open opening
+07:11:30.755894 journal@recovery F·1
+07:11:30.763941 journal@recovery recovering @6
+07:11:30.766319 memdb@flush created L0@7 N·2 S·545B "eth..ˏ\xa3,v21267":"unc..own,v21268"
+07:11:30.777557 version@stat F·[3] S·1MiB[1MiB] Sc·[0.75]
+07:11:30.785007 db@janitor F·5 G·0
+07:11:30.785031 db@open done T·29.198371ms
+07:11:30.789080 table@compaction range L-1 "a":"b"
+07:11:30.789102 table@compaction L0·3 -> L1·0 S·1MiB Q·21270
+07:11:30.902503 db@close closing
+07:11:30.934087 table@build created L1@10 N·21263 S·1MiB "\x00\x00\xae..\x82\x88\x11,v9389":"\xff\xfc\x94..\xa5\x05\xa1,v9518"
+07:11:30.936790 table@build exiting
+07:11:30.936803 table@build revert @10
+07:11:30.939526 db@close done T·37.021989ms
