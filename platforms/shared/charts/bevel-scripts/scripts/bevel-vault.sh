@@ -93,6 +93,12 @@ readHashicorpVaultSecret() {
 
 # Write a secret to the HashiCorp Vault
 writeHashicorpVaultSecret() {
+    # IGNORE #########################################
+    echo "\VAULT_TOKEN=>$VAULT_TOKEN"
+    echo "\VAULT_ADDR=>$VAULT_ADDR"
+    echo "1=>${1}"
+    # IGNORE #########################################
+    
     # Send a request to Vault API to write a secret
     VAULT_RESPONSE=$(curl \
         -H "X-Vault-Token: ${VAULT_TOKEN}" \

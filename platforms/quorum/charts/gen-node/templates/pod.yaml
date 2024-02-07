@@ -1,0 +1,156 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: second-{{ .Release.Name }}-node
+  namespace: genesis
+  labels:
+    app: geth-node
+spec:
+  serviceAccountName: {{ .Values.global.serviceAccountName }}
+  containers:
+    - name: first-con
+      image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
+      env:
+        - name: VAULT_ADDR
+          value: "{{ .Values.global.vault.address }}"
+        - name: VAULT_SECRET_ENGINE
+          value: "{{ .Values.global.vault.secretEngine }}"
+        - name: VAULT_SECRET_PREFIX
+          value: "{{ .Values.global.vault.secretPrefix }}"
+        - name: KUBERNETES_AUTH_PATH
+          value: "{{ .Values.global.vault.authPath }}"
+        - name: VAULT_APP_ROLE
+          value: "{{ .Values.global.vault.role }}"
+        - name: VAULT_TYPE
+          value: "{{ .Values.global.vault.type }}"
+      securityContext:
+        runAsUser: 0
+      command:
+        - /bin/bash
+        - -c
+      args:
+        - |
+
+          . /scripts/bevel-vault.sh
+
+          echo "Generate customize token."
+          vaultBevelFunc "init"
+
+          apt update
+          wget https://gethstore.blob.core.windows.net/builds/geth-alltools-linux-amd64-1.10.0-56dec25a.tar.gz
+          tar -xvf geth-alltools-linux-amd64-1.10.0-56dec25a.tar.gz
+          cp geth-alltools-linux-amd64-1.10.0-56dec25a/geth geth-alltools-linux-amd64-1.10.0-56dec25a/bootnode /usr/bin/
+          /usr/bin/geth version
+          
+          apt install tree
+
+          mkdir -p {{ .Release.Name }}/data/keystore/
+          cd {{ .Release.Name }}/
+
+          # vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-node-{{ .Release.Name }}-keys"
+          vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-node-{{ .Release.Name }}-keys"
+          # Storing values at specified locations
+          echo ${VAULT_SECRET} | jq -r '.["accountAddress"]' > data/keystore/accountAddress
+          echo ${VAULT_SECRET} | jq -r '.["accountKeystore_base64"]' | base64 -d > data/keystore/accountKeystore
+          echo ${VAULT_SECRET} | jq -r '.["accountPassword"]' > data/keystore/accountPassword
+          echo ${VAULT_SECRET} | jq -r '.["accountPrivateKey"]' > data/keystore/accountPrivateKey
+          echo ${VAULT_SECRET} | jq -r '.["nodeAddress"]' > data/address
+          echo ${VAULT_SECRET} | jq -r '.["nodeKey"]' > data/nodekey
+          echo ${VAULT_SECRET} | jq -r '.["nodeKeyPub"]' > data/nodekey.pub
+
+          vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-genesis"
+          echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d > data/genesis.json
+          # echo ${VAULT_SECRET} | jq -r '.["staticNodes_base64"]' | base64 -d > data/static-nodes.json
+
+          touch data/static-nodes.json
+          # Create an empty static-nodes.json file
+          echo "[" >> "data/static-nodes.json"
+          # Insert pubkey at second-last line
+          pubkey=$(cat data/nodekey.pub)
+          sed -i '$s/.$//' "data/static-nodes.json"
+          echo ",\"enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0\"" >> "data/static-nodes.json"
+          echo "]" >> "data/static-nodes.json"
+
+          
+
+          configmap_name="static-nodes-config"
+          # Check if the ConfigMap exists
+          if kubectl get configmap "$configmap_name" -n {{ .Release.Namespace }} &> /dev/null; then
+              echo "ConfigMap $configmap_name exists in namespace $namespace"
+              
+              # Get the content of the ConfigMap and save it to a file
+              kubectl get configmap static-nodes-config -n genesis -o json | jq -r '.data["static-nodes.json"]' > data/static-nodes.json
+              echo "Content of the ConfigMap has been saved to static-nodes.json"
+              existingStaticNodes=$(cat data/static-nodes.json)
+
+              echo "SN-1"
+              cat data/static-nodes.json
+
+              pubkey=$(cat data/nodekey.pub)
+              # newStaticNode="\"enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0\""
+              newStaticNode="enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0"
+              existingStaticNodes=$(jq ". + [\"$newStaticNode\"]" <<< "$existingStaticNodes")
+              echo "$existingStaticNodes" > data/static-nodes.json
+              # cat build/static-nodes.json
+
+              echo "SN-2"
+              cat data/static-nodes.json
+              echo "FINISH #######################################"
+          else
+              echo "ConfigMap $configmap_name does not exist in namespace {{ .Release.Namespace }}. Creating one."
+
+              # Create an empty static-nodes.json file
+              echo "[" > "data/static-nodes.json"
+              # Insert pubkey at second-last line
+              pubkey=$(cat data/nodekey.pub)
+              echo "\"enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0\"" >> "data/static-nodes.json"
+              echo "]" >> "data/static-nodes.json"
+
+              kubectl create configmap static-nodes-config --from-file=data/static-nodes.json -n {{ .Release.Namespace }}
+          fi
+
+          export ADDRESS=$(grep -o '"address": *"[^"]*"' ./data/keystore/accountKeystore | grep -o '"[^"]*"$' | sed 's/"//g')
+          export PRIVATE_CONFIG=ignore
+          geth --datadir data \
+          --networkid 1337 --nodiscover --verbosity 5 \
+          --syncmode full \
+          --mine --miner.gasprice 0 \
+          --http --http.addr 0.0.0.0 --http.port 22000 --http.corsdomain "*" --http.vhosts "*" \
+          --ws --ws.addr 0.0.0.0 --ws.port 32000 --ws.origins "*" \
+          --http.api admin,eth,debug,miner,net,txpool,personal,web3,istanbul \
+          --ws.api admin,eth,debug,miner,net,txpool,personal,web3,istanbul \
+          --unlock ${ADDRESS} --allow-insecure-unlock --password ./data/keystore/accountPassword \
+          --port 30303
+
+          tail -f /dev/null
+      ports:
+        - containerPort: 22000
+        - containerPort: 32000
+        - containerPort: 30303
+      volumeMounts:
+        - name: scripts-volume
+          mountPath: /scripts/bevel-vault.sh
+          subPath: bevel-vault.sh
+  restartPolicy: Always
+  volumes:
+    - name: generated-config
+      emptyDir: {}
+    - name: scripts-volume
+      configMap:
+        name: bevel-vault-script
+        defaultMode: 0777
+
+# cd platforms/quorum/charts/
+# helm dependency update gen-node
+# helm repo update
+# hl -n genesis
+
+# hi validator-0 platforms/quorum/charts/gen-node -n genesis
+# hu validator-0 -n genesis
+# kl second-v-node -n genesis
+# k exec -it second-validator-0-node -n genesis -- /bin/bash
+
+# hi validator-1 platforms/quorum/charts/gen-node -n genesis
+# hu validator-1 -n genesis
+# kl second-validator-1-node -n genesis
+# k exec -it second-validator-1-node -n genesis -- /bin/bash

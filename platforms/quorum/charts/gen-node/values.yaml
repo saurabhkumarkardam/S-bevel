@@ -1,0 +1,25 @@
+# The following are for overriding global values
+global:
+  #Provide the service account name which will be created.
+  serviceAccountName: vault-auth
+  cluster:
+    provider: aws  # choose from: minikube | aws
+    cloudNativeServices: false # 'false' is implemented
+    #Provide the kubernetes host url
+    #Eg. kubernetesUrl: https://10.3.8.5:6443
+    kubernetesUrl: 
+  vault:
+    #Provide the type of vault
+    type: hashicorp
+    #Provide the vault role used.
+    role: vault-role
+    #Provide the network type
+    network: besu
+    #Provide the vault server address
+    address: http://vault.vault.svc.cluster.local:80 # http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
+    #Provide the vault authPath configured to be used.
+    authPath: genesis
+    #Provide the secret engine.
+    secretEngine: secretsv2
+    #Provide the vault path where the secrets will be stored
+    secretPrefix: "data/genesis"

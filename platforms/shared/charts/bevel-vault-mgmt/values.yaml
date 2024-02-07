@@ -61,8 +61,8 @@ global:
   vault:
     type: hashicorp
     role: vault-role
-    address: http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
-    authPath: quo-1ch
+    address: http://vault.vault.svc.cluster.local:80 # http://localhost:8200 # http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
+    authPath: genesis # quo-1ch
     network: quorum
     secretEngine: secretsv2
     secretPrefix: "data/ch"
