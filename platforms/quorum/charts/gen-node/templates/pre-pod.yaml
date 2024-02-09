@@ -1,0 +1,239 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-pre-hook"
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+  labels:
+    app.kubernetes.io/name: pre-install-hook
+    app.kubernetes.io/component: keygen
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+spec:
+  backoffLimit: 1
+  completions: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pre-install-hook
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccountName }}
+      restartPolicy: "OnFailure"
+      containers:
+        - name: pre-con
+          image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
+          securityContext:
+            runAsUser: 0
+          {{- if (eq .Values.global.vault.type "hashicorp") }}
+          volumeMounts:
+            - name: scripts-volume
+              mountPath: /scripts/bevel-vault.sh
+              subPath: bevel-vault.sh
+          env:
+          - name: VAULT_ADDR
+            value: "{{ .Values.global.vault.address }}"
+          - name: VAULT_SECRET_ENGINE
+            value: "{{ .Values.global.vault.secretEngine }}"
+          - name: VAULT_SECRET_PREFIX
+            value: "{{ .Values.global.vault.secretPrefix }}"
+          - name: KUBERNETES_AUTH_PATH
+            value: "{{ .Values.global.vault.authPath }}"
+          - name: VAULT_APP_ROLE
+            value: "{{ .Values.global.vault.role }}"
+          - name: VAULT_TYPE
+            value: "{{ .Values.global.vault.type }}"
+          {{- end }}
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
+
+                . /scripts/bevel-vault.sh
+                echo "Generate customize token."
+                vaultBevelFunc "init"
+                # apt install tree
+
+                safeWriteSecret() {
+                  local dir="$1"
+                  local fpath="$2"
+                  # vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-node-{{ .Release.Name }}-keys"
+                  vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-node-{{ .Release.Name }}-keys"
+                  if [ "$SECRETS_AVAILABLE" == "no" ]
+                  then
+                    # Check if all required files exist
+                    local required_files=("accountAddress" "accountKeystore" "accountPassword" "accountPrivateKey" "address" "nodekey" "nodekey.pub")
+                    for file in "${required_files[@]}"; do
+                      if [ ! -f "${dir}/${file}" ]; then
+                        echo "Error: File '${file}' not found in '${dir}'" >&2
+                        return 1
+                      fi
+                    done
+                    
+                    # Read data from files
+                    local accountAddress=$(cat "${dir}/accountAddress")
+                    local accountKeystore_base64=$(cat "${dir}/accountKeystore" | base64 -w 0)
+                    local accountPassword=$(cat "${dir}/accountPassword")
+                    local accountPrivateKey=$(cat "${dir}/accountPrivateKey")
+                    local address=$(cat "${dir}/address")
+                    local nodekey=$(cat "${dir}/nodekey")
+                    local nodekey_pub=$(cat "${dir}/nodekey.pub")
+                    
+                    # Construct JSON payload
+                    echo "
+                      {
+                        \"data\":
+                          {
+                            \"accountAddress\": \"${accountAddress}\",
+                            \"accountKeystore_base64\": \"${accountKeystore_base64}\",
+                            \"accountPassword\": \"${accountPassword}\",
+                            \"accountPrivateKey\": \"${accountPrivateKey}\",
+                            \"nodeAddress\": \"${address}\",
+                            \"nodeKey\": \"${nodekey}\",
+                            \"nodeKeyPub\": \"${nodekey_pub}\"
+                          }
+                      }" > nodePayload.json
+                    
+                    # Push data to vault
+                    vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'nodePayload.json'
+                  fi
+                }
+
+                if kubectl get secret "{{ .Release.Name }}-secret" -n {{ .Release.Namespace }} &> /dev/null; then
+                  output=$(quorum-genesis-tool --validators 0 --members 1 --bootnodes 0 \
+                    {{ if .Values.node.besu.account.password }} --accountPassword {{ .Values.node.besu.account.password }} {{ end }} \
+                    --outputPath 'artifacts')
+                  
+                  # Extract the directory path from the output
+                  directory=$(echo "$output" | grep -o 'artifacts/.*')
+                  # Print the directory path
+                  echo "Directory path: $directory" # NR
+                  mv $directory/* artifacts
+                  
+                  dir="./artifacts/member0"
+                  # local deployment="vault" # vault | local
+
+                  # Secret
+                  kubectl create secret generic quorum-{{ .Release.Name }} --namespace {{ .Release.Namespace }} \
+                  --from-literal=accountAddress=$(cat "${dir}/accountAddress") \
+                  --from-literal=accountKeystore=$(cat "${dir}/accountKeystore") \
+                  --from-literal=accountPassword=$(cat "${dir}/accountPassword") \
+                  --from-literal=accountPrivateKey=$(cat "${dir}/accountPrivateKey") \
+                  --from-literal=address=$(cat "${dir}/address") \
+                  --from-literal=nodekey=$(cat "${dir}/nodekey") \
+                  --from-literal=nodekey.pub=$(cat "${dir}/nodekey.pub")
+                  
+                  if [ "{{ .Values.deployment }}" == "vault" ]; then # vault | local
+                    safeWriteSecret "${dir}" "quorum-node-{{ .Release.Name }}-keys"
+                  fi
+                else
+                  echo "Already exist."
+                fi              
+
+                # vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-genesis"
+                # echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d > ./genesis.json
+                # # genesis=$(echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d)
+                # kubectl create configmap "quorum-genesis" --from-file=./genesis.json -n {{ .Release.Namespace }}
+
+                configmap_name="static-nodes-config"
+                # Check if the ConfigMap exists
+                if kubectl get configmap "$configmap_name" -n {{ .Release.Namespace }} &> /dev/null; then
+                    echo "ConfigMap $configmap_name exists in namespace $namespace"
+                    
+                    # Get the content of the ConfigMap and save it to a file
+                    kubectl get configmap static-nodes-config -n genesis -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json
+                    echo "Content of the ConfigMap has been saved to static-nodes.json"
+                    existingStaticNodes=$(cat ./static-nodes.json)
+
+                    echo "SN-1"
+                    cat ./static-nodes.json
+
+                    # pubkey=$(cat data/nodekey.pub)
+                    pubkey=$(echo ${nodekey_pub})
+                    # newStaticNode="\"enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0\""
+                    newStaticNode="enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0"
+
+                    ####################################################################################################
+                    # existingStaticNodes=$(jq ". + [\"$newStaticNode\"]" <<< "$existingStaticNodes")
+                    # echo "$existingStaticNodes" > data/static-nodes.json
+                    # # cat build/static-nodes.json
+                    # kubectl create configmap static-nodes-config --from-file=data/static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl apply -f -
+
+                    # Check if newStaticNode already exists in existingStaticNodes
+                    if ! echo "$existingStaticNodes" | jq 'contains(["'"$newStaticNode"'"])' | grep -q true; then
+                        existingStaticNodes=$(jq ". + [\"$newStaticNode\"]" <<< "$existingStaticNodes")
+                        echo "$existingStaticNodes" > ./static-nodes.json
+                        kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl apply -f -
+                    fi
+                    ####################################################################################################
+
+                    echo "SN-2"
+                    cat ./static-nodes.json
+                    echo "FINISH #######################################"
+                else
+                    echo "ConfigMap $configmap_name does not exist in namespace {{ .Release.Namespace }}. Creating one."
+                    
+                    # Create an empty static-nodes.json file
+                    echo "[" > "./static-nodes.json"
+                    # Insert pubkey at second-last line
+                    # pubkey=$(cat data/nodekey.pub)
+                    pubkey=$(echo ${nodekey_pub})
+                    echo "\"enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0\"" >> "./static-nodes.json"
+                    echo "]" >> "./static-nodes.json"
+                    
+                    kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }}
+                fi
+          ports:
+            - containerPort: 22000
+            - containerPort: 32000
+            - containerPort: 30303
+      volumes:
+        - name: generated-config
+          emptyDir: {}
+        - name: scripts-volume
+          configMap:
+            name: bevel-vault-script
+            defaultMode: 0777
+
+# cd platforms/quorum/charts/
+# helm dependency update gen-node
+# helm repo update
+# hl -n genesis
+
+# hi validator-0 platforms/quorum/charts/gen-node -n genesis
+# hu validator-0 -n genesis
+# kl second-validator-0-node -n genesis
+# k exec -it second-validator-0-node -n genesis -- /bin/sh
+
+# hi validator-1 platforms/quorum/charts/gen-node -n genesis
+# hu validator-1 -n genesis
+# kl second-validator-1-node -n genesis
+# k exec -it second-validator-1-node -n genesis -- /bin/sh
+
+# hi validator-2 platforms/quorum/charts/gen-node -n genesis
+# hu validator-2 -n genesis
+# kl second-validator-2-node -n genesis
+# k exec -it second-validator-2-node -n genesis -- /bin/sh
+
+# hi validator-3 platforms/quorum/charts/gen-node -n genesis
+# hu validator-3 -n genesis
+# kl second-validator-3-node -n genesis
+# k exec -it second-validator-3-node -n genesis -- /bin/sh
+
+# hi validator-4 platforms/quorum/charts/gen-node -n genesis
+# hu validator-4 -n genesis
+# kl second-validator-4-node -n genesis
+# k exec -it second-validator-4-node -n genesis -- /bin/sh
+
+# hu validator-0 -n genesis
+# hu validator-1 -n genesis
+# hu validator-2 -n genesis
+# hu validator-3 -n genesis
+# hu validator-4 -n genesis
+# kdd cm static-nodes-config -n genesis

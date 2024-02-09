@@ -30,7 +30,8 @@ spec:
   serviceAccountName: {{ .Values.global.serviceAccountName }}
   containers:
     - name: first-con
-      image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
+      # image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
+      image: consensys/quorum-k8s-hooks:qgt-0.2.12
       env:
         - name: VAULT_ADDR
           value: "{{ .Values.global.vault.address }}"
@@ -53,99 +54,81 @@ spec:
         - |
 
           . /scripts/bevel-vault.sh
-
-          echo "Generate customize token."
-          vaultBevelFunc "init"
-
-          # Function to push data to vault
-          write_to_vault() {
-            local dir="$1"
-            local vault_location="$2"
-
-            if [[ "$vault_location" == "quorum-node-validator"* ]]; then
-              # Check if all required files exist
-              local required_files=("accountAddress" "accountKeystore" "accountPassword" "accountPrivateKey" "address" "nodekey" "nodekey.pub")
-              for file in "${required_files[@]}"; do
-                if [ ! -f "${dir}/${file}" ]; then
-                  echo "Error: File '${file}' not found in '${dir}'" >&2
-                  return 1
-                fi
-              done
-
-              # Read data from files
-              local node_address=$(cat "${dir}/address")
-              local node_key=$(cat "${dir}/nodekey")
-              local node_key_pub=$(cat "${dir}/nodekey.pub")
-              local account_private_key=$(cat "${dir}/accountPrivateKey")
-              local account_password=$(cat "${dir}/accountPassword")
-              local account_keystore=$(cat "${dir}/accountKeystore" | base64 -w 0)
-              local account_address=$(cat "${dir}/accountAddress")
-
-              # Construct JSON payload
-              echo "
-                {
-                  \"data\":
-                    {
-                      \"nodeAddress\": \"${node_address}\",
-                      \"nodeKey\": \"${node_key}\",
-                      \"nodeKeyPub\": \"${node_key_pub}\",
-                      \"accountPrivateKey\": \"${account_private_key}\",
-                      \"accountPassword\": \"${account_password}\",
-                      \"accountKeystore_base64\": \"${account_keystore}\",
-                      \"accountAddress\": \"${account_address}\"
-                    }
-                }" > nodePayload.json
-
-              # Push data to vault
-              vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${vault_location}" 'nodePayload.json'
-            elif [ "$vault_location" == "quorum-genesis" ]; then	
-              # Check if all required files exist
-              local required_files=("genesis.json" "static-nodes.json")
-              for file in "${required_files[@]}"; do
-                if [ ! -f "${dir}/${file}" ]; then
-                  echo "Error: File '${file}' not found in '${dir}'" >&2
-                  return 1
-                fi
-              done
-              
-              # Read data from files
-              local genesis_base64=$(cat "${dir}/genesis.json" | base64 -w 0)
-              local staticNodes_base64=$(cat "${dir}/static-nodes.json" | base64 -w 0)
-              
-              # Construct JSON payload
-              echo "
-                {
-                  \"data\":
-                  {
-                    \"genesis_base64\": \"${genesis_base64}\",
-                    \"staticNodes_base64\": \"${staticNodes_base64}\"
-                  }
-                }" > genesisPayload.json
-
-              # Push data to vault
-              vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${vault_location}" 'genesisPayload.json'
-            else
-              echo "Error: Unsupported vault location '$vault_location'" >&2
-              return 1
-            fi
-          }
-
-          apt update
-          wget https://gethstore.blob.core.windows.net/builds/geth-alltools-linux-amd64-1.10.0-56dec25a.tar.gz
-          tar -xvf geth-alltools-linux-amd64-1.10.0-56dec25a.tar.gz
-          cp geth-alltools-linux-amd64-1.10.0-56dec25a/geth geth-alltools-linux-amd64-1.10.0-56dec25a/bootnode /usr/bin/
-          /usr/bin/geth version
           
-          apt install tree
-
-          # Create the main directory
-          mkdir -p IBFT-Network
-          # Create subdirectories Node-0 to Node-4
-          for i in {0..4}; do
-              mkdir -p "IBFT-Network/Node-$i/data/keystore"
-          done
-
-          cd IBFT-Network/
+          # echo "Generate customize token."
+          vaultBevelFunc "init"
+          
+          # Function to push data to vault
+          safeWriteSecret() {
+            local dir="$1"
+            local fpath="$2"
+            local deployment="vault" # vault | local
+            
+            # Check if all required files exist
+            local required_files=("accountAddress" "accountKeystore" "accountPassword" "accountPrivateKey" "address" "nodekey" "nodekey.pub")
+            for file in "${required_files[@]}"; do
+              if [ ! -f "${dir}/${file}" ]; then
+                echo "Error: File '${file}' not found in '${dir}'" >&2
+                return 1
+              fi
+            done
+            
+            # Read data from files
+            local node_address=$(cat "${dir}/address")
+            local node_key=$(cat "${dir}/nodekey")
+            local node_key_pub=$(cat "${dir}/nodekey.pub")
+            local account_private_key=$(cat "${dir}/accountPrivateKey")
+            local account_password=$(cat "${dir}/accountPassword")
+            local account_keystore_base64=$(cat "${dir}/accountKeystore" | base64 -w 0)
+            local account_address=$(cat "${dir}/accountAddress")
+            
+            # Construct JSON payload
+            echo "
+              {
+                \"data\":
+                  {
+                    \"nodeAddress\": \"${node_address}\",
+                    \"nodeKey\": \"${node_key}\",
+                    \"nodeKeyPub\": \"${node_key_pub}\",
+                    \"accountPrivateKey\": \"${account_private_key}\",
+                    \"accountPassword\": \"${account_password}\",
+                    \"accountKeystore_base64\": \"${account_keystore_base64}\",
+                    \"accountAddress\": \"${account_address}\"
+                  }
+              }" > nodePayload.json
+              
+            # Push data to vault
+            vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'nodePayload.json'
+          }
+            
+          safeWriteGenesis() {
+            local dir="$1"
+            local fpath="$2"
+            local deployment="vault"
+            
+            local required_files=("genesis.json" "static-nodes.json")
+            for file in "${required_files[@]}"; do
+              if [ ! -f "${dir}/${file}" ]; then
+                echo "Error: File '${file}' not found in '${dir}'" >&2
+                return 1
+              fi
+            done
+            
+            # Read data from files
+            local genesis_base64=$(cat "${dir}/genesis.json" | base64 -w 0)
+            
+            # Construct JSON payload
+            echo "
+              {
+                \"data\":
+                {
+                  \"genesis_base64\": \"${genesis_base64}\"
+                }
+              }" > genesisPayload.json
+              
+            # Push data to vault
+            vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'genesisPayload.json'
+          }
 
           # Run the command and capture the output
           output=$(quorum-genesis-tool \
@@ -165,42 +148,37 @@ spec:
           # Extract the directory path from the output
           directory=$(echo "$output" | grep -o 'artifacts/.*')
           # Print the directory path
-          echo "Directory path: $directory"
+          echo "Directory path: $directory" # NR
           mv $directory/* artifacts
 
           # Count the number of validators based on their directories
           validator_count=$(ls -d ./artifacts/validator* | wc -l)
           echo "validator_count: $validator_count"
 
-          # # Define the base hostname
-          # hostname="quorum-node-validator-"
-
-          # Read the static-nodes.json file into a variable
-          static_nodes_json=$(<./artifacts/goQuorum/static-nodes.json)
-
           # Iterate through the validators using a for loop
           for ((i = 0; i < validator_count; i++)); do
             # Access the current validator directory using its index
             current_validator_dir="./artifacts/validator${i}"
 
-            # # Copy the genesis.json file into the current validator directory # SNR
-            # cp "./artifacts/goQuorum/genesis.json" "${current_validator_dir}/" # SNR
+            kubectl create secret generic quorum-{{ .Release.Name }} --namespace {{ .Release.Namespace }} \
+              --from-literal=accountAddress=$(cat "${current_validator_dir}/accountAddress") \
+              --from-literal=accountKeystore=$(cat "${current_validator_dir}/accountKeystore") \
+              --from-literal=accountPassword=$(cat "${current_validator_dir}/accountPassword") \
+              --from-literal=accountPrivateKey=$(cat "${current_validator_dir}/accountPrivateKey") \
+              --from-literal=address=$(cat "${current_validator_dir}/address") \
+              --from-literal=nodekey=$(cat "${current_validator_dir}/nodekey") \
+              --from-literal=nodekey.pub=$(cat "${current_validator_dir}/nodekey.pub")
 
-            # Construct the hostname for the current validator
-            current_hostname="quorum-node-validator-$i.{{ .Release.Namespace }}"
-            static_nodes_json=$(echo "$static_nodes_json" | sed "0,/<HOST>/s/<HOST>/$current_hostname/")
-
-            # Push data to vault
-            write_to_vault "${current_validator_dir}" "quorum-node-validator-${i}-keys"
+            if [ "$deployment" == "vault" ]; then
+              # Push data to vault
+              safeWriteSecret "${current_validator_dir}" "quorum-node-validator-${i}-keys"
+            fi
           done
 
-          # Write the modified JSON back to the file
-          echo "$static_nodes_json" > ./artifacts/goQuorum/static-nodes.json
-          # Overwrite the static-nodes.json file with the modified array
-          echo "STATIC JSON:"
-          cat ./artifacts/goQuorum/static-nodes.json
-
-          write_to_vault "./artifacts/goQuorum" "quorum-genesis"
+          kubectl create configmap genesis-config --namespace {{ .Release.Namespace }} --from-file="./artifacts/goQuorum/genesis.json"
+          if [ "$deployment" == "vault" ]; then
+            safeWriteGenesis "./artifacts/goQuorum" "quorum-genesis"
+          fi
 
           echo "# DONE ####################################################################"
 
