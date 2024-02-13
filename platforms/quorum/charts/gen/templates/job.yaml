@@ -11,7 +11,7 @@
 # kind: Pod
 # metadata:
 #   name: quorum-genesis-pod
-#   namespace: testing-quorum
+#   namespace: genesis
 # spec:
 #   containers:
 #   - name: quorum-genesis-con
@@ -21,181 +21,219 @@
 #     - containerPort: 80
 #   # restartPolicy: Always
 
-apiVersion: v1
-kind: Pod
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: first
+#   namespace: genesis
+
+---
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: first
-  namespace: genesis
+  name: {{ include "quorum-genesis.name" . }}-init
+  labels:
+    app: {{ .Release.Name }}
+    app.kubernetes.io/name: quorum-genesis-job
+    app.kubernetes.io/component: genesis-job
+    app.kubernetes.io/part-of: {{ include "quorum-genesis.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    helm.sh/hook-delete-policy: "hook-succeeded"
 spec:
-  serviceAccountName: {{ .Values.global.serviceAccountName }}
-  containers:
-    - name: first-con
-      # image: ghcr.io/hyperledger/bevel-k8s-hooks:qgt-0.2.12
-      image: consensys/quorum-k8s-hooks:qgt-0.2.12
-      env:
-        - name: VAULT_ADDR
-          value: "{{ .Values.global.vault.address }}"
-        - name: VAULT_SECRET_ENGINE
-          value: "{{ .Values.global.vault.secretEngine }}"
-        - name: VAULT_SECRET_PREFIX
-          value: "{{ .Values.global.vault.secretPrefix }}"
-        - name: KUBERNETES_AUTH_PATH
-          value: "{{ .Values.global.vault.authPath }}"
-        - name: VAULT_APP_ROLE
-          value: "{{ .Values.global.vault.role }}"
-        - name: VAULT_TYPE
-          value: "{{ .Values.global.vault.type }}"
-      securityContext:
-        runAsUser: 0
-      command:
-        - /bin/bash
-        - -c
-      args:
-        - |
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        app.kubernetes.io/name: quorum-genesis-job
+        app.kubernetes.io/component: genesis-job
+        app.kubernetes.io/part-of: {{ include "quorum-genesis.fullname" . }}
+        app.kubernetes.io/namespace: {{ .Release.Namespace }}
+        app.kubernetes.io/managed-by: helm
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccountName }}
+      restartPolicy: OnFailure
+      containers:
+        - name:  generate-genesis # first-con
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" # consensys/quorum-k8s-hooks:qgt-0.2.12
+          securityContext:
+            runAsUser: 0
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: scripts-volume
+              mountPath: /scripts/bevel-vault.sh
+              subPath: bevel-vault.sh
+          env:
+            - name: VAULT_ADDR
+              value: "{{ .Values.global.vault.address }}"
+            - name: VAULT_SECRET_ENGINE
+              value: "{{ .Values.global.vault.secretEngine }}"
+            - name: VAULT_SECRET_PREFIX
+              value: "{{ .Values.global.vault.secretPrefix }}"
+            - name: KUBERNETES_AUTH_PATH
+              value: "{{ .Values.global.vault.authPath }}"
+            - name: VAULT_APP_ROLE
+              value: "{{ .Values.global.vault.role }}"
+            - name: VAULT_TYPE
+              value: "{{ .Values.global.vault.type }}"
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
 
-          . /scripts/bevel-vault.sh
-          
-          # echo "Generate customize token."
-          vaultBevelFunc "init"
-          
-          # Function to push data to vault
-          safeWriteSecret() {
-            local dir="$1"
-            local fpath="$2"
-            local deployment="vault" # vault | local
-            
-            # Check if all required files exist
-            local required_files=("accountAddress" "accountKeystore" "accountPassword" "accountPrivateKey" "address" "nodekey" "nodekey.pub")
-            for file in "${required_files[@]}"; do
-              if [ ! -f "${dir}/${file}" ]; then
-                echo "Error: File '${file}' not found in '${dir}'" >&2
-                return 1
-              fi
-            done
-            
-            # Read data from files
-            local node_address=$(cat "${dir}/address")
-            local node_key=$(cat "${dir}/nodekey")
-            local node_key_pub=$(cat "${dir}/nodekey.pub")
-            local account_private_key=$(cat "${dir}/accountPrivateKey")
-            local account_password=$(cat "${dir}/accountPassword")
-            local account_keystore_base64=$(cat "${dir}/accountKeystore" | base64 -w 0)
-            local account_address=$(cat "${dir}/accountAddress")
-            
-            # Construct JSON payload
-            echo "
-              {
-                \"data\":
-                  {
-                    \"nodeAddress\": \"${node_address}\",
-                    \"nodeKey\": \"${node_key}\",
-                    \"nodeKeyPub\": \"${node_key_pub}\",
-                    \"accountPrivateKey\": \"${account_private_key}\",
-                    \"accountPassword\": \"${account_password}\",
-                    \"accountKeystore_base64\": \"${account_keystore_base64}\",
-                    \"accountAddress\": \"${account_address}\"
-                  }
-              }" > nodePayload.json
-              
-            # Push data to vault
-            vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'nodePayload.json'
-          }
-            
-          safeWriteGenesis() {
-            local dir="$1"
-            local fpath="$2"
-            local deployment="vault"
-            
-            local required_files=("genesis.json" "static-nodes.json")
-            for file in "${required_files[@]}"; do
-              if [ ! -f "${dir}/${file}" ]; then
-                echo "Error: File '${file}' not found in '${dir}'" >&2
-                return 1
-              fi
-            done
-            
-            # Read data from files
-            local genesis_base64=$(cat "${dir}/genesis.json" | base64 -w 0)
-            
-            # Construct JSON payload
-            echo "
-              {
-                \"data\":
-                {
-                  \"genesis_base64\": \"${genesis_base64}\"
+              if [ "$VAULT_TYPE" == "hashicorp" ]; then
+                . /scripts/bevel-vault.sh
+                # echo "Generate customize token."
+                vaultBevelFunc "init"
+                
+                # Function to push data to vault
+                safeWriteSecret() {
+                  local dir="$1"
+                  local fpath="$2"
+                  local deployment="vault" # vault | local
+                  
+                  # Check if all required files exist
+                  local required_files=("accountAddress" "accountKeystore" "accountPassword" "accountPrivateKey" "address" "nodekey" "nodekey.pub")
+                  for file in "${required_files[@]}"; do
+                    if [ ! -f "${dir}/${file}" ]; then
+                      echo "Error: File '${file}' not found in '${dir}'" >&2
+                      return 1
+                    fi
+                  done
+                  
+                  # Read data from files
+                  local node_address=$(cat "${dir}/address")
+                  local node_key=$(cat "${dir}/nodekey")
+                  local node_key_pub=$(cat "${dir}/nodekey.pub")
+                  local account_private_key=$(cat "${dir}/accountPrivateKey")
+                  local account_password=$(cat "${dir}/accountPassword")
+                  local account_keystore_base64=$(cat "${dir}/accountKeystore" | base64 -w 0)
+                  local account_address=$(cat "${dir}/accountAddress")
+                  
+                  # Construct JSON payload
+                  echo "
+                    {
+                      \"data\":
+                        {
+                          \"nodeAddress\": \"${node_address}\",
+                          \"nodeKey\": \"${node_key}\",
+                          \"nodeKeyPub\": \"${node_key_pub}\",
+                          \"accountPrivateKey\": \"${account_private_key}\",
+                          \"accountPassword\": \"${account_password}\",
+                          \"accountKeystore_base64\": \"${account_keystore_base64}\",
+                          \"accountAddress\": \"${account_address}\"
+                        }
+                    }" > nodePayload.json
+                    
+                  # Push data to vault
+                  vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'nodePayload.json'
                 }
-              }" > genesisPayload.json
-              
-            # Push data to vault
-            vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'genesisPayload.json'
-          }
+                  
+                safeWriteGenesis() {
+                  local dir="$1"
+                  local fpath="$2"
+                  local deployment="vault"
+                  
+                  local required_files=("genesis.json" "static-nodes.json")
+                  for file in "${required_files[@]}"; do
+                    if [ ! -f "${dir}/${file}" ]; then
+                      echo "Error: File '${file}' not found in '${dir}'" >&2
+                      return 1
+                    fi
+                  done
+                  
+                  # Read data from files
+                  local genesis_base64=$(cat "${dir}/genesis.json" | base64 -w 0)
+                  
+                  # Construct JSON payload
+                  echo "
+                    {
+                      \"data\":
+                      {
+                        \"genesis_base64\": \"${genesis_base64}\"
+                      }
+                    }" > genesisPayload.json
+                    
+                  # Push data to vault
+                  vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'genesisPayload.json'
+                }
+              fi
 
-          # Run the command and capture the output
-          output=$(quorum-genesis-tool \
-            --consensus ibft \
-            --chainID 1337 \
-            --blockperiod 5 \
-            --requestTimeout 10 \
-            --epochLength 30000 \
-            --difficulty 1 \
-            --gasLimit '0xFFFFFF' \
-            --coinbase '0x0000000000000000000000000000000000000000' \
-            --validators 5 \
-            --members 0 \
-            --bootnodes 0 \
-            --outputPath 'artifacts')
+              # # Run the command and capture the output
+              # FOLDER_PATH=$(quorum-genesis-tool \
+              #   --consensus ibft \
+              #   --chainID 1337 \
+              #   --blockperiod 5 \
+              #   --requestTimeout 10 \
+              #   --epochLength 30000 \
+              #   --difficulty 1 \
+              #   --gasLimit '0xFFFFFF' \
+              #   --coinbase '0x0000000000000000000000000000000000000000' \
+              #   --validators 5 \
+              #   --members 0 \
+              #   --bootnodes 0 \
+              #   --outputPath 'artifacts')
+              # Run the command and capture the output
+              FOLDER_PATH=$(quorum-genesis-tool --consensus {{ .Values.rawGenesisConfig.genesis.config.algorithm.consensus }} \
+                {{ if .Values.rawGenesisConfig.blockchain.nodes.generate }} --validators {{ .Values.rawGenesisConfig.blockchain.nodes.count }} {{ else }} --validators 0 {{ end }} \
+                --members 0 --bootnodes 0 --chainID {{ .Values.rawGenesisConfig.genesis.config.chainId }} --blockperiod {{ .Values.rawGenesisConfig.genesis.config.algorithm.blockperiodseconds }} \
+                --emptyBlockPeriod {{ .Values.rawGenesisConfig.genesis.config.algorithm.emptyBlockPeriod }} --epochLength {{ .Values.rawGenesisConfig.genesis.config.algorithm.epochlength }} \
+                --requestTimeout {{ .Values.rawGenesisConfig.genesis.config.algorithm.requesttimeoutseconds }} --difficulty {{ .Values.rawGenesisConfig.genesis.difficulty }} \
+                --gasLimit {{ .Values.rawGenesisConfig.genesis.gasLimit }} --coinbase {{ .Values.rawGenesisConfig.genesis.coinbase }} \
+                {{ if .Values.rawGenesisConfig.blockchain.accountPassword }} --accountPassword {{ .Values.rawGenesisConfig.blockchain.accountPassword }} {{ end }} \
+                --quickstartDevAccounts {{ .Values.rawGenesisConfig.genesis.includeQuickStartAccounts }} \
+                --outputPath 'artifacts')
 
-          # Extract the directory path from the output
-          directory=$(echo "$output" | grep -o 'artifacts/.*')
-          # Print the directory path
-          echo "Directory path: $directory" # NR
-          mv $directory/* artifacts
+              # Extract the directory path from the output
+              directory=$(echo "$FOLDER_PATH" | grep -o 'artifacts/.*')
+              # Print the directory path
+              echo "Directory path: $directory" # NR
+              mv $directory/* artifacts
 
-          # Count the number of validators based on their directories
-          validator_count=$(ls -d ./artifacts/validator* | wc -l)
-          echo "validator_count: $validator_count"
+              # Count the number of validators based on their directories
+              validator_count=$(ls -d ./artifacts/validator* | wc -l)
+              echo "validator_count: $validator_count"
 
-          # Iterate through the validators using a for loop
-          for ((i = 0; i < validator_count; i++)); do
-            # Access the current validator directory using its index
-            current_validator_dir="./artifacts/validator${i}"
+              # Iterate through the validators using a for loop
+              for ((i = 0; i < validator_count; i++)); do
+                # Access the current validator directory using its index
+                current_validator_dir="./artifacts/validator${i}"
 
-            kubectl create secret generic quorum-{{ .Release.Name }} --namespace {{ .Release.Namespace }} \
-              --from-literal=accountAddress=$(cat "${current_validator_dir}/accountAddress") \
-              --from-literal=accountKeystore=$(cat "${current_validator_dir}/accountKeystore") \
-              --from-literal=accountPassword=$(cat "${current_validator_dir}/accountPassword") \
-              --from-literal=accountPrivateKey=$(cat "${current_validator_dir}/accountPrivateKey") \
-              --from-literal=address=$(cat "${current_validator_dir}/address") \
-              --from-literal=nodekey=$(cat "${current_validator_dir}/nodekey") \
-              --from-literal=nodekey.pub=$(cat "${current_validator_dir}/nodekey.pub")
+                kubectl create secret generic goquorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} \
+                  --from-literal=accountAddress=$(cat "${current_validator_dir}/accountAddress") \
+                  --from-literal=accountKeystore=$(cat "${current_validator_dir}/accountKeystore") \
+                  --from-literal=accountPassword=$(cat "${current_validator_dir}/accountPassword") \
+                  --from-literal=accountPrivateKey=$(cat "${current_validator_dir}/accountPrivateKey") \
+                  --from-literal=address=$(cat "${current_validator_dir}/address") \
+                  --from-literal=nodekey=$(cat "${current_validator_dir}/nodekey") \
+                  --from-literal=nodekey.pub=$(cat "${current_validator_dir}/nodekey.pub")
 
-            if [ "$deployment" == "vault" ]; then
-              # Push data to vault
-              safeWriteSecret "${current_validator_dir}" "quorum-node-validator-${i}-keys"
-            fi
-          done
+                # if [ "$VAULT_TYPE" == "hashicorp" ]; then
+                #   # Push data to vault
+                #   safeWriteSecret "${current_validator_dir}" "quorum-node-validator-${i}-keys"
+                # fi
+                safeWriteSecret "${current_validator_dir}" "quorum-node-validator-${i}-keys"
+              done
 
-          kubectl create configmap genesis-config --namespace {{ .Release.Namespace }} --from-file="./artifacts/goQuorum/genesis.json"
-          if [ "$deployment" == "vault" ]; then
-            safeWriteGenesis "./artifacts/goQuorum" "quorum-genesis"
-          fi
+              kubectl create configmap genesis-config --namespace {{ .Release.Namespace }} --from-file="./artifacts/goQuorum/genesis.json"
+              # if [ "$VAULT_TYPE" == "hashicorp" ]; then
+              #   safeWriteGenesis "./artifacts/goQuorum" "quorum-genesis"
+              # fi
+              safeWriteGenesis "./artifacts/goQuorum" "quorum-genesis"
 
-          echo "# DONE ####################################################################"
+              echo "# DONE #"
 
-          tail -f /dev/null
-      volumeMounts:
+              # tail -f /dev/null
+      volumes:
         - name: scripts-volume
-          mountPath: /scripts/bevel-vault.sh
-          subPath: bevel-vault.sh
-  restartPolicy: Always
-  volumes:
-    - name: generated-config
-      emptyDir: {}
-    - name: scripts-volume
-      configMap:
-        name: bevel-vault-script
-        defaultMode: 0777
-
+          configMap:
+            name: bevel-vault-script
+            defaultMode: 0777
 
 # kubectl apply -f build/pod.yaml
 # kg po -n gen

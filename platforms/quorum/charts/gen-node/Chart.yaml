@@ -1,14 +1,17 @@
-# apiVersion: v2
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
 apiVersion: v1
-name: gen_node_chart
-description: "Quorum: Deploys genesis node."
-type: application
-version: 1.0.0
+name: goquorum-node
+description: Hyperledger Goquorum nodes for a POA network
+version: 1.0.1
 appVersion: latest
 keywords:
   - bevel
   - ethereum
-  - quorum
+  - goquorum
   - hyperledger
   - enterprise
   - blockchain

@@ -23,3 +23,33 @@ global:
     secretEngine: secretsv2
     #Provide the vault path where the secrets will be stored
     secretPrefix: "data/genesis"
+image:
+  repository: consensys/quorum-k8s-hooks
+  tag: qgt-0.2.12
+  pullPolicy: IfNotPresent
+  # Provide the secret to use if private repository
+  # Eg. pullSecret: regcred
+  pullSecret:
+settings:
+  # Flag to ensure the genesis configmap is removed on helm uninstall
+  removeGenesisOnDelete: true
+rawGenesisConfig:
+  genesis:
+    config:
+      chainId: 1337
+      algorithm: 
+        consensus: qbft # choose from: ibft | qbft | raft | clique
+        blockperiodseconds: 10
+        emptyBlockPeriod: 60
+        epochlength: 30000
+        requesttimeoutseconds: 20
+    nonce: '0x0'
+    gasLimit: '0x47b760'
+    difficulty: '0x1'
+    coinbase: '0x0000000000000000000000000000000000000000'
+    includeQuickStartAccounts: false
+  blockchain:
+    nodes:      # refers to validators/signers
+      generate: true
+      count: 4
+    accountPassword: 'password'

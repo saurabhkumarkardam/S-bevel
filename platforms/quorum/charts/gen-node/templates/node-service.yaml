@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "goquorum-node.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "goquorum-node.fullname" . }}
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: {{ include "goquorum-node.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm    
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/part-of: {{ include "goquorum-node.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+  ports:
+    - name: json-rpc
+      port: {{ .Values.node.goquorum.rpc.port }}
+      targetPort: json-rpc
+      protocol: TCP
+    - name: ws
+      port: {{ .Values.node.goquorum.ws.port }}
+      targetPort: ws
+      protocol: TCP
+    - name: graphql
+      port: {{ .Values.node.goquorum.graphql.port }}
+      targetPort: graphql
+      protocol: TCP
+    - name: rlpx
+      port: {{ .Values.node.goquorum.p2p.port }}
+      targetPort: rlpx
+      protocol: TCP
+    - name: discovery
+      port: {{ .Values.node.goquorum.p2p.port }}
+      targetPort: discovery
+      protocol: UDP
+    - name: metrics
+      port: {{ .Values.node.goquorum.metrics.pprofport }}
+      targetPort: metrics
+      protocol: TCP
+
+{{- if eq .Values.global.proxy.provider "ambassador" }}
+## Listeners rlpx (p2p) ports
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Listener
+metadata:
+  name: {{ include "goquorum-node.fullname" . }}-rlpx
+  namespace: {{ .Release.Namespace }}
+spec:
+  port: {{ .Values.global.proxy.p2p }}
+  protocol: TCP
+  securityModel: XFP
+  hostBinding:
+    namespace:
+      from: SELF
+## Mapping for rpc
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: {{ include "goquorum-node.fullname" . }}-json-rpc
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostname: '{{ .Release.Name }}rpc.{{ .Values.global.proxy.externalUrlSuffix }}'
+  prefix: /
+  service: http://{{ include "goquorum-node.fullname" . }}.{{ .Release.Namespace }}:{{ .Values.node.goquorum.rpc.port }}
+## TCPMapping for rlpx
+---
+apiVersion: getambassador.io/v3alpha1
+kind: TCPMapping
+metadata:
+  name: {{ include "goquorum-node.fullname" . }}-rlpx
+  namespace: {{ .Release.Namespace }}
+spec:
+  port: {{ .Values.global.proxy.p2p }}
+  service: {{ include "goquorum-node.fullname" . }}.{{ .Release.Namespace }}:{{ .Values.node.goquorum.p2p.port }}
+{{- end }}
