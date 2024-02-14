@@ -7,7 +7,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "0"
-    "helm.sh/hook-delete-policy": "hook-succeeded" # "before-hook-creation"
+    "helm.sh/hook-delete-policy": "before-hook-creation" # "hook-succeeded" | "before-hook-creation"
   labels:
     app.kubernetes.io/name: pre-install-hook
     app.kubernetes.io/component: keygen
@@ -63,29 +63,46 @@ spec:
                   # apt install tree
 
                   safeWriteSecret() {
-                    local dir="$1"
-                    local fpath="$2"
-                    # vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-node-{{ .Release.Name }}-keys"
-                    vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}"
-                    if [ "$SECRETS_AVAILABLE" == "no" ]
+                    local key="$1" # {{ template "goquorum-node.fullname" . }}-keys
+                    local fpath="$2" # ${dir}
+
+                    vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}"
+                    if [ "$SECRETS_AVAILABLE" == "yes" ]
                     then
+                      local accountAddress=$(echo ${VAULT_SECRET} | jq -r '.["accountAddress"]')
+                      local accountKeystore=$(echo ${VAULT_SECRET} | jq -r '.["accountKeystore_base64"]' | base64 -d)
+                      local accountPassword=$(echo ${VAULT_SECRET} | jq -r '.["accountPassword"]')
+                      local accountPrivateKey=$(echo ${VAULT_SECRET} | jq -r '.["accountPrivateKey"]')
+                      local address=$(echo ${VAULT_SECRET} | jq -r '.["nodeAddress"]')
+                      local nodeKey=$(echo ${VAULT_SECRET} | jq -r '.["nodeKey"]')
+                      nodekey_pub=$(echo ${VAULT_SECRET} | jq -r '.["nodeKeyPub"]')
+                      
+                      kubectl create secret generic {{ template "goquorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }} \
+                      --from-literal=accountAddress=${accountAddress} \
+                      --from-literal=accountKeystore=${accountKeystore} \
+                      --from-literal=accountPassword=${accountPassword} \
+                      --from-literal=accountPrivateKey=${accountPrivateKey} \
+                      --from-literal=address=${address} \
+                      --from-literal=nodekey=${nodeKey} \
+                      --from-literal=nodekey.pub=${nodekey_pub}
+                    else
                       # Check if all required files exist
                       local required_files=("accountAddress" "accountKeystore" "accountPassword" "accountPrivateKey" "address" "nodekey" "nodekey.pub")
                       for file in "${required_files[@]}"; do
-                        if [ ! -f "${dir}/${file}" ]; then
-                          echo "Error: File '${file}' not found in '${dir}'" >&2
+                        if [ ! -f "${fpath}/${file}" ]; then
+                          echo "Error: File '${file}' not found in '${fpath}'" >&2
                           return 1
                         fi
                       done
                       
                       # Read data from files
-                      local accountAddress=$(cat "${dir}/accountAddress")
-                      local accountKeystore_base64=$(cat "${dir}/accountKeystore" | base64 -w 0)
-                      local accountPassword=$(cat "${dir}/accountPassword")
-                      local accountPrivateKey=$(cat "${dir}/accountPrivateKey")
-                      local address=$(cat "${dir}/address")
-                      local nodekey=$(cat "${dir}/nodekey")
-                      local nodekey_pub=$(cat "${dir}/nodekey.pub")
+                      local accountAddress=$(cat "${fpath}/accountAddress")
+                      local accountKeystore_base64=$(cat "${fpath}/accountKeystore" | base64 -w 0)
+                      local accountPassword=$(cat "${fpath}/accountPassword")
+                      local accountPrivateKey=$(cat "${fpath}/accountPrivateKey")
+                      local address=$(cat "${fpath}/address")
+                      local nodekey=$(cat "${fpath}/nodekey")
+                      local nodekey_pub=$(cat "${fpath}/nodekey.pub")
                       
                       # Construct JSON payload
                       echo "
@@ -103,8 +120,16 @@ spec:
                         }" > nodePayload.json
                       
                       # Push data to vault
-                      vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${fpath}" 'nodePayload.json'
+                      vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}" 'nodePayload.json'
                     fi
+                  }
+                else
+                  safeWriteSecret() {
+                  # Placeholder:
+                  # - Implement code to fetch the keys if using any cloud-native service or platform different from HashiCorp to store the keys
+                  # - After fetching the keys, create Kubernetes secrets from them
+                  # - For guidance, refer to the code written for HashiCorp Vault for the same purpose
+                  return 0
                   }
                 fi
 
@@ -112,39 +137,42 @@ spec:
                   echo "Secret does not exist. Creating secret."
                   FOLDER_PATH=$(quorum-genesis-tool --validators 0 --members 1 --bootnodes 0 \
                     {{ if .Values.node.goquorum.account.password }} --accountPassword {{ .Values.node.goquorum.account.password }} {{ end }} \
-                    --outputPath 'artifacts')
+                    --outputPath /generated-config | tail -1 | sed -e "s/^Artifacts in folder: //")
                   
-                  # Extract the directory path from the output
-                  directory=$(echo "$FOLDER_PATH" | grep -o 'artifacts/.*')
-                  # Print the directory path
-                  echo "Directory path: $directory" # NR
-                  mv $directory/* artifacts
-                  
-                  dir="./artifacts/member0"
-                  # local deployment="vault" # vault | local
+                  # dir="./artifacts/member0"
+                  dir="$FOLDER_PATH/member0"
 
-                  # Secret
-                  kubectl create secret generic {{ template "goquorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }} \
-                  --from-literal=accountAddress=$(cat "${dir}/accountAddress") \
-                  --from-literal=accountKeystore=$(cat "${dir}/accountKeystore") \
-                  --from-literal=accountPassword=$(cat "${dir}/accountPassword") \
-                  --from-literal=accountPrivateKey=$(cat "${dir}/accountPrivateKey") \
-                  --from-literal=address=$(cat "${dir}/address") \
-                  --from-literal=nodekey=$(cat "${dir}/nodekey") \
-                  --from-literal=nodekey.pub=$(cat "${dir}/nodekey.pub")
+{{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
+                  echo "Creating keys in vault for {{ template "besu-node.fullname" . }} ..."
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-nodekey $FOLDER_PATH/member0/nodekey
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-nodekeypub $FOLDER_PATH/member0/nodekey.pub
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-enode $FOLDER_PATH/member0/nodekey.pub
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-address $FOLDER_PATH/member0/address
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-accountPrivateKey $FOLDER_PATH/member0/accountPrivateKey
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-accountPassword $FOLDER_PATH/member0/accountPassword
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-accountKeystore $FOLDER_PATH/member0/accountKeystore
+                  safeWriteSecret {{ template "besu-node.fullname" . }}-accountAddress $FOLDER_PATH/member0/accountAddress
+{{- else }}
+                  safeWriteSecret "{{ template "goquorum-node.fullname" . }}-keys" "${dir}"
+{{- end }}
 
-                  nodekey_pub=$(cat "${dir}/nodekey.pub")
-                  
-                  safeWriteSecret "${dir}" "{{ template "goquorum-node.fullname" . }}-keys"
+                  if ! kubectl get secret {{ template "goquorum-node.fullname" . }}-keys -n {{ .Release.Namespace }} &> /dev/null; then
+                    # Secret
+                    kubectl create secret generic {{ template "goquorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }} \
+                    --from-literal=accountAddress=$(cat "${dir}/accountAddress") \
+                    --from-literal=accountKeystore=$(cat "${dir}/accountKeystore") \
+                    --from-literal=accountPassword=$(cat "${dir}/accountPassword") \
+                    --from-literal=accountPrivateKey=$(cat "${dir}/accountPrivateKey") \
+                    --from-literal=address=$(cat "${dir}/address") \
+                    --from-literal=nodekey=$(cat "${dir}/nodekey") \
+                    --from-literal=nodekey.pub=$(cat "${dir}/nodekey.pub")
+                    
+                    nodekey_pub=$(cat "${dir}/nodekey.pub")
+                  fi
                 else
                   echo "Secret exists. Extract modekey.pub key"
                   nodekey_pub=$(kubectl get secret {{ template "goquorum-node.fullname" . }}-keys -n genesis -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
-                fi              
-
-                # vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/quorum-genesis"
-                # echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d > ./genesis.json
-                # # genesis=$(echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d)
-                # kubectl create configmap "quorum-genesis" --from-file=./genesis.json -n {{ .Release.Namespace }}
+                fi
 
                 configmap_name="static-nodes-config"
                 # Check if the ConfigMap exists
@@ -159,28 +187,18 @@ spec:
                     echo "SN-1"
                     cat ./static-nodes.json
 
-                    # # pubkey=$(cat data/nodekey.pub)
-                    # pubkey=$(echo ${nodekey_pub})
-                    # newStaticNode="enode://$pubkey@quorum-node-{{ .Release.Name }}.{{ .Release.Namespace }}:30303?discport=0"
                     newStaticNode="enode://$nodekey_pub@{{ include "goquorum-node.enodeURL" . }}?discport=0"
-
-                    ####################################################################################################
-                    # existingStaticNodes=$(jq ". + [\"$newStaticNode\"]" <<< "$existingStaticNodes")
-                    # echo "$existingStaticNodes" > data/static-nodes.json
-                    # # cat build/static-nodes.json
-                    # kubectl create configmap static-nodes-config --from-file=data/static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl apply -f -
 
                     # Check if newStaticNode already exists in existingStaticNodes
                     if ! echo "$existingStaticNodes" | jq 'contains(["'"$newStaticNode"'"])' | grep -q true; then
                         existingStaticNodes=$(jq ". + [\"$newStaticNode\"]" <<< "$existingStaticNodes")
                         echo "$existingStaticNodes" > ./static-nodes.json
-                        kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl apply -f -
+                        kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -
                     fi
-                    ####################################################################################################
 
                     echo "SN-2"
                     cat ./static-nodes.json
-                    echo "FINISH #######################################"
+                    echo "# FINISH CM-IF #"
                 else
                     echo "ConfigMap $configmap_name does not exist in namespace {{ .Release.Namespace }}. Creating one."
                     
@@ -193,8 +211,9 @@ spec:
                     echo "]" >> "./static-nodes.json"
                     
                     kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }}
+                    echo "# FINISH CM-ELSE #"
                 fi
-
+                
                 echo "# COMPLETED PRE-HOOK #"
       volumes:
         - name: scripts-volume

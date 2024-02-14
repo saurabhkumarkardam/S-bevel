@@ -43,28 +43,27 @@ spec:
 
               echo "{{ template "goquorum-node.fullname" . }} Pre Delete hook ..."
 
-              # Get the content of the ConfigMap and save it to a file
-              if kubectl get configmap static-nodes-config -n genesis -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json; then
-                  echo "Content of the ConfigMap has been saved to static-nodes.json"
-                  existingStaticNodes=$(cat ./static-nodes.json)
-              else
-                  echo "Error: Failed to get content of ConfigMap."
-                  exit 1
+              # Check if the ConfigMap exists
+              if kubectl get configmap static-nodes-config -n genesis &>/dev/null; then
+                  # Get the content of the ConfigMap and save it to a file
+                  if kubectl get configmap static-nodes-config -n genesis -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json; then
+                      existingStaticNodes=$(cat ./static-nodes.json)
+                  else
+                      echo "Error: Failed to get content of ConfigMap."
+                      exit 1
+                  fi
               fi
 
               ## Check if the secret exists
               if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} >/dev/null 2>&1; then
-                  # Retrieve nodekey_pub from the secret
-                  nodekey_pub=$(kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
-                  # Check if nodekey_pub is empty
-                  if [ -z "$nodekey_pub" ]; then
-                      echo "Error: Retrieved nodekey.pub is empty."
-                      exit 1
-                  fi
-                  deleteNode="enode://$nodekey_pub@{{ include "goquorum-node.enodeURL" . }}?discport=0"
-              else
-                  echo "Error: Secret containing nodekey.pub does not exist."
-                  exit 1
+                # Retrieve nodekey_pub from the secret
+                nodekey_pub=$(kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
+                # Check if nodekey_pub is empty
+                if [ -z "$nodekey_pub" ]; then
+                    echo "Error: Retrieved nodekey.pub is empty."
+                    exit 1
+                fi
+                deleteNode="enode://$nodekey_pub@{{ include "goquorum-node.enodeURL" . }}?discport=0"
               fi
 
               # Check if the newStaticNode is already present in existingStaticNodes
@@ -76,12 +75,15 @@ spec:
               # Update the static-nodes.json file
               echo "$existingStaticNodes" > ./static-nodes.json
 
-              # Apply the updated static-nodes.json to the ConfigMap
-              if kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
-                  echo "ConfigMap updated successfully."
-              else
-                  echo "Error: Failed to update ConfigMap."
-                  exit 1
+              # Check if the ConfigMap exists
+              if kubectl get configmap static-nodes-config -n {{ .Release.Namespace }} &>/dev/null; then
+                  # Apply the updated static-nodes.json to the ConfigMap
+                  if kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
+                      echo "ConfigMap updated successfully."
+                  else
+                      echo "Error: Failed to update ConfigMap."
+                      exit 1
+                  fi
               fi
 
               if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} >/dev/null 2>&1; then
