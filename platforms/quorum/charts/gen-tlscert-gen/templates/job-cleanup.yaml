@@ -44,4 +44,6 @@ spec:
           args:
             - |
               echo "Deleting tls-certs secret in k8s ..."
-              kubectl delete secret --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs
+              if kubectl get secret --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs &>/dev/null; then
+                kubectl delete secret --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs
+              fi

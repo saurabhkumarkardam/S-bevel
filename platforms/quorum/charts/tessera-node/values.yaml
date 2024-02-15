@@ -21,10 +21,10 @@ global:
   proxy:
     #This will be the proxy/ingress provider. Can have values "ambassador" or "none"
     #Eg. provider: "ambassador"
-    provider: "" # ambassador # LB is not working
+    provider: ambassador # "" | ambassador # LB is not working
     #This field contains the external URL of the node
     #Eg. externalUrlSuffix: test.blockchaincloudpoc.com
-    externalUrlSuffix: test.blockchaincloudpoc.com
+    externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com # test.blockchaincloudpoc.com
     # Following are the ports that are exposed externally via the proxy
     tmport: 443
 
@@ -51,6 +51,13 @@ image:
   tessera: 
     repository: quorumengineering/tessera
     tag: 22.1.7
+  ############################################
+  tls:
+    #Provide the image repository for all containers
+    #Eg. repository: ghcr.io/hyperledger/bevel-alpine
+    repository: ghcr.io/hyperledger/bevel-alpine
+    tag: latest
+  ############################################
   #Provide the valid image name and version for busybox
   busybox: busybox
   #Provide the valid image name and version for MySQL. This is used as the DB for TM
@@ -108,7 +115,7 @@ tessera:
   ##     still possible. This should only be used if another transport security
   ##     mechanism like WireGuard is in place.
   #Eg. tlsMode: 'STRICT'
-  tlsMode: "OFF" # "STRICT" # updated it to OFF from STRICT, revert
+  tlsMode: STRICT # "OFF" | "STRICT" # updated it to OFF from STRICT, revert
   #Provide the server/client  trust configuration for transaction manager nodes. 
   # options are: "WHITELIST", "CA_OR_TOFU", "CA", "TOFU"
   # Eg: trust: "TOFU"
@@ -118,3 +125,18 @@ labels:
   service: []
   pvc: []
   deployment: []
+
+########################################################################
+
+#Settings for certificate generation
+settings:
+  #Set value to true when transaction manager like tessera uses tls
+  #Eg. tmTls: True
+  tmTls: true # NEW
+  #Provide the X.509 subject for root CA.
+  #Eg. certSubject: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"
+  certSubject: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"
+
+enableFile1: true # true | false
+
+

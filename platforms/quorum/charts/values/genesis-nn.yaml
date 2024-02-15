@@ -10,19 +10,8 @@ global:
     kubernetesUrl: 
   vault:
     #Provide the type of vault
-    type: hashicorp
-    #Provide the vault role used.
-    role: vault-role
-    #Provide the network type
-    network: besu
-    #Provide the vault server address
-    address: 
-    #Provide the vault authPath configured to be used.
-    authPath: genesis
-    #Provide the secret engine.
-    secretEngine: secretsv2
-    #Provide the vault path where the secrets will be stored
-    secretPrefix: "data/genesis"
+    type: none
+
 image:
   repository: consensys/quorum-k8s-hooks
   tag: qgt-0.2.12

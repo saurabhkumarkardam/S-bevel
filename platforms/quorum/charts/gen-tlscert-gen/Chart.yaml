@@ -5,7 +5,7 @@
 ##############################################################################################
 
 apiVersion: v1
-name: goquorum-tlscert-gen
+name: goquorum-tls-gen
 description: "Hyperledger goquorum: Generates and stores TLS certificates for nodes and tessera"
 version: 1.0.0
 appVersion: latest

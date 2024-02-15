@@ -77,3 +77,8 @@ spec:
 
 {{- end }}
               echo "Completed"
+
+              echo "Deleting tls-certs secret in k8s ..."
+              if kubectl get secret --namespace {{ .Release.Namespace }} goquorum-tls-gen-tls-certs &>/dev/null; then
+                kubectl delete secret --namespace {{ .Release.Namespace }} goquorum-tls-gen-tls-certs
+              fi

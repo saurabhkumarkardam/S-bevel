@@ -34,7 +34,7 @@ global:
     secretPrefix: "data/genesis" # "data/supplychain"
   proxy:
     # Provide external URL for cert generation
-    externalUrlSuffix: test.blockchaincloudpoc.com
+    externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com # test.blockchaincloudpoc.com
 
 image:
   #Provide the image repository for all containers
@@ -52,7 +52,7 @@ image:
 settings:
   #Set value to true when transaction manager like tessera uses tls
   #Eg. tmTls: True
-  tmTls: True
+  tmTls: true # NEW
   #Provide the X.509 subject for root CA.
   #Eg. certSubject: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"
   certSubject: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"

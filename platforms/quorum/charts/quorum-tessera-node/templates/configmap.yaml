@@ -64,7 +64,7 @@ data:
             "serverKeyStorePassword": "quorum",
             "serverTrustStore": "{{ .Values.node.mountPath }}/tm/server-truststore",
             "serverTrustStorePassword": "quorum",
-            "serverTrustMode": {{ .Values.tessera.trust | quote }},
+            "serverTrustMode": {{ .Values.tessera.trust | quote }}, # tm_trust: "tofu"
             "knownClientsFile": "{{ .Values.node.mountPath }}/tm/knownClients",
             "clientKeyStore": "{{ .Values.node.mountPath }}/tm/client-keystore",
             "clientKeyStorePassword": "quorum",

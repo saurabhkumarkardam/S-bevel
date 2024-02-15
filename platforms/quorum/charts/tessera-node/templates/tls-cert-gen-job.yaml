@@ -3,17 +3,20 @@
 #
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
-
+---
+{{- if (eq .Values.enableFile1 true) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ include "goquorum-tlscert-gen.name" . }}"
+  name: goquorum-tls-gen
   namespace: "{{ .Release.Namespace }}"
   annotations:
-    helm.sh/hook-delete-policy: "before-hook-creation"
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
-    app: "{{ include "goquorum-tlscert-gen.name" . }}"
-    app.kubernetes.io/name: "{{ include "goquorum-tlscert-gen.name" . }}"
+    app: goquorum-tls-gen
+    app.kubernetes.io/name: goquorum-tls-gen
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- if $.Values.labels }}
@@ -28,8 +31,8 @@ spec:
   template:
     metadata:
       labels:
-        app: "{{ include "goquorum-tlscert-gen.name" . }}"
-        app.kubernetes.io/name: "{{ include "goquorum-tlscert-gen.name" . }}"
+        app: goquorum-tls-gen
+        app.kubernetes.io/name: goquorum-tls-gen
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if $.Values.labels }}
@@ -56,7 +59,7 @@ spec:
           defaultMode: 0777
       initContainers:
       - name: init-check-certificates
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: {{ .Values.image.tls.repository }}:{{ .Values.image.tls.tag }}
         imagePullPolicy: {{ $.Values.image.pullPolicy }}
         env:
         - name: VAULT_ADDR
@@ -121,7 +124,7 @@ spec:
             subPath: bevel-vault.sh
       containers:
       - name:  "generate-certs"
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.tls.repository }}:{{ .Values.image.tls.tag }}"
         imagePullPolicy: {{ $.Values.image.pullPolicy }}
         env:
         - name: VAULT_ADDR
@@ -143,7 +146,7 @@ spec:
         - name: CERT_SUBJECT
           value: "{{ $.Values.settings.certSubject }}"
         - name: EXTERNAL_URL
-          value: "{{ include "goquorum-tlscert-gen.name" . }}.{{ .Values.global.proxy.externalUrlSuffix }}"
+          value: "goquorum-tls-gen.{{ .Values.global.proxy.externalUrlSuffix }}"
         - name: COMPONENT_NS
           value: "{{ .Release.Namespace }}"
         command: ["sh", "-c"]
@@ -205,7 +208,7 @@ spec:
               subjectAltName = @alt_names
               [alt_names]
               DNS.1 = ${EXTERNAL_URL}
-              DNS.2 = {{ include "goquorum-tlscert-gen.fullname" . }}.{{ .Release.Namespace }}
+              DNS.2 = goquorum-tls-gen.{{ .Release.Namespace }}
               DNS.3 = tessera-{{ .Release.Name }}.{{ .Release.Namespace }}
               " > openssl.conf
               # Generates the ambassador tls certificates
@@ -411,10 +414,9 @@ spec:
             echo "7-T"
 
             # Create tls secret with the certificates
-            # kubectl get configmap --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs # INCORRECT
-            if ! kubectl get secret tls --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs &>/dev/null; then
+            if ! kubectl get secret tls --namespace {{ .Release.Namespace }} goquorum-tls-gen-tls-certs &>/dev/null; then
               echo "8-T"
-              kubectl create secret tls --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs \
+              kubectl create secret tls --namespace {{ .Release.Namespace }} goquorum-tls-gen-tls-certs \
               --cert=${AMBASSADORTLS_PATH}/certchain.pem \
               --key=${AMBASSADORTLS_PATH}/node.key
             fi
@@ -427,3 +429,4 @@ spec:
           - name: scripts-volume
             mountPath: /scripts/bevel-vault.sh
             subPath: bevel-vault.sh
+{{- end }}

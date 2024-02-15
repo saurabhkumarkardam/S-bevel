@@ -10,32 +10,13 @@ global:
     kubernetesUrl: 
   vault:
     #Provide the type of vault
-    type: hashicorp
-    #Provide the vault role used.
-    role: vault-role
-    #Provide the network type
-    network: besu
-    #Provide the vault server address
-    address: http://vault.vault.svc.cluster.local:80 # http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
-    #Provide the vault authPath configured to be used.
-    authPath: genesis
-    #Provide the secret engine.
-    secretEngine: secretsv2
-    #Provide the vault path where the secrets will be stored
-    secretPrefix: "data/genesis"
+    type: none
+
 
   # This section contains the proxy ports.
   proxy:
     # Mention the proxy provider. Currently ambassador or none is supported.
-    # Eg. provider: ambassador
-    provider: "" # ambassador
-    # Provide the external URL of the proxy. This is not used because Besu does not support DNS names.
-    # Eg. externalUrlSuffix: test.blockchaincloudpoc.com
-    externalUrlSuffix: test.blockchaincloudpoc.com
-    # Mention the p2p port configured on proxy.
-    # NOTE: Make sure that the port is enabled and not already used.
-    # Eg. p2p: 15010
-    p2p: 15010
+    provider: none
 
 quorumFlags:
   privacy: false

@@ -10,7 +10,7 @@ global:
     type: kubernetes
   proxy:
     provider: none
-    externalUrlSuffix: svc.cluster.local
+    externalUrlSuffix: svc.cluster.local # NR
 
 storage:
   enabled: true

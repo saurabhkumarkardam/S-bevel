@@ -44,9 +44,9 @@ spec:
               echo "{{ template "goquorum-node.fullname" . }} Pre Delete hook ..."
 
               # Check if the ConfigMap exists
-              if kubectl get configmap static-nodes-config -n genesis &>/dev/null; then
+              if kubectl get configmap static-nodes-config --namespace genesis &>/dev/null; then
                   # Get the content of the ConfigMap and save it to a file
-                  if kubectl get configmap static-nodes-config -n genesis -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json; then
+                  if kubectl get configmap static-nodes-config --namespace genesis -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json; then
                       existingStaticNodes=$(cat ./static-nodes.json)
                   else
                       echo "Error: Failed to get content of ConfigMap."
@@ -55,9 +55,9 @@ spec:
               fi
 
               ## Check if the secret exists
-              if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} >/dev/null 2>&1; then
+              if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
                 # Retrieve nodekey_pub from the secret
-                nodekey_pub=$(kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
+                nodekey_pub=$(kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
                 # Check if nodekey_pub is empty
                 if [ -z "$nodekey_pub" ]; then
                     echo "Error: Retrieved nodekey.pub is empty."
@@ -76,9 +76,9 @@ spec:
               echo "$existingStaticNodes" > ./static-nodes.json
 
               # Check if the ConfigMap exists
-              if kubectl get configmap static-nodes-config -n {{ .Release.Namespace }} &>/dev/null; then
+              if kubectl get configmap static-nodes-config --namespace {{ .Release.Namespace }} &>/dev/null; then
                   # Apply the updated static-nodes.json to the ConfigMap
-                  if kubectl create configmap static-nodes-config --from-file=./static-nodes.json -n {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
+                  if kubectl create configmap static-nodes-config --from-file=./static-nodes.json --namespace {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
                       echo "ConfigMap updated successfully."
                   else
                       echo "Error: Failed to update ConfigMap."
@@ -86,6 +86,6 @@ spec:
                   fi
               fi
 
-              if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" -n {{ .Release.Namespace }} >/dev/null 2>&1; then
-                kubectl delete secret {{ template "goquorum-node.fullname" . }}-keys -n {{ .Release.Namespace }}
+              if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
+                kubectl delete secret {{ template "goquorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }}
               fi

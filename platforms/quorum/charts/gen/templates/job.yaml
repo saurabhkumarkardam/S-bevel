@@ -138,8 +138,8 @@ spec:
                     # local genesis=$(echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d)
                     echo "HERE : ${genesis}"                    
                     echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d > ./genesis.json
-                    if ! kubectl get configmap "genesis-config" -n {{ .Release.Namespace }} &> /dev/null; then
-                      kubectl create configmap "quorum-genesis" --from-file=./genesis.json -n {{ .Release.Namespace }}
+                    if ! kubectl get configmap "genesis-config" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                      kubectl create configmap "quorum-genesis" --from-file=./genesis.json --namespace {{ .Release.Namespace }}
                     fi
                   else
                     local required_files=("genesis.json" "static-nodes.json")
@@ -187,7 +187,7 @@ spec:
                 --quickstartDevAccounts {{ .Values.rawGenesisConfig.genesis.includeQuickStartAccounts }} \
                 --outputPath /generated-config | tail -1 | sed -e "s/^Artifacts in folder: //")
 
-              if ! kubectl get configmap "genesis-config" -n {{ .Release.Namespace }} &> /dev/null; then
+              if ! kubectl get configmap "genesis-config" --namespace {{ .Release.Namespace }} &> /dev/null; then
                 kubectl create configmap "genesis-config" --namespace {{ .Release.Namespace }} --from-file="$FOLDER_PATH/goQuorum/genesis.json"
               fi
 
@@ -212,11 +212,11 @@ spec:
                 safeWriteSecret besu-node-validator-${i}-accountKeystore ${current_validator_dir}/accountKeystore 
                 safeWriteSecret besu-node-validator-${i}-accountAddress ${current_validator_dir}/accountAddress 
 {{- else }}
-                safeWriteSecret "quorum-node-validator-${i}-keys" "${current_validator_dir}"
-                safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
+                safeWriteSecret "goquorum-node-validator-${i}-keys" "${current_validator_dir}"
+                safeWriteGenesis "goquorum-genesis" "$FOLDER_PATH/goQuorum"
 {{- end }}
 
-                if ! kubectl get secret goquorum-node-validator-${i}-keys -n {{ .Release.Namespace }} &> /dev/null; then
+                if ! kubectl get secret goquorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
                   echo "Creating directly"
                   kubectl create secret generic goquorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} \
                     --from-literal=accountAddress=$(cat "${current_validator_dir}/accountAddress") \
@@ -237,9 +237,9 @@ spec:
             defaultMode: 0777
 
 # kubectl apply -f build/pod.yaml
-# kg po -n gen
-# kubectl exec -it first -n gen -- /bin/bash
-# kubectl logs first -n gen
+# kg po --namespace gen
+# kubectl exec -it first --namespace gen -- /bin/bash
+# kubectl logs first --namespace gen
 # kubectl delete ns gen
 # kubectl delete -f build/pod.yaml
 

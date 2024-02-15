@@ -20,7 +20,7 @@ metadata:
     {{- end }}
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
+  replicas: "{{ .Values.node.goquorum.replicaCount }}"
   podManagementPolicy: OrderedReady
   updateStrategy:
     type: RollingUpdate
@@ -172,7 +172,7 @@ spec:
               # tail -f /dev/null
           livenessProbe:
             httpGet:
-              path: /liveness
+              path: / # /liveness
               port: 8545
             initialDelaySeconds: 180
             periodSeconds: 60
