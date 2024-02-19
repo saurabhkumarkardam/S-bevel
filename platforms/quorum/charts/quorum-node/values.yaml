@@ -29,17 +29,13 @@ global:
     # Mention the proxy provider. Currently ambassador or none is supported.
     # Eg. provider: ambassador
     provider: ambassador # ambassador | none
-    # Provide the external URL of the proxy. This is not used because Besu does not support DNS names.
+    # Provide the external URL of the proxy.
     # Eg. externalUrlSuffix: test.blockchaincloudpoc.com
     externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com # svc.cluster.local | test.blockchaincloudpoc.com
     # Mention the p2p port configured on proxy.
     # NOTE: Make sure that the port is enabled and not already used.
     # Eg. p2p: 15010
     p2p: 15010
-
-# quorumFlags:
-#   privacy: false
-#   removeKeysOnDelete: false
 
 tessera:
   enabled: false
@@ -53,18 +49,14 @@ node:
       cpuRequest: 0.1
       memLimit: "2G"
       memRequest: "1G"
-    # privKey:
-    # pubKey:
-    dataPath: "data" # FIXED ########################
-    # keysPath: "/keys" # NR
-    # genesisFilePath: "/etc/genesis/genesis.json" # NR
+    dataPath: "data"
     customLabels: {}
     networkId: 10
     replicaCount: 1
     account:
       unlock: 0
       password: 'password'
-      passwordPath: "data/keystore/accountPassword" # FIXED ########################
+      passwordPath: "data/keystore/accountPassword"
     log:
       verbosity: 5
     miner:
@@ -109,15 +101,10 @@ image:
   goquorum:
     repository: quorumengineering/quorum
     tag: 22.7.1
-  # tessera:
-  #   repository: quorumengineering/tessera
-  #   tag: 22.1.7
   hooks:
-    # repository: consensys/quorum-k8s-hooks
-    # tag: qgt-0.2.12
     repository: ghcr.io/hyperledger/bevel-k8s-hooks
     tag: qgt-0.2.12
-    pullPolicy: IfNotPresent
+  pullPolicy: IfNotPresent
   pullSecret:
 
 # fixes permissions of volumes because besu runs as user `besu` and volumes prefer `root`

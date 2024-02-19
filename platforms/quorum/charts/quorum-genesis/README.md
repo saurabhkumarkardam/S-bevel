@@ -1,8 +1,10 @@
-Certainly! Here's a refined version of the provided documentation:
+[//]: # (##############################################################################################)
+[//]: # (Copyright Accenture. All Rights Reserved.)
+[//]: # (SPDX-License-Identifier: Apache-2.0)
+[//]: # (##############################################################################################)
 
----
 
-## goquorum
+# goquorum-genesis
 
 This Helm chart is a component of Hyperledger Bevel, designed to facilitate the creation of the genesis file for a Goquorum network. If enabled, the cryptographic keys are securely stored on the configured vault and managed as Kubernetes secrets. Refer to the [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for comprehensive details.
 
@@ -79,7 +81,7 @@ These parameters remain consistent across parent or child charts.
 | Name   | Description  | Default Value |
 |--------|---------|-------------|
 |`settings.removeGenesisOnDelete` | Deletes genesis configmaps when uninstalling the release | `true` |
-| `settings.secondaryGenesis` | Copies genesis and static nodes from `files` for secondary members  | `false` |
+| `settings.secondaryGenesis` | Set to true to skip network initialization from scratch. Useful for deploying additional nodes, possibly in another namespace. Set to false to start the network from scratch.  | `false` |
 
 #### Genesis Config
 
@@ -95,7 +97,7 @@ These parameters remain consistent across parent or child charts.
 | `rawGenesisConfig.genesis.coinbase`   | Coinbase setting | `'0x0000000000000000000000000000000000000000'`         |
 | `rawGenesisConfig.genesis.includeQuickStartAccounts`   | Include default accounts flag | `false`         |
 | `rawGenesisConfig.blockchain.nodes.generate` | Flag to generate initial nodes as per the specified `count`   | `true`    |
-| `rawGenesisConfig.blockchain.nodes.count`   | Number of validators/signers. | `4` |
+| `rawGenesisConfig.blockchain.nodes.count`   | Number of validators. | `4` |
 | `rawGenesisConfig.blockchain.accountPassword` | Default password for new accounts   | `'password'`    |
 
 ## License
@@ -121,7 +123,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-
---- 
-
-This revision enhances clarity and structure, ensuring the information is easily digestible for users.

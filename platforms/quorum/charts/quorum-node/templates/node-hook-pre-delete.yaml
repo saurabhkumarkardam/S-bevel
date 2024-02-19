@@ -54,7 +54,7 @@ spec:
                   fi
               fi
 
-              ## Check if the secret exists
+              # Check if the secret exists
               if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
                 # Retrieve nodekey_pub from the secret
                 nodekey_pub=$(kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
@@ -68,7 +68,7 @@ spec:
 
               # Check if the newStaticNode is already present in existingStaticNodes
               if echo "$existingStaticNodes" | jq 'contains(["'"$deleteNode"'"])' | grep -q true; then
-                  # Enode URL exists, so remove it
+                  # Enode URL exists, remove it
                   existingStaticNodes=$(echo "$existingStaticNodes" | jq 'map(select(. != "'"${deleteNode}"'"))')
               fi
 
@@ -77,7 +77,7 @@ spec:
 
               # Check if the ConfigMap exists
               if kubectl get configmap static-nodes-config --namespace {{ .Release.Namespace }} &>/dev/null; then
-                  # Apply the updated static-nodes.json to the ConfigMap
+                  # Applying the updated static-nodes.json to the ConfigMap.
                   if kubectl create configmap static-nodes-config --from-file=./static-nodes.json --namespace {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
                       echo "ConfigMap updated successfully."
                   else
@@ -86,6 +86,7 @@ spec:
                   fi
               fi
 
+              # Checking if the secret exist and delete it.
               if kubectl get secret "{{ template "goquorum-node.fullname" . }}-keys" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
                 kubectl delete secret {{ template "goquorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }}
               fi

@@ -1,5 +1,5 @@
 ---
-#helm install member-2 -f values/noproxy-and-novault/txnode-sec.yml -n carrier-bes besu-node
+# helm install member-2 -f values/noproxy-and-novault/txnode-sec.yml -n carrier-bes quorum-node
 global:
   serviceAccountName: vault-auth
   cluster:
@@ -14,7 +14,7 @@ global:
 tessera:
   enabled: true
   tessera:
-    tlsMode: "OFF" # SKK - Shoul be OFF only bcoz STRICT needs TLS configuration means proxy (Ambassador) but we want noproxy here so OFF is suitable here.
+    tlsMode: "OFF"
     peerNodes: 
       - url: "http://goquorum-tessera-node-member-0.genesis:9000" # "http://tessera-member-1.supplychain-bes:9000"
   resources:
@@ -32,9 +32,6 @@ tessera:
 
 tls:
   enabled: false
-  # settings:
-  #   certSubject: CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB
-  #   tmTls: true
 
 node:
   goquorum:

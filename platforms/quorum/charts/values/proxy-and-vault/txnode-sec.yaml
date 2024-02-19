@@ -1,5 +1,5 @@
 ---
-#helm install member-2 -f values/proxy-and-vault/txnode-sec.yml -n carrier-bes --set global.proxy.p2p=15016 besu-node
+#helm install member-2 -f values/proxy-and-vault/txnode-sec.yml -n carrier-bes --set global.proxy.p2p=15016 quorum-node
 global:
   serviceAccountName: vault-auth
   cluster:

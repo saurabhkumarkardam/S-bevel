@@ -3,15 +3,15 @@
 [//]: # (SPDX-License-Identifier: Apache-2.0)
 [//]: # (##############################################################################################)
 
-# besu-tessera-node
+# quorum-tessera-node
 
-This chart is a component of Hyperledger Bevel. The besu-tessera-node chart deploys a tessera node with separate Mysql database. If enabled, the keys are then stored on the configured vault and stored as Kubernetes secrets. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
+This chart is a component of Hyperledger Bevel. The quorum-tessera-node chart deploys a tessera node with separate Mysql database. If enabled, the keys are then stored on the configured vault and stored as Kubernetes secrets. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
 
 ## TL;DR
 
 ```bash
 helm repo add bevel https://hyperledger.github.io/bevel
-helm install my-tessera bevel/besu-tessera-node
+helm install my-tessera bevel/quorum-tessera-node
 ```
 
 ## Prerequisitess
@@ -30,7 +30,7 @@ To install the chart with the release name `my-tessera`:
 
 ```bash
 helm repo add bevel https://hyperledger.github.io/bevel
-helm install my-tessera bevel/besu-tessera-node
+helm install my-tessera bevel/quorum-tessera-node
 ```
 
 The command deploys the chart on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
@@ -110,7 +110,7 @@ These parameters are refered to as same in each parent or child chart
 | `tessera.keysPath` | Mount path for Tessera keys   | `/keys`    |
 | `tessera.port`   | Port at which Tessera service will run | `9000`         |
 | `tessera.tpport` | Third party port   | `9080`    |
-| `tessera.q2tport`   | Client port where besu nodes will connect | `9101`         |
+| `tessera.q2tport`   | Client port where quorum nodes will connect | `9101`         |
 | `tessera.dbport` | Port where MySQL service is running   | `3306`    |
 | `tessera.metrics.enabled`   | Enable metrics and monitoring for Tessera node | `true`         |
 | `tessera.metrics.host`   | Host where metrics will be available | `"0.0.0.0"`         |

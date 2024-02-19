@@ -78,6 +78,18 @@ spec:
       {{- if .Values.image.pullSecret }}
         - name: {{ .Values.image.pullSecret }}
       {{- end }}
+      initContainers:
+{{- if has .Values.global.cluster.provider .Values.volumePermissionsFix }}
+      # fix for minikube and PVC's only writable as root https://github.com/kubernetes/minikube/issues/1990
+      - name: volume-permission-goquorum
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /data"]
+        volumeMounts:
+          - name: data
+            mountPath: /data
+        securityContext:
+          runAsUser: 0
+{{- end}}
       containers:
         - name: "{{ include "goquorum-node.fullname" . }}-quorum"
           image: {{ .Values.image.goquorum.repository }}:{{ .Values.image.goquorum.tag }}
@@ -94,11 +106,11 @@ spec:
               mountPath: /scripts/bevel-vault.sh
               subPath: bevel-vault.sh
             - name: static-nodes
-              mountPath: /{{ .Release.Name }}/staticNode/  # Mount path in the container
+              mountPath: /{{ .Release.Name }}/staticNode/
             - name: genesis
-              mountPath: /{{ .Release.Name }}/genesis/  # Mount path in the container
+              mountPath: /{{ .Release.Name }}/genesis/
             - name: node-keys
-              mountPath: /{{ .Release.Name }}/nodeSecrets/  # Mount path in the container
+              mountPath: /{{ .Release.Name }}/nodeSecrets/
               readOnly: true
           securityContext:
             runAsUser: 0
@@ -138,6 +150,7 @@ spec:
 
               # Create the necessary directory structure
               mkdir -p {{ .Release.Name }}/data/keystore
+
               # Move files to their respective locations
               cp {{ .Release.Name }}/staticNode/static-nodes.json {{ .Release.Name }}/data/
               cp {{ .Release.Name }}/genesis/genesis.json {{ .Release.Name }}/data/
@@ -145,10 +158,13 @@ spec:
               cp {{ .Release.Name }}/nodeSecrets/account* {{ .Release.Name }}/data/keystore/
               cd {{ .Release.Name }}/
 
+              # Initialize the node
               geth --datadir data init data/genesis.json
-              export ADDRESS=$(grep -o '"address": *"[^"]*"' ./data/keystore/accountKeystore | grep -o '"[^"]*"$' | sed 's/"//g')
-              echo "ADDRESS: $ADDRESS"
 
+              # Extract the address from the account keystore file
+              export ADDRESS=$(grep -o '"address": *"[^"]*"' ./data/keystore/accountKeystore | grep -o '"[^"]*"$' | sed 's/"//g')
+
+              # Start the node
               geth \
               --datadir {{ .Values.node.goquorum.dataPath }} \
               --nodiscover --ipcdisable \
@@ -168,11 +184,9 @@ spec:
               {{- if hasKey .Values.node.goquorum.account "unlock" }}
               --unlock ${ADDRESS} --allow-insecure-unlock --password {{ .Values.node.goquorum.account.passwordPath }} \
               {{- end }}
-
-              # tail -f /dev/null
           livenessProbe:
             httpGet:
-              path: / # /liveness
+              path: /
               port: 8545
             initialDelaySeconds: 180
             periodSeconds: 60
@@ -183,10 +197,10 @@ spec:
             defaultMode: 0777
         - name: static-nodes
           configMap:
-            name: static-nodes-config  # Name of the ConfigMap to mount
+            name: static-nodes-config
         - name: genesis
           configMap:
-            name: genesis-config  # Name of the ConfigMap to mount
+            name: genesis-config
         - name: node-keys
           secret:
             secretName: {{ template "goquorum-node.fullname" . }}-keys

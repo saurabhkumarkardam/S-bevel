@@ -3,15 +3,15 @@
 [//]: # (SPDX-License-Identifier: Apache-2.0)
 [//]: # (##############################################################################################)
 
-# besu-tlscert-gen
+# quorum-tlscert-gen
 
-This chart is a component of Hyperledger Bevel. The besu-tlscert-gen chart generates the TLS certificates needed for accessing Besu and tessera nodes outside the cluster. If enabled, the certificates are then stored on the configured vault and also stored as Kubernetes secrets. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
+This chart is a component of Hyperledger Bevel. The quorum-tlscert-gen chart generates the TLS certificates needed for accessing Besu and tessera nodes outside the cluster. If enabled, the certificates are then stored on the configured vault and also stored as Kubernetes secrets. See [Bevel documentation](https://hyperledger-bevel.readthedocs.io/en/latest/) for details.
 
 ## TL;DR
 
 ```bash
 helm repo add bevel https://hyperledger.github.io/bevel
-helm install my-release bevel/besu-tlscert-gen
+helm install my-release bevel/quorum-tlscert-gen
 ```
 
 ## Prerequisitess
@@ -28,7 +28,7 @@ To install the chart with the release name `my-release`:
 
 ```bash
 helm repo add bevel https://hyperledger.github.io/bevel
-helm install my-release bevel/besu-tlscert-gen
+helm install my-release bevel/quorum-tlscert-gen
 ```
 
 The command deploys the chart on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
@@ -56,7 +56,7 @@ These parameters are refered to as same in each parent or chold chart
 | `global.vault.role`  | Role used for authentication with Vault | `vault-role`    |
 | `global.vault.address`| URL of the Vault server.    | `""`            |
 | `global.vault.authPath`    | Authentication path for Vault  | `supplychain`            |
-| `global.vault.network` | Network type which will determine the vault policy | `besu` |
+| `global.vault.network` | Network type which will determine the vault policy | `quorum` |
 | `global.vault.secretEngine` | Provide the value for vault secret engine name   | `secretsv2`  |
 | `global.vault.secretPrefix` | Provide the value for vault secret prefix which must start with `data/`   | `data/supplychain`  |
 | `global.proxy.externalUrlSuffix` | Provide the External URL suffix which will be used as CN to generate certificate | `test.blockchaincloudpoc.com`  |
