@@ -1,0 +1,17 @@
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: aws
+    cloudNativeServices: false
+    kubernetesUrl: https://300125A3D09FFA0A178EC3522C96BBB8.gr7.eu-west-1.eks.amazonaws.com # if Proxy and Vault else keep it empty # https://kubernetes.url
+  vault:
+    type: hashicorp
+    network: quorum
+    address: http://vault.vault.svc.cluster.local:80 # http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com # http://vault.demo.com:8200
+    authPath: genesis
+    secretEngine: secretsv2
+    secretPrefix: "data/genesis"
+    role: vault-role
+settings:
+  removeGenesisOnDelete: true
+  secondaryGenesis: true

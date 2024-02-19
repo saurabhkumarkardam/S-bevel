@@ -1,0 +1,16 @@
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: aws
+    cloudNativeServices: false
+  vault:
+    type: hashicorp
+    role: vault-role
+    network: quorum
+    address: http://vault.vault.svc.cluster.local:80 # http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com
+    authPath: genesis
+    secretEngine: secretsv2
+    secretPrefix: "data/genesis"
+  proxy:
+    provider: ambassador
+    externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com # test.blockchaincloudpoc.com

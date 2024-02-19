@@ -1,0 +1,11 @@
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: aws
+    cloudNativeServices: false
+  vault:
+    type: kubernetes
+
+settings:
+  removeGenesisOnDelete: true
+  secondaryGenesis: true

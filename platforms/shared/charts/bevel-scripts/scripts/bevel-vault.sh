@@ -28,12 +28,11 @@ validateVaultResponseHashicorp() {
 initHashicorpVaultToken() {
     # Retrieve the Kubernetes service account token
     KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-    # # IGNORE #########################################
-    # echo "KUBE_SA_TOKEN=>$KUBE_SA_TOKEN"
-    # echo "\nVAULT_ADDR=>$VAULT_ADDR"
-    # echo "\nKUBERNETES_AUTH_PATH=>$KUBERNETES_AUTH_PATH"
-    # echo "\nVAULT_APP_ROLE=>$VAULT_APP_ROLE"
-    # # IGNORE #########################################
+
+    echo "KUBE_SA_TOKEN=>$KUBE_SA_TOKEN"
+    echo "\nVAULT_ADDR=>$VAULT_ADDR"
+    echo "\nKUBERNETES_AUTH_PATH=>$KUBERNETES_AUTH_PATH"
+    echo "\nVAULT_APP_ROLE=>$VAULT_APP_ROLE"
 
     # Request a Vault token using the Kubernetes authentication method
     RESPONSE=$(curl -sS --request POST "${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login" -H "Content-Type: application/json" -d \
