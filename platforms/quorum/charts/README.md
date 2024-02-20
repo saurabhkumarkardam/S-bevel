@@ -76,7 +76,7 @@ kubectl create namespace carrier-quo
 
 # Copy configuration from existing namespace (supplychain-quo) to the new namespace (carrier-quo)
 kubectl get configmap static-nodes-config -n supplychain-quo -o yaml | sed 's/namespace: supplychain-quo/namespace: carrier-quo/g' | kubectl apply -n carrier-quo -f -
-kubectl get configmap genesis-config -n supplychain-quo -o yaml | sed 's/namespace: supplychain-quo/namespace: carrier-quo/g' | kubectl apply -n carrier-quo -f -
+kubectl get configmap quorum-genesis -n supplychain-quo -o yaml | sed 's/namespace: supplychain-quo/namespace: carrier-quo/g' | kubectl apply -n carrier-quo -f -
 
 # Install secondary genesis node
 helm install genesis ./quorum-genesis --namespace carrier-quo -f ./values/noproxy-and-novault/genesis-sec.yaml
@@ -130,7 +130,7 @@ kubectl -n carrier-quo create secret generic roottoken --from-literal=token=<VAU
 
 # Copy configuration from existing namespace (supplychain-quo) to the new namespace (carrier-quo)
 kubectl get configmap static-nodes-config -n supplychain-quo -o yaml | sed 's/namespace: supplychain-quo/namespace: carrier-quo/g' | kubectl apply -n carrier-quo -f -
-kubectl get configmap genesis-config -n supplychain-quo -o yaml | sed 's/namespace: supplychain-quo/namespace: carrier-quo/g' | kubectl apply -n carrier-quo -f -
+kubectl get configmap quorum-genesis -n supplychain-quo -o yaml | sed 's/namespace: supplychain-quo/namespace: carrier-quo/g' | kubectl apply -n carrier-quo -f -
 
 # Install secondary genesis node
 helm install genesis ./quorum-genesis --namespace carrier-quo -f ./values/proxy-and-vault/genesis-sec.yaml

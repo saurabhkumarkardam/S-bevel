@@ -61,3 +61,5 @@ labels:
   service: []
   pvc: []
   deployment: []
+
+nameOverride: ambassador-tls-gen

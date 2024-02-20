@@ -200,7 +200,7 @@ spec:
             name: static-nodes-config
         - name: genesis
           configMap:
-            name: genesis-config
+            name: quorum-genesis
         - name: node-keys
           secret:
             secretName: {{ template "goquorum-node.fullname" . }}-keys

@@ -312,8 +312,7 @@ spec:
                 # Check if any of the certificate and key fields are missing, empty or having any kind of error
                 for field in "$CA_PEM" "$CA_KEY" "$AMBASSADORCRT" "$AMBASSADORKEY" "$KEYSTORE" "$PASSWORD" "$KNOWNSERVER"
                 do
-                  if [ "$field" = "null"  ] || [[ "$field" = "parse error"* ]] || [ "$field" = "" ]
-                  then
+                  if [ "$field" = "null" ] || [[ "$field" = *"error"* ]] || [ "$field" = "" ]; then
                     AMBASSADORTLS_CERT_WRITTEN=false
                     break
                   else
@@ -333,8 +332,7 @@ spec:
                 # Check if any of the certificate and key fields are missing, empty or having any kind of error
                 for field in "$CA_PEM" "$CA_KEY" "$AMBASSADORCRT" "$AMBASSADORKEY"
                 do
-                  if [ "$field" = "null"  ] || [[ "$field" = "parse error"* ]] || [ "$field" = "" ]
-                  then
+                  if [ "$field" = "null" ] || [[ "$field" = *"error"* ]] || [ "$field" = "" ]; then
                     AMBASSADORTLS_CERT_WRITTEN=false
                     break
                   else

@@ -139,7 +139,7 @@ spec:
                   if [ "$SECRETS_AVAILABLE" == "yes" ]
                   then           
                     echo ${VAULT_SECRET} | jq -r '.["genesis_base64"]' | base64 -d > ./genesis.json
-                    if ! kubectl get configmap "genesis-config" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                    if ! kubectl get configmap "quorum-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
                       kubectl create configmap "quorum-genesis" --from-file=./genesis.json --namespace {{ .Release.Namespace }}
                     fi
                   else
@@ -186,9 +186,9 @@ spec:
                   --quickstartDevAccounts {{ .Values.rawGenesisConfig.genesis.includeQuickStartAccounts }} \
                   --outputPath /generated-config | tail -1 | sed -e "s/^Artifacts in folder: //")
 
-                # Check if genesis-config configmap exists, if not, create one
-                if ! kubectl get configmap "genesis-config" --namespace {{ .Release.Namespace }} &> /dev/null; then
-                  kubectl create configmap "genesis-config" --namespace {{ .Release.Namespace }} --from-file="$FOLDER_PATH/goQuorum/genesis.json"
+                # Check if quorum-genesis configmap exists, if not, create one
+                if ! kubectl get configmap "quorum-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                  kubectl create configmap "quorum-genesis" --namespace {{ .Release.Namespace }} --from-file="$FOLDER_PATH/goQuorum/genesis.json"
                 fi
 
                 # Count the number of validators based on their directories

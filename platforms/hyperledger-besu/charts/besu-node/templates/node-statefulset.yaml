@@ -174,7 +174,7 @@ spec:
               --min-gas-price=0
         livenessProbe:
           httpGet:
-            path: /liveness
+            path: /
             port: 8545
           initialDelaySeconds: 180
           periodSeconds: 60

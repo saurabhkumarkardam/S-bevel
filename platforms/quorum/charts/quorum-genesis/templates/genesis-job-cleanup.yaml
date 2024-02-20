@@ -41,8 +41,8 @@ spec:
             - |
 
 {{- if .Values.settings.removeGenesisOnDelete }}
-              echo "Deleting genesis configmap in k8s ..."
-              if kubectl get configmap --namespace {{ .Release.Namespace }} genesis-config &> /dev/null; then
-                kubectl delete configmap --namespace {{ .Release.Namespace }} genesis-config
+              if kubectl get configmap --namespace {{ .Release.Namespace }} quorum-genesis &> /dev/null; then
+                echo "Deleting genesis configmap in k8s ..."
+                kubectl delete configmap --namespace {{ .Release.Namespace }} quorum-genesis
               fi
 {{- end}}
