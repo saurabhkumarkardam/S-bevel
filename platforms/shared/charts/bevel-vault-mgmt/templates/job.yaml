@@ -90,11 +90,33 @@ spec:
                   exit 1
                 fi
               };
+
+              echo "VAULT_ADDR: $VAULT_ADDR"
+              echo "VAULT_SECRET_PATH: $VAULT_SECRET_PATH"
+              echo "KUBERNETES_AUTH_PATH: $KUBERNETES_AUTH_PATH"
+              echo "VAULT_ROLE: $VAULT_ROLE"
+              echo "VAULT_SA: $VAULT_SA"
+              echo "KUBERNETES_URL: $KUBERNETES_URL"
+
+              # Check if secretEngine already created
+              vault_kv_check=$(curl --header "X-Vault-Token: $ROOT_TOKEN" \
+                ${VAULT_ADDR}/v1/$VAULT_SECRET_PATH/);
+              # echo "vault_kv_check: $vault_kv_check"
+
+              vault_kv_check=$(curl --header "X-Vault-Token: $ROOT_TOKEN" \
+                ${VAULT_ADDR}/v1/$VAULT_SECRET_PATH/);
+              # echo "vault_kv_check-2: $vault_kv_check"
+
+              echo ">>>>> -1- <<<<<"
+
               # Check if secretEngine already created
               vault_kv_check=$(curl --header "X-Vault-Token: $ROOT_TOKEN" \
                 ${VAULT_ADDR}/v1/$VAULT_SECRET_PATH/ | jq '.errors');
 
+              echo ">>>>> -2- <<<<<"
+
               if [ "$vault_kv_check" != 'null' ]; then
+                echo ">>>>> -3- <<<<<"
                 echo "secretEngine does not exist. Creating ..."
                 curl \
                 --header "X-Vault-Token: $ROOT_TOKEN" \
@@ -103,11 +125,16 @@ spec:
                 ${VAULT_ADDR}/v1/sys/mounts/${VAULT_SECRET_PATH}
               fi;
 
+              echo ">>>>> -4- <<<<<"
+
               # Check if authPath already created
               vault_auth_check=$(curl --header "X-Vault-Token: $ROOT_TOKEN" \
                 ${VAULT_ADDR}/v1/sys/auth | jq '."${KUBERNETES_AUTH_PATH}/"');
+
+              echo ">>>>> -5- <<<<<"
               
               if [ "$vault_auth_check" == 'null' ]; then
+                echo ">>>>> -6- <<<<<"
                 echo "authPath does not exist. Creating ..."
                 # This command enables the path for the organizations on vault
                 curl \
@@ -132,6 +159,9 @@ spec:
                     \"disable_iss_validation\": \"true\"
                   }" > payload.json
 
+                echo ">>>>> -6- <<<<<"
+                cat payload.json
+
                 # This command writes the Service Account token to the vault for Organisations
                 curl \
                 --header "X-Vault-Token: $ROOT_TOKEN" \
@@ -139,10 +169,14 @@ spec:
                 --data @payload.json \
                 ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/config
 
+                echo ">>>>> -7- <<<<<"
+
                 # Check auth
                 response_status=$(curl -s -o /dev/null -w "%{http_code}" \
                 --header "X-Vault-Token: $ROOT_TOKEN" \
                 ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/config);
+
+                echo ">>>>> -8- <<<<<"
 
                 rm payload.json
 
@@ -195,6 +229,8 @@ spec:
             
                 validateVaultResponse ${response_status};
               fi;
+
+              # sleep 10m # Remove
           volumeMounts:
           {{ if .Values.global.vault.tls  }}
             - name: vaultca

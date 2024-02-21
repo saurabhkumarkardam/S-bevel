@@ -33,8 +33,8 @@ Create static nodes url depending on proxy
 */}}
 {{- define "besu-node.enodeURL" -}}
 {{- $fullname := include "besu-node.fullname" . -}}
-{{- $port := .Values.node.besu.p2p.port | int -}}
-{{- $extport := .Values.global.proxy.p2p | int -}}
+{{- $port := .Values.node.besu.p2p.port | int -}} 30303
+{{- $extport := .Values.global.proxy.p2p | int -}} 15010
 {{- if eq .Values.global.proxy.provider "ambassador" -}}
     {{- printf "%s.%s:%d" .Release.Name .Values.global.proxy.externalUrlSuffix $extport | quote }}
 {{- else -}}

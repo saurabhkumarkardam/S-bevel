@@ -21,6 +21,8 @@
 # Get the existing ambassador tls certs
 - name: Get ambassador and tls certs from Vault
   shell: |
+
+    # platforms/quorum/charts/quorum-tlscerts-gen/templates/job.yaml @ 236 # NEW
     vault kv get -format=yaml {{ vault.secret_path | default('secretsv2') }}/{{ name }}/crypto/{{ name }}/certs
   environment:
     VAULT_ADDR: "{{ vault.url }}"
@@ -29,6 +31,7 @@
   when: check == "ambassador_creds"
 
 # Get ambassador tls certs
+# Saving certificates fetched from vault to local directory # NEW
 - name: Get ambassador tls certs
   include_role:
     name: "setup/get_crypto"

@@ -136,7 +136,7 @@ spec:
                   accountPassword=$(cat ${fpath}/accountPassword)
                   accountKeystore=$(cat ${fpath}/accountKeystore | base64 -w 0)
                   accountAddress=$(cat ${fpath}/accountAddress)
-
+                  
                   # create a JSON file for the data related to node crypto
                   echo "
                   {

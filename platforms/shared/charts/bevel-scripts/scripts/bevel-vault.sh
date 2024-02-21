@@ -28,9 +28,17 @@ validateVaultResponseHashicorp() {
 initHashicorpVaultToken() {
     # Retrieve the Kubernetes service account token
     KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+    echo "KUBE_SA_TOKEN=>$KUBE_SA_TOKEN"
+    echo "\nVAULT_ADDR=>$VAULT_ADDR"
+    echo "\nKUBERNETES_AUTH_PATH=>$KUBERNETES_AUTH_PATH"
+    echo "\nVAULT_APP_ROLE=>$VAULT_APP_ROLE"
+
     # Request a Vault token using the Kubernetes authentication method
     RESPONSE=$(curl -sS --request POST "${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login" -H "Content-Type: application/json" -d \
         '{"role":"'${VAULT_APP_ROLE}'","jwt":"'${KUBE_SA_TOKEN}'"}')
+    echo "RESPONSE=>$RESPONSE"
+
     # Print the Vault API response
     echo "Vault token API call response: $RESPONSE"
 
@@ -51,6 +59,7 @@ initHashicorpVaultToken() {
 
 # Read HashiCorp Vault secret
 readHashicorpVaultSecret() {
+    echo "read path=>${VAULT_ADDR}/v1/${1}"
     # Send a request to Vault API to read a secret
     RESPONSE=$(curl --header "X-Vault-Token: ${VAULT_TOKEN}" "${VAULT_ADDR}/v1/${1}")
     # Print the Vault API response
@@ -85,6 +94,12 @@ readHashicorpVaultSecret() {
 
 # Write a secret to the HashiCorp Vault
 writeHashicorpVaultSecret() {
+    # # IGNORE #########################################
+    # echo "\VAULT_TOKEN=>$VAULT_TOKEN"
+    # echo "\VAULT_ADDR=>$VAULT_ADDR"
+    # echo "1=>${1}"
+    # # IGNORE #########################################
+    
     # Send a request to Vault API to write a secret
     VAULT_RESPONSE=$(curl \
         -H "X-Vault-Token: ${VAULT_TOKEN}" \
