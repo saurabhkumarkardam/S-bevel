@@ -7,13 +7,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ include "besu-tlscert-gen.name" . }}"
+  name: "{{ include "goquorum-tlscert-gen.name" . }}"
   namespace: "{{ .Release.Namespace }}"
   annotations:
     helm.sh/hook-delete-policy: "before-hook-creation"
   labels:
-    app: "{{ include "besu-tlscert-gen.name" . }}"
-    app.kubernetes.io/name: "{{ include "besu-tlscert-gen.name" . }}"
+    app: "{{ include "goquorum-tlscert-gen.name" . }}"
+    app.kubernetes.io/name: "{{ include "goquorum-tlscert-gen.name" . }}"
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- if $.Values.labels }}
@@ -28,8 +28,8 @@ spec:
   template:
     metadata:
       labels:
-        app: "{{ include "besu-tlscert-gen.name" . }}"
-        app.kubernetes.io/name: "{{ include "besu-tlscert-gen.name" . }}"
+        app: "{{ include "goquorum-tlscert-gen.name" . }}"
+        app.kubernetes.io/name: "{{ include "goquorum-tlscert-gen.name" . }}"
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if $.Values.labels }}
@@ -142,7 +142,7 @@ spec:
         - name: CERT_SUBJECT
           value: "{{ $.Values.settings.certSubject }}"
         - name: EXTERNAL_URL
-          value: "{{ .Release.Name }}.{{ .Values.global.proxy.externalUrlSuffix }}"
+          value: "{{ include "goquorum-tlscert-gen.name" . }}.{{ .Values.global.proxy.externalUrlSuffix }}"
         - name: COMPONENT_NS
           value: "{{ .Release.Namespace }}"
         command: ["sh", "-c"]
@@ -177,8 +177,10 @@ spec:
               # Generates the rootCA certificates
               openssl genrsa -out rootca.key 2048
               openssl req -x509 -new -nodes -key rootca.key -sha256 -days 1024 -out rootca.pem -subj "/${CERT_SUBJECT}"
+
               # Generates the openssl file for domain
               cd ${AMBASSADORTLS_PATH}
+
               echo "[req]
               req_extensions = v3_req
               distinguished_name = dn
@@ -189,7 +191,7 @@ spec:
               subjectAltName = @alt_names
               [alt_names]
               DNS.1 = ${EXTERNAL_URL}
-              DNS.2 = {{ include "besu-tlscert-gen.fullname" . }}.{{ .Release.Namespace }}
+              DNS.2 = {{ include "goquorum-tlscert-gen.fullname" . }}.{{ .Release.Namespace }}
               DNS.3 = tessera-{{ .Release.Name }}.{{ .Release.Namespace }}
               " > openssl.conf
               # Generates the ambassador tls certificates
@@ -202,16 +204,18 @@ spec:
               # Check if TM_TLS_ENABLED is true
               if [ "$TM_TLS_ENABLED" == "true"  ]
               then
-                # Generate crypto for besu nodes and knownserver file
-                openssl genrsa -out besu-node.key 2048
-                openssl req -new -key besu-node.key -out besu-node.csr -subj "/CN=${EXTERNAL_URL}"
-                openssl x509 -req -in besu-node.csr -CA ${ROOTCA_PATH}/rootca.pem -CAkey ${ROOTCA_PATH}/rootca.key -CAcreateserial -out besu-node.pem -days 500 -sha256
-                cat besu-node.key besu-node.pem > besu_certificates.pem
-                openssl pkcs12 -export -in besu_certificates.pem -out besu-node.pkcs12 -password pass:changeme -name myAlias -noiter -nomaciter
-                echo "changeme" > besu-password
-                openssl x509 -in certchain.pem -noout -fingerprint -sha256 > besu-certchain-sha256
-                export DIGEST=$(awk '{print $2}' besu-certchain-sha256 | sed -n 's/Fingerprint=\(.*\)/\1/p')
-                printf '%s\n' "tessera-*.${COMPONENT_NS}:${TM_CLIENT_PORT} $DIGEST" "${EXTERNAL_URL} $DIGEST" > besu-knownServer
+                # Generate crypto for goquorum nodes and knownserver file
+                openssl genrsa -out goquorum-node.key 2048
+                openssl req -new -key goquorum-node.key -out goquorum-node.csr -subj "/CN=${EXTERNAL_URL}"
+                openssl x509 -req -in goquorum-node.csr -CA ${ROOTCA_PATH}/rootca.pem -CAkey ${ROOTCA_PATH}/rootca.key -CAcreateserial -out goquorum-node.pem -days 500 -sha256
+                cat goquorum-node.key goquorum-node.pem > goquorum_certificates.pem
+
+                openssl pkcs12 -export -in goquorum_certificates.pem -out goquorum-node.pkcs12 -password pass:changeme -name myAlias -noiter -nomaciter
+                echo "changeme" > goquorum-password
+
+                openssl x509 -in certchain.pem -noout -fingerprint -sha256 > goquorum-certchain-sha256
+                export DIGEST=$(awk '{print $2}' goquorum-certchain-sha256 | sed -n 's/Fingerprint=\(.*\)/\1/p')
+                printf '%s\n' "tessera-*.${COMPONENT_NS}:${TM_CLIENT_PORT} $DIGEST" "${EXTERNAL_URL} $DIGEST" > goquorum-knownServer
               fi;
             fi;
             # Create necessary subdirectories for certificate storage
@@ -249,19 +253,19 @@ spec:
               if [ "$TM_TLS_ENABLED" == "true" ]
               then
                 # Encode additional certificate files when tmTls is true
-                base64 ${AMBASSADORTLS_PATH}/besu-node.pkcs12 > ${AMBASSADORTLS_PATH}/encode_besu-node.pkcs12
-                base64 ${AMBASSADORTLS_PATH}/besu-password > ${AMBASSADORTLS_PATH}/encode_besu-password
-                base64 ${AMBASSADORTLS_PATH}/besu-knownServer > ${AMBASSADORTLS_PATH}/encode_besu-knownServer
+                base64 ${AMBASSADORTLS_PATH}/goquorum-node.pkcs12 > ${AMBASSADORTLS_PATH}/encode_goquorum-node.pkcs12
+                base64 ${AMBASSADORTLS_PATH}/goquorum-password > ${AMBASSADORTLS_PATH}/encode_goquorum-password
+                base64 ${AMBASSADORTLS_PATH}/goquorum-knownServer > ${AMBASSADORTLS_PATH}/encode_goquorum-knownServer
                 
                 # Format the additional certificate files for saving in the vault
-                formatCertificate "${AMBASSADORTLS_PATH}/encode_besu-node.pkcs12" "${FORMAT_CERTIFICATE_PATH}/ambassadortls"
-                formatCertificate "${AMBASSADORTLS_PATH}/encode_besu-password" "${FORMAT_CERTIFICATE_PATH}/ambassadortls"
-                formatCertificate "${AMBASSADORTLS_PATH}/encode_besu-knownServer" "${FORMAT_CERTIFICATE_PATH}/ambassadortls"
+                formatCertificate "${AMBASSADORTLS_PATH}/encode_goquorum-node.pkcs12" "${FORMAT_CERTIFICATE_PATH}/ambassadortls"
+                formatCertificate "${AMBASSADORTLS_PATH}/encode_goquorum-password" "${FORMAT_CERTIFICATE_PATH}/ambassadortls"
+                formatCertificate "${AMBASSADORTLS_PATH}/encode_goquorum-knownServer" "${FORMAT_CERTIFICATE_PATH}/ambassadortls"
 
                 # Read the additional formatted certificate files
-                KEYSTORE_FORMAT=$(cat ${FORMAT_CERTIFICATE_PATH}/ambassadortls/encode_besu-node.pkcs12.txt)
-                PASSWORD_FORMAT=$(cat ${FORMAT_CERTIFICATE_PATH}/ambassadortls/encode_besu-password.txt)
-                KNOWNSERVER_FORMAT=$(cat ${FORMAT_CERTIFICATE_PATH}/ambassadortls/encode_besu-knownServer.txt)
+                KEYSTORE_FORMAT=$(cat ${FORMAT_CERTIFICATE_PATH}/ambassadortls/encode_goquorum-node.pkcs12.txt)
+                PASSWORD_FORMAT=$(cat ${FORMAT_CERTIFICATE_PATH}/ambassadortls/encode_goquorum-password.txt)
+                KNOWNSERVER_FORMAT=$(cat ${FORMAT_CERTIFICATE_PATH}/ambassadortls/encode_goquorum-knownServer.txt)
                 
                 # Create a JSON file with the data to be saved in the vault when tmTls is true
                 echo "
@@ -312,7 +316,7 @@ spec:
                 # Check if any of the certificate and key fields are missing, empty or having any kind of error
                 for field in "$CA_PEM" "$CA_KEY" "$AMBASSADORCRT" "$AMBASSADORKEY" "$KEYSTORE" "$PASSWORD" "$KNOWNSERVER"
                 do
-                  if [ "$field" = "null" ] || [[ "$field" = *"error"* ]] || [ "$field" = "" ]; then
+                  if [ "$field" == "null" ] || [[ "$field" = *"error"* ]] || [ "$field" = "" ]; then
                     AMBASSADORTLS_CERT_WRITTEN=false
                     break
                   else
@@ -332,7 +336,7 @@ spec:
                 # Check if any of the certificate and key fields are missing, empty or having any kind of error
                 for field in "$CA_PEM" "$CA_KEY" "$AMBASSADORCRT" "$AMBASSADORKEY"
                 do
-                  if [ "$field" = "null" ] || [[ "$field" = *"error"* ]] || [ "$field" = "" ]; then
+                  if [ "$field" == "null" ] || [[ "$field" = *"error"* ]] || [ "$field" = "" ]; then
                     AMBASSADORTLS_CERT_WRITTEN=false
                     break
                   else
@@ -344,13 +348,15 @@ spec:
               # Delete the same JSON file that we created to perform the write operation in the vault
               rm payload.json
             fi;
+
             # Create tls secret with the certificates
-            kubectl get configmap --namespace {{ .Release.Namespace }} {{ include "besu-tlscert-gen.name" . }}-tls-certs
-            if [ $? -ne 0 ]; then
-              kubectl create secret tls --namespace {{ .Release.Namespace }} {{ include "besu-tlscert-gen.name" . }}-tls-certs \
+            if ! kubectl get secret tls --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs &>/dev/null; then
+              kubectl create secret tls --namespace {{ .Release.Namespace }} {{ include "goquorum-tlscert-gen.name" . }}-tls-certs \
               --cert=${AMBASSADORTLS_PATH}/certchain.pem \
               --key=${AMBASSADORTLS_PATH}/node.key
             fi
+
+            echo "COMPLETED"
         volumeMounts:
           - name: certificates
             mountPath: /certificates

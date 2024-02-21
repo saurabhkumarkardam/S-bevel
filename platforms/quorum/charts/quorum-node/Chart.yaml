@@ -4,14 +4,13 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 apiVersion: v1
-name: goquorum-tessera-node
-description: "Hyperledger Goquorum: Deploys Tessera transaction manager nodes"
+name: goquorum-node
+description: Hyperledger Goquorum nodes for a POA network
 version: 1.0.1
-# Tessera version 
-appVersion: '21.7.3'
+appVersion: latest
 keywords:
   - bevel
-  - tessera
+  - ethereum
   - goquorum
   - hyperledger
   - enterprise

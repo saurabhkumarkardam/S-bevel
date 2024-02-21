@@ -72,8 +72,8 @@ data:
             "clientTlsKeyPath": "{{ .Values.tessera.dataPath }}/crypto/tessera_cer.key",
             "clientTlsCertificatePath": "{{ .Values.tessera.dataPath }}/crypto/tessera_cer.pem",
             "clientTrustCertificates": ["{{ .Values.tessera.dataPath }}/crypto/tessera_ca.pem"],
-            "knownClientsFile": "{{ .Values.tessera.dataPath }}/crypto/known_client2",
-            "knownServersFile": "{{ .Values.tessera.dataPath }}/crypto/known_server2"
+            "knownClientsFile": "{{ .Values.tessera.dataPath }}/crypto/known_client",
+            "knownServersFile": "{{ .Values.tessera.dataPath }}/crypto/known_server"
           },
           "communicationType": "REST"
         }
