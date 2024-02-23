@@ -9,14 +9,14 @@ global:
   vault:
     type: hashicorp
     network: quorum
-    address: http://vault.demo.com:8200
-    authPath: supplychain
+    address: http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com # http://vault.demo.com:8200
+    authPath: genesis
     secretEngine: secretsv2
-    secretPrefix: "data/supplychain"
+    secretPrefix: "data/genesis"
     role: vault-role
   proxy:
     provider: ambassador
-    externalUrlSuffix: test.yourdomain.com
+    externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com # test.yourdomain.com
     tmport: 443
 
 tessera:

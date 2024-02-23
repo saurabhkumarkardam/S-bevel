@@ -44,9 +44,9 @@ spec:
               echo "{{ template "goquorum-node.fullname" . }} Pre Delete hook ..."
 
               # Check if the ConfigMap exists
-              if kubectl get configmap static-nodes-config --namespace genesis &>/dev/null; then
+              if kubectl get configmap quorum-peers --namespace {{ .Release.Namespace }} &>/dev/null; then
                   # Get the content of the ConfigMap and save it to a file
-                  if kubectl get configmap static-nodes-config --namespace genesis -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json; then
+                  if kubectl get configmap quorum-peers --namespace {{ .Release.Namespace }} -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json; then
                       existingStaticNodes=$(cat ./static-nodes.json)
                   else
                       echo "Error: Failed to get content of ConfigMap."
@@ -76,9 +76,9 @@ spec:
               echo "$existingStaticNodes" > ./static-nodes.json
 
               # Check if the ConfigMap exists
-              if kubectl get configmap static-nodes-config --namespace {{ .Release.Namespace }} &>/dev/null; then
+              if kubectl get configmap quorum-peers --namespace {{ .Release.Namespace }} &>/dev/null; then
                   # Applying the updated static-nodes.json to the ConfigMap.
-                  if kubectl create configmap static-nodes-config --from-file=./static-nodes.json --namespace {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
+                  if kubectl create configmap quorum-peers --from-file=./static-nodes.json --namespace {{ .Release.Namespace }} --dry-run=client -o yaml | kubectl replace -f -; then
                       echo "ConfigMap updated successfully."
                   else
                       echo "Error: Failed to update ConfigMap."

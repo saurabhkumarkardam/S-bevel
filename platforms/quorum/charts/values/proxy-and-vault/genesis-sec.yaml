@@ -4,14 +4,14 @@ global:
   cluster:
     provider: aws
     cloudNativeServices: false
-    kubernetesUrl: https://kubernetes.url
+    kubernetesUrl: https://300125A3D09FFA0A178EC3522C96BBB8.gr7.eu-west-1.eks.amazonaws.com # https://kubernetes.url
   vault:
     type: hashicorp
     network: quorum
-    address: http://vault.demo.com:8200
-    authPath: supplychain
+    address: http://dev-vault-public.dev.aws.blockchaincloudpoc-develop.com # http://vault.demo.com:8200
+    authPath: genesis
     secretEngine: secretsv2
-    secretPrefix: "data/supplychain"
+    secretPrefix: "data/genesis"
     role: vault-role
 settings:
   removeGenesisOnDelete: true

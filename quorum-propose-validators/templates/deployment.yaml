@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "goquorum-propose-validator.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    app.kubernetes.io/name: quorum-propose-validator-job
+    app.kubernetes.io/component: propose-validator-job
+    app.kubernetes.io/part-of: {{ include "goquorum-propose-validator.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        app.kubernetes.io/name: quorum-propose-validator-job
+        app.kubernetes.io/component: propose-validator-job
+        app.kubernetes.io/part-of: {{ include "goquorum-propose-validator.fullname" . }}
+        app.kubernetes.io/namespace: {{ .Release.Namespace }}
+        app.kubernetes.io/managed-by: helm
+    spec:
+      restartPolicy: "OnFailure"
+      containers:
+      - name: propose-validator
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+            runAsUser: 0
+        env:
+          - name: AUTHORIZED_VALIDATORS_URL
+            value: "{{- .Values.validators.authorizedValidatorsURL | join " " -}}"
+          - name: NON_AUTHORIZED_VALIDATORS_NODE_ADDRESS
+            value: "{{- .Values.validators.nonAuthorizedValidatorsNodeAddress | join " " -}}"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            for none_auth_val_address in $NON_AUTHORIZED_VALIDATORS_NODE_ADDRESS; do
+              for auth_val_url in $AUTHORIZED_VALIDATORS_URL; do
+                proposal_response=$(curl -s -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"istanbul_propose","params":["'"$none_auth_val_address"'",true],"id":1}' "$auth_val_url")
+                result_count=$(echo "$proposal_response" | grep -c "result")
+                if [ "$result_count" = 1 ]; then
+                    echo "Node proposed successfully."
+                else
+                    echo "$proposal_response" | jq -r '.error'
+                fi
+              done
+            done
+            echo "COMPLETED"

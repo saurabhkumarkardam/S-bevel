@@ -1,0 +1,19 @@
+image:
+  repository: ghcr.io/hyperledger/bevel-k8s-hooks
+  tag: qgt-0.2.12
+  pullPolicy: IfNotPresent
+  pullSecret: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+validators:
+  authorizedValidatorsURL:
+    - "http://validator-0rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+    - "http://validator-1rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+    - "http://validator-2rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+    - "http://validator-3rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+    - "http://validator-4rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+    - "http://validator-5rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+  nonAuthorizedValidatorsNodeAddress:
+    - "0xcbea9c7255c71453874f2645d97ad896d346a71e"

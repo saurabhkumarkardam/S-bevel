@@ -1,0 +1,22 @@
+image:
+  repository: ghcr.io/hyperledger/bevel-k8s-hooks
+  tag: qgt-0.2.12
+  pullPolicy: IfNotPresent
+  pullSecret: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+validators:
+  auth: true # Set to 'true' to vote the candidate in and 'false' to vote them out
+  # URLs of already authorized validators
+  authorizedValidatorsURL:
+    - "http://validator-0rpc.sau99.dev.aws.blockchaincloudpoc-develop.com" # - "http://test-1.yourDomain.com"
+    - "http://validator-1rpc.sau99.dev.aws.blockchaincloudpoc-develop.com" # - "http://test-2.yourDomain.com"
+    - "http://validator-2rpc.sau99.dev.aws.blockchaincloudpoc-develop.com" # - "http://test-3.yourDomain.com"
+    - "http://validator-3rpc.sau99.dev.aws.blockchaincloudpoc-develop.com" # - "http://test-4.yourDomain.com"
+    - "http://validator-4rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+    - "http://validator-5rpc.sau99.dev.aws.blockchaincloudpoc-develop.com"
+  # Node addresses of the validators that need to be proposed
+  nonAuthorizedValidatorsNodeAddress:
+    - "0xcbea9c7255c71453874f2645d97ad896d346a71e" # - "0x<nodeAddress>"
