@@ -27,7 +27,7 @@ spec:
         {{- include "labels.custom" . | nindent 2 }}
     spec:
       restartPolicy: OnFailure
-      serviceAccountName: {{ $.Values.vault.serviceaccountname }}
+      serviceAccountName: {{ $.Values.global.vault.serviceaccountname }}
       securityContext:
         fsGroup: 1000
       containers:
@@ -40,60 +40,81 @@ spec:
           - name: package-manager
             mountPath: /scripts/package-manager.sh
             subPath: package-manager.sh
+          - name: scripts-volume
+            mountPath: /scripts/bevel-vault.sh
+            subPath: bevel-vault.sh
         env:    
         - name: VAULT_ADDR
-          value: {{ $.Values.vault.address }}
+          value: {{ $.Values.global.vault.address }}
         - name: KUBERNETES_AUTH_PATH
-          value: {{ $.Values.vault.authpath }}
+          value: {{ $.Values.global.vault.authPath }}
         - name: VAULT_APP_ROLE
-          value: {{ $.Values.vault.role }}
+          value: {{ $.Values.global.vault.role }}
         - name: MOUNT_PATH
           value: "certcheck"
-        - name: CERTS_SECRET_PREFIX
-          value: {{ .Values.vault.certsecretprefix }}
+        - name: VAULT_SECRET_PREFIX # CERTS_SECRET_PREFIX
+          value: {{ .Values.global.vault.secretPrefix }}
+        - name: VAULT_SECRET_ENGINE
+          value: "{{ .Values.global.vault.secretEngine }}"
         command: ["bash", "-c"]
         args:
         - |-
           #!/usr/bin/env bash
 
           {{- if ne $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template" }}
-          . /scripts/package-manager.sh
-          # Define the packages to install
-          packages_to_install="jq bc curl unzip"
-          install_packages "$packages_to_install"
+            . /scripts/package-manager.sh
+            # Define the packages to install
+            packages_to_install="jq bc curl unzip"
+            install_packages "$packages_to_install"
 
-          if [[ $? > 0 ]]
-          then
-            # download jq
-            cd ~;
-            curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64;
-            chmod +x jq;
-            export PATH=$PATH:.;
-          else
-            echo "jq and curl was installed using apt-get."
-          fi;     
-          {{- end }}     
+            # Check if jq is installed
+            if ! command -v jq &> /dev/null; then
+              # jq is not installed, download it
+              cd ~
+              curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+              chmod +x jq
+              export PATH="$PATH:$HOME"
+            else
+              echo "jq is already installed via package-manager.sh script."
+            fi   
+          {{- end }}
 
-          validateVaultResponse () {
-            if echo ${2} | grep "errors"; then
-              echo "ERROR: unable to retrieve ${1}: ${2}"
-              exit 1
-            fi
-            if  [ "$3" == "LOOKUPSECRETRESPONSE" ]
-            then
-              http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
-              --header "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" \
-              ${VAULT_ADDR}/v1/${vault_secret_key})
-              curl_response=$?
-              if test "$http_code" != "200" ; then
-                  echo "Http response code from Vault - $http_code"
-                  if test "$curl_response" != "0"; then
-                     echo "Error: curl command failed with error code - $curl_response"
-                     exit 1
+          # Check if the vault type is HashiCorp
+{{- if eq .Values.global.vault.type "hashicorp" }}
+                # Source the script containing vault-related functions
+                . /scripts/bevel-vault.sh
+
+                echo "Generate a customize token."
+                vaultBevelFunc "init"
+                
+                # Function to safely write genesis
+                safeWriteGenesis() {
+                  # the vault cli is required for this job as the genesis file is too large to be passed in via a vault api call
+                  echo "installing vault cli"
+                  curl -O -L https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip # NOTE: = v1.15.5 ~~
+                  unzip vault_1.7.1_linux_amd64.zip
+                  {{- if eq $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template" }}
+                  export PATH=$PATH:~/workspace
+                  {{- else }}
+                  mv vault /bin
+                  {{- end }}
+                  vault --version
+
+                  vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/genesis"
+                  if [ "$SECRETS_AVAILABLE" == "no" ]
+                    then
+                      vault_secret_key="${VAULT_SECRET_ENGINE}/${KUBERNETES_AUTH_PATH}/genesis"
+                      # Save the generated keys to VAULT
+                      vault kv put $vault_secret_key genesis="@${MOUNT_PATH}/genesis_base64" sudo_details="@${MOUNT_PATH}/sudoKeygenOutput.json"
                   fi
-              fi
-            fi
-          }
+                }
+{{- else }}
+                safeWriteGenesis() {
+                  # Placeholder:
+                  # - Implement code to create keys over the cloud-native service or platform different from HashiCorp to store the keys
+                  return 0
+                }
+{{- end }}
 
           mkdir certcheck
           command={{ $.Values.node.command }}
@@ -108,8 +129,8 @@ spec:
           GENESIS=$(echo $GENESIS | jq '.genesis.runtime.grandpa.authorities |= []')
           GENESIS=$(echo $GENESIS | jq '.genesis.runtime.balances.balances |= []')
           {{- if eq $.Values.node.image "ghcr.io/inteli-poc/dscp-node" }}
-           GENESIS=$(echo $GENESIS | jq '.genesis.runtime.nodeAuthorization.nodes |= []')
-           GENESIS=$(echo $GENESIS | jq '.genesis.runtime.membership.members |= []')
+            GENESIS=$(echo $GENESIS | jq '.genesis.runtime.nodeAuthorization.nodes |= []')
+            GENESIS=$(echo $GENESIS | jq '.genesis.runtime.membership.members |= []')
           {{- end }}
 
           echo "Generating sudo key with scheme Sr25519..."          
@@ -123,28 +144,40 @@ spec:
           
           echo "Inserting keys into genesis"
 
-          echo "Inserting aura keys into genesis"
-          {{- range .Values.aura_keys }}
-          echo {{.}}
-          GENESIS=$(echo "$GENESIS" | jq --arg aura {{.}} '.genesis.runtime.aura.authorities += [$aura]')
-          {{- end }} 
+          for ((i=1; i<={{ $.Values.node.validatorCount }}; i++))
+          do
+            secret_data=$(kubectl get secret "substrate-node-validator-${i}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d)
+            
+            # Check if secret_data is empty or not
+              if [ -n "$secret_data" ]; then
+                  echo "Parse aura_addr from decoded JSON"
+                  # Extract aura_addr and grandpa_addr
+                  aura_addr=$(echo "$secret_data" | jq -r '.data.aura_addr')
+                  grandpa_addr=$(echo "$secret_data" | jq -r '.data.grandpa_addr')
 
-          echo "Inserting grandpa keys into genesis"
-          {{- range .Values.grandpa_keys }}
-          echo {{.}}
-          GENESIS=$(echo "$GENESIS" | jq --arg grandpa {{.}} '.genesis.runtime.grandpa.authorities += [[$grandpa, 1]]')
-          {{- end }}
+                  # Check if extraction successful
+                  if [ -n "$aura_addr" ] && [ -n "$grandpa_addr" ]; then
+                      # Insert aura_addr keys into GENESIS JSON
+                      GENESIS=$(echo "$GENESIS" | jq --arg aura "$aura_addr" '.genesis.runtime.aura.authorities += [$aura]')
+                      GENESIS=$(echo "$GENESIS" | jq --arg grandpa "$grandpa_addr" '.genesis.runtime.grandpa.authorities += [[$grandpa, 1]]')
+                  else
+                      echo "Error: Unable to retrieve aura_addr or grandpa_addr key"
+                  fi
+              else
+                  echo "Error: Unable to retrieve data."
+              fi
+          done
           
           {{- if eq $.Values.node.image "ghcr.io/inteli-poc/dscp-node" }}
           echo "Adding member accounts and their balances to genesis"
           {{- range $idx, $member := .Values.members }}
-          GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} --arg balance {{ $member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
-          GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} '.genesis.runtime.membership.members += [$account_id]')
+            GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} --arg balance {{ $member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
+            GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} '.genesis.runtime.membership.members += [$account_id]')
 
           {{- range $member.nodes }}
-          this_node_id={{ . }}
-          arr_node_id=($(echo $this_node_id | fold -w2))
-          GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+            this_node_id={{ . }}
+            arr_node_id=($(echo $this_node_id | fold -w2))
+            GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
           for byte in "${arr_node_id[@]}"
           do
             GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
@@ -160,31 +193,16 @@ spec:
           GENESIS=$($command build-spec --disable-default-bootnode --raw --chain certcheck/genesis.json)
           echo "$GENESIS" > certcheck/genesis_raw.json
           cat certcheck/genesis_raw.json | base64 -w0 > certcheck/genesis_base64
-      
-          KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-          echo "Getting secrets from Vault Server: ${VAULT_ADDR}"
 
-          # Login to Vault and so I can get an approle token
-          export VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login \
-            -H "Content-Type: application/json" \
-            -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | \
-            jq -r 'if .errors then . else .auth.client_token end')
-          
-          # the vault cli is required for this job as the genesis file is too large to be passed in via a vault api call
-          echo "installing vault cli"
-          curl -O -L https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip
-          unzip vault_1.7.1_linux_amd64.zip
-          {{- if eq $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template" }}
-          export PATH=$PATH:~/workspace
+          if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+            kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
+          fi
+
+          {{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
+            # If using any cloud-native service or platform different from HashiCorp to store the keys
           {{- else }}
-          mv vault /bin
+            safeWriteGenesis
           {{- end }}
-          vault --version
-
-          validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
-          vault_secret_key="${CERTS_SECRET_PREFIX}/genesis"
-          # Save the generated keys to VAULT
-          vault kv put $vault_secret_key genesis="@${MOUNT_PATH}/genesis_base64" sudo_details="@${MOUNT_PATH}/sudoKeygenOutput.json"
       volumes:
         - name: certcheck
           emptyDir:
@@ -192,3 +210,9 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
+{{- if eq .Values.global.vault.type "hashicorp" }}
+        - name: scripts-volume
+          configMap:
+            name: bevel-vault-script
+            defaultMode: 0777
+{{- end }}

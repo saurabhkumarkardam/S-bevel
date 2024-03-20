@@ -31,7 +31,7 @@ spec:
       {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
-        {{- if .Values.node.chainDataSnapshotUrl }}
+        {{- if .Values.node.chainDataSnapshotUrl }} # SKIP NEW
         - name: download-chain-snapshot
           image: {{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}
           command: [ "/bin/sh" ]
@@ -65,7 +65,7 @@ spec:
             - mountPath: /data
               name: chain-data
         {{- end }}
-        {{- if .Values.node.collator.relayChainDataSnapshotUrl }}
+        {{- if .Values.node.collator.relayChainDataSnapshotUrl }} # SKIP NEW
         - name: download-relay-chain-snapshot
           image: {{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}
           command: [ "/bin/sh" ]
@@ -99,7 +99,7 @@ spec:
             - mountPath: /data
               name: chain-data
         {{- end }}
-        {{- if .Values.node.chainDataGcsBucketUrl }}
+        {{- if .Values.node.chainDataGcsBucketUrl }} # SKIP NEW
         - name: sync-chain-gcs
           image: {{ .Values.googleCloudSdk.image.repository }}:{{ .Values.googleCloudSdk.image.tag }}
           command: [ "/bin/sh" ]
@@ -133,7 +133,7 @@ spec:
               readOnly: true
             {{- end }}
         {{- end }}
-        {{- if .Values.node.collator.relayChainDataGcsBucketUrl }}
+        {{- if .Values.node.collator.relayChainDataGcsBucketUrl }} # SKIP NEW
         - name: sync-relay-chain-gcs
           image: {{ .Values.googleCloudSdk.image.repository }}:{{ .Values.googleCloudSdk.image.tag }}
           command: [ "/bin/sh" ]
@@ -185,6 +185,8 @@ spec:
           args:
           - |-
             #!/bin/sh
+{{- if eq .Values.global.vault.type "hashicorp" }}
+              #############################################################################
               validateVaultResponse () {
                 if echo ${2} | grep "errors"; then
                   echo "ERROR: unable to retrieve ${1}: ${2}"
@@ -216,24 +218,39 @@ spec:
                 jq -r 'if .errors then . else .auth.client_token end')
               validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
               echo "logged in"
+              #############################################################################
+              . /scripts/bevel-vault.sh
 
+              echo "Generate a customize token."
+              vaultBevelFunc "init"
               vault_secret_key="${VAULT_SECRET_PREFIX}/${PEER_NAME}/substrate"
               
               echo "Getting node-key, aura and grandpa secret seeds from $vault_secret_key"
 
+              #############################################################################
               LOOKUP_SECRET_RESPONSE=$(curl -sS \
                 --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
                 ${VAULT_ADDR}/v1/${vault_secret_key} | \
                 jq -r 'if .errors then . else . end')
-              validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
+              validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
+              #############################################################################
+              vaultBevelFunc "readJson" "${VAULT_ADDR}/v1/${vault_secret_key}"
               
               {{- range $keys := .Values.node.keys }}
-              secretSeed=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["{{ .seed }}"]')
-              echo "${secretSeed}" > /secrets/{{ .seed }}              
+                secretSeed=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["{{ .seed }}"]')
+                echo "${secretSeed}" > /secrets/{{ .seed }}              
               {{- end }}
 
               node_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["node_key"]')
               echo "${node_key}" > /secrets/node_key
+{{- else }}
+              secret_data=$(kubectl get secret "${PEER_NAME}-substrate" --namespace gensub -o json | jq -r '.data["${PEER_NAME}-substrate-creds"]' | base64 -d)
+              {{- range $keys := .Values.node.keys }}
+                secretSeed=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data["{{ .seed }}"]')
+                echo "${secretSeed}" > /secrets/{{ .seed }}              
+              {{- end }}
+              node_key=$(echo "$secret_data" | jq -r '.data.node_key')
+{{- end }}
           volumeMounts:
           - name: keystore
             mountPath: /secrets

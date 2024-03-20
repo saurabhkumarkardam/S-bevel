@@ -29,6 +29,8 @@ data:
     # Transaction Pool
     tx-pool-retention-hours={{ .Values.node.besu.txPool.retentionHours }}
     tx-pool-max-size={{ .Values.node.besu.txPool.maxSize }}
+    # tx-pool-max-size=10 (Not supportable with 23.x.x)
+    # tx-pool-layer-max-capacity=12 (supportable with 23.x.x)
 
     {{ if  .Values.node.besu.p2p.enabled -}}
     # P2P network
