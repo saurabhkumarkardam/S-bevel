@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-weight": "1"
     "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
     app.kubernetes.io/name: pre-install-hook
@@ -23,7 +23,7 @@ spec:
         app.kubernetes.io/name: pre-install-hook
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ $.Values.global.vault.serviceAccountName }}
+      serviceAccountName: {{ $.Values.global.serviceAccountName }}
       restartPolicy: "OnFailure"
       containers:
         - name: sup-keygen
@@ -159,7 +159,7 @@ spec:
                   AURA_ADDR=$(jq -r '.ss58Address' auraKeygenOutput_validator$i.json)
                   
                   echo "Generate grandpa key for validator-$i"
-                  $command key generate --scheme Ed25519 --output-type json >> grandpaKeygenOutput.json
+                  $command key generate --scheme Ed25519 --output-type json >> grandpaKeygenOutput_validator$i.json
                   GRANDPA_SEED=$(jq -r '.secretSeed' grandpaKeygenOutput_validator$i.json)
                   GRANDPA_ADDR=$(jq -r '.ss58Address' grandpaKeygenOutput_validator$i.json)
 
@@ -181,8 +181,8 @@ spec:
                       \"account_seed\": \"$ACCOUNT_SEED\",
                       \"account_addr\": \"$ACCOUNT_ADDR\",
                       \"account_file_b64\": \"$(cat accKeygenOutput.json | base64 -w 0)\",
-                      \"aura_file_b64\": \"$(cat auraKeygenOutput.json | base64 -w 0)\",
-                      \"grandpa_file_b64\":\"$(cat grandpaKeygenOutput.json | base64 -w 0)\"
+                      \"aura_file_b64\": \"$(cat auraKeygenOutput_validator$i.json | base64 -w 0)\",
+                      \"grandpa_file_b64\":\"$(cat grandpaKeygenOutput_validator$i.json | base64 -w 0)\"
                     }}" > finalJSON.json
                     secret_name="substrate-node-member-${i}-keys"
                   {{- else }}
@@ -195,8 +195,8 @@ spec:
                       \"aura_addr\": \"$AURA_ADDR\",
                       \"grandpa_seed\": \"$GRANDPA_SEED\",
                       \"grandpa_addr\": \"$GRANDPA_ADDR\",
-                      \"aura_file_b64\": \"$(cat auraKeygenOutput.json | base64 -w 0)\",
-                      \"grandpa_file_b64\":\"$(cat grandpaKeygenOutput.json | base64 -w 0)\"
+                      \"aura_file_b64\": \"$(cat auraKeygenOutput_validator$i.json | base64 -w 0)\",
+                      \"grandpa_file_b64\":\"$(cat grandpaKeygenOutput_validator$i.json | base64 -w 0)\"
                     }}" > finalJSON.json
                     secret_name="substrate-node-validator-${i}-keys"
                   {{- end }}
@@ -217,8 +217,6 @@ spec:
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
-{{- if eq .Values.global.vault.type "hashicorp" }}
         - name: package-manager
           configMap:
             name: package-manager
-{{- end }}

@@ -7,31 +7,29 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ $.Values.metadata.name }}"
-  namespace: "{{ $.Values.metadata.namespace }}"
-    annotations:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
     "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-weight": "2"
     "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
-    app: "{{ $.Values.metadata.name }}"
-    app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
+    app: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ .Release.Name }}
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    {{- include "labels.custom" . | nindent 2 }}
 spec:
   backoffLimit: 6
   template:
     metadata:
       labels:
-        app: "{{ $.Values.metadata.name }}"
-        app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
+        app: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ .Release.Name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        {{- include "labels.custom" . | nindent 2 }}
     spec:
       restartPolicy: OnFailure
-      serviceAccountName: {{ $.Values.global.vault.serviceaccountname }}
+      serviceAccountName: {{ $.Values.global.serviceAccountName }}
       securityContext:
         fsGroup: 1000
       containers:
@@ -120,6 +118,11 @@ spec:
                 }
 {{- end }}
 
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/
+          kubectl version --client
+
           mkdir certcheck
           command={{ $.Values.node.command }}
           echo "Generate genesis"
@@ -207,6 +210,7 @@ spec:
           {{- else }}
             safeWriteGenesis
           {{- end }}
+          sleep 5m
       volumes:
         - name: certcheck
           emptyDir:
@@ -214,9 +218,8 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
-{{- if eq .Values.global.vault.type "hashicorp" }}
         - name: scripts-volume
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
-{{- end }}
+
