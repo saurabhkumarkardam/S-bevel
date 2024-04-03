@@ -5,7 +5,7 @@ metadata:
   name: substrate-genesis-pre-hook
   namespace: {{ .Release.Namespace }}
   annotations:
-    "helm.sh/hook": pre-install
+    "helm.sh/hook": post-install
     "helm.sh/hook-weight": "0"
     "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:

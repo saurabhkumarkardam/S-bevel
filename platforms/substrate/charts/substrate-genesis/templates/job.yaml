@@ -9,6 +9,10 @@ kind: Job
 metadata:
   name: "{{ $.Values.metadata.name }}"
   namespace: "{{ $.Values.metadata.namespace }}"
+    annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
     app: "{{ $.Values.metadata.name }}"
     app.kubernetes.io/name: "{{ $.Values.metadata.name }}"
@@ -188,7 +192,7 @@ spec:
           
           echo "$GENESIS" > certcheck/genesis.json
           echo "********* check genesis *********"
-          cat certcheck/genesis.json
+          # cat certcheck/genesis.json
           echo "Converting genesis to raw format"
           GENESIS=$($command build-spec --disable-default-bootnode --raw --chain certcheck/genesis.json)
           echo "$GENESIS" > certcheck/genesis_raw.json
