@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: oem-4s-ipfs-node
+  namespace: oem-subs
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  interval: 1m
+  releaseName: oem-4s-ipfs-node
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-s
+        namespace: flux-s
+      chart: platforms/substrate/charts/dscp-ipfs-node
+  values:
+    fullnameOverride: oem-4s-ipfs
+    namespace: oem-subs
+    config:
+      healthCheckPort: 80
+      healthCheckPollPeriod: 30000
+      healthCheckTimeout: 2000
+      nodeHost: "oem"
+      nodePort: "9944"
+      logLevel: info
+      ipfsApiPort: 5001
+      ipfsSwarmPort: 4001
+      ipfsDataPath: "/ipfs"
+      ipfsCommand: "/usr/local/bin/ipfs"
+      ipfsArgs:
+        - daemon
+        - "--migrate"
+      ipfsSwarmAddrFilters: null
+      ipfsLogLevel: info
+      ipfsBootNodeAddress: /dns4/oem-ipfs-bn-3s-ipfs-swarm.oem-subs.svc.cluster.local/tcp/4001/p2p/12D3KooWBWmpb3j5k9SujBtmCY9LgsciynXXTxwagmQFKrFFWrJ6
+      
+    service:
+      swarm:
+        annotations: {}
+        enabled: true
+        port: 4001
+      api:
+        annotations: {}
+        enabled: true
+        port: 5001
+
+    statefulSet:
+      annotations: {}
+      livenessProbe:
+        enabled: true
+    image:
+      repository: ghcr.io/inteli-poc/dscp-ipfs
+      pullPolicy: IfNotPresent
+      tag: 'v2.6.2'
+    storage:
+      storageClass: "oem-bevel-storageclass"
+      dataVolumeSize: 20  # in Gigabytes
+    dscpNode:
+      enabled: false
+    proxy:
+      provider: ambassador
+      external_url: oem-4s-ipfs-swarm.sub.blockchaincloudpoc-develop.com
+      port: 15057
+      certSecret: oem-ambassador-certs
+    vault:
+      address: http://98.64.226.131:20001
+      role: vault-role
+      authpath: soem
+      serviceaccountname: vault-auth
+      certsecretprefix: secretsv2/data/oem/oem-4s
