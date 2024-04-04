@@ -316,10 +316,10 @@ node:
     enabled: false
 
 proxy:
-  provider: none # ambassador
-  # external_url: validator1.saikb.dev.aws.blockchaincloudpoc-develop.com
-  # p2p: 15052
-  # certSecret: oem-ambassador-certs
+  provider: ambassador # none # ambassador
+  external_url: validator1.saikb.dev.aws.blockchaincloudpoc-develop.com
+  p2p: 15052
+  certSecret: oem-ambassador-certs
 
 # storageClass: awsstorageclass
 

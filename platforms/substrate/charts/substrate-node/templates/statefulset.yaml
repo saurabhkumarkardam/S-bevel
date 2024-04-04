@@ -90,21 +90,25 @@ spec:
 
               EXTERNAL_ADDRESS=${POD_NAME}.sub.blockchaincloudpoc-develop.com
               echo "EXTERNAL_ADDRESS=${EXTERNAL_ADDRESS}"
-              EXTERNAL_P2P_PORT=15031
+              EXTERNAL_P2P_PORT={{ $.Values.proxy.p2p }}
               echo "EXTERNAL_P2P_PORT=${EXTERNAL_P2P_PORT}"
-              RELAY_CHAIN_P2P_PORT=15031
+              RELAY_CHAIN_P2P_PORT={{ $.Values.proxy.p2p }} # 15034
               echo "RELAY_CHAIN_P2P_PORT=${RELAY_CHAIN_P2P_PORT}"
 
               echo ">>> 6 <<<"
 
               echo "POD_NAME=${POD_NAME}"
+
+              sleep 30m
+              echo "------------------ SLEEP DONE ------------------"
+
               exec ./dscp-node \
               --name=${POD_NAME} \
               --base-path=/data/ \
               --chain=/data/chainspec.json \
-              --validator \
-              --bootnodes '/dns4/validator-1-substrate-node-0.sub.blockchaincloudpoc-develop.com/tcp/15030/p2p/12D3KooWP1Trq8pH1LVFm52YTbnu6veVSLV8pXQByYZGehr3xzEM' \
               --node-key ${node_key} \
+              --validator \
+              --bootnodes '/dns4/validator-1-substrate-node-0.sub.blockchaincloudpoc-develop.com/tcp/15050/p2p/12D3KooWDYCsJgrQXuAQEFR9ijda3apdjcSLBPN3RfzbZRRA2fJP' \
               --rpc-external --ws-external --rpc-methods=Unsafe --rpc-cors=all --unsafe-ws-external --unsafe-rpc-external \
               --public-addr=/dns4/${EXTERNAL_ADDRESS}/tcp/${EXTERNAL_P2P_PORT} \
               --listen-addr=/ip4/0.0.0.0/tcp/${RELAY_CHAIN_P2P_PORT}
@@ -119,6 +123,9 @@ spec:
                   apiVersion: v1
                   fieldPath: metadata.name
           ports:
+            - name: admin
+              containerPort: 14271
+              protocol: TCP
             - containerPort: 9933
               name: http-rpc
               protocol: TCP
@@ -131,11 +138,9 @@ spec:
             - containerPort: 30333
               name: p2p
               protocol: TCP
-          {{- if .Values.node.collator.isParachain }}
             - containerPort: 30334
               name: pc-p2p
               protocol: TCP
-          {{- end }}
           {{- if .Values.node.enableStartupProbe }}
           # On startup, retry the connection to the /health endpoint every 10s for 5 min before killing the container
           startupProbe:
@@ -155,10 +160,6 @@ spec:
           - name: package-manager
             mountPath: /scripts/package-manager.sh
             subPath: package-manager.sh
-          ports:
-            - name: admin
-              containerPort: 14271
-              protocol: TCP
           # livenessProbe:
           #   httpGet:
           #     path: /
