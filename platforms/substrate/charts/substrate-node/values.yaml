@@ -306,7 +306,7 @@ node:
   podManagementPolicy: Parallel
 
   ports:
-    p2p: 30333
+    p2p: 8080 # 30333
     ws: 9944
     rpc: 9933
 

@@ -138,7 +138,7 @@ spec:
             - containerPort: 30333
               name: p2p
               protocol: TCP
-            - containerPort: 30334
+            - containerPort: 8080 # 30334
               name: pc-p2p
               protocol: TCP
           {{- if .Values.node.enableStartupProbe }}
