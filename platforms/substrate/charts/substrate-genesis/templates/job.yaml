@@ -69,9 +69,8 @@ spec:
             packages_to_install="jq bc curl unzip"
             install_packages "$packages_to_install"
 
-            # Check if jq is installed
+            # Check if jq is installed and download it if not installed
             if ! command -v jq &> /dev/null; then
-              # jq is not installed, download it
               cd ~
               curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
               chmod +x jq
@@ -80,43 +79,6 @@ spec:
               echo "jq is already installed via package-manager.sh script."
             fi   
           {{- end }}
-
-          # Check if the vault type is HashiCorp
-{{- if eq .Values.global.vault.type "hashicorp" }}
-                # Source the script containing vault-related functions
-                . /scripts/bevel-vault.sh
-
-                echo "Generate a customize token."
-                vaultBevelFunc "init"
-                
-                # Function to safely write genesis
-                safeWriteGenesis() {
-                  # the vault cli is required for this job as the genesis file is too large to be passed in via a vault api call
-                  echo "installing vault cli"
-                  curl -O -L https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip # NOTE: = v1.15.5 ~~
-                  unzip vault_1.7.1_linux_amd64.zip
-                  {{- if eq $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template" }}
-                  export PATH=$PATH:~/workspace
-                  {{- else }}
-                  mv vault /bin
-                  {{- end }}
-                  vault --version
-
-                  vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/genesis"
-                  if [ "$SECRETS_AVAILABLE" == "no" ]
-                    then
-                      vault_secret_key="${VAULT_SECRET_ENGINE}/${KUBERNETES_AUTH_PATH}/genesis"
-                      # Save the generated keys to VAULT
-                      vault kv put $vault_secret_key genesis="@${MOUNT_PATH}/genesis_base64" sudo_details="@${MOUNT_PATH}/sudoKeygenOutput.json"
-                  fi
-                }
-{{- else }}
-                safeWriteGenesis() {
-                  # Placeholder:
-                  # - Implement code to create keys over the cloud-native service or platform different from HashiCorp to store the keys
-                  return 0
-                }
-{{- end }}
 
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
@@ -151,7 +113,7 @@ spec:
           
           echo "Inserting keys into genesis"
 
-          for ((i=1; i<={{ $.Values.node.validatorCount }}; i++))
+          for ((i=1; i<=1; i++))
           do
             secret_data=$(kubectl get secret "substrate-node-validator-${i}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d)
             
@@ -177,20 +139,23 @@ spec:
           
           {{- if eq $.Values.node.image "ghcr.io/inteli-poc/dscp-node" }}
           echo "Adding member accounts and their balances to genesis"
-          {{- range $idx, $member := .Values.members }}
-            GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} --arg balance {{ $member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
-            GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} '.genesis.runtime.membership.members += [$account_id]')
+            {{- range $idx, $member := .Values.members }}
+              echo ">>>> 1 <<<<"
+              GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} --arg balance {{ $member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
+              GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} '.genesis.runtime.membership.members += [$account_id]')
 
-          {{- range $member.nodes }}
-            this_node_id={{ . }}
-            arr_node_id=($(echo $this_node_id | fold -w2))
-            GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
-          for byte in "${arr_node_id[@]}"
-          do
-            GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
-          done
-          {{- end }}
-          {{- end }}          
+              {{- range $member.nodes }}
+                echo ">>>> 2 <<<<"
+                this_node_id={{ . }}
+                arr_node_id=($(echo $this_node_id | fold -w2))
+                GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+                for byte in "${arr_node_id[@]}"
+                do
+                  echo ">>>> 3 <<<<"
+                  GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
+                done
+              {{- end }}
+            {{- end }}          
           {{- end }}
           
           echo "$GENESIS" > certcheck/genesis.json
@@ -205,12 +170,9 @@ spec:
             kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           fi
 
-          {{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
-            # If using any cloud-native service or platform different from HashiCorp to store the keys
-          {{- else }}
-            safeWriteGenesis
-          {{- end }}
-          sleep 5m
+          echo "sleep 10m"
+          sleep 10m
+          echo "Done"
       volumes:
         - name: certcheck
           emptyDir:

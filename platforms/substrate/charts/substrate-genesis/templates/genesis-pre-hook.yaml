@@ -90,61 +90,6 @@ spec:
                   fi;
                 {{- end }}
 
-                # Check if the vault type is HashiCorp
-{{- if eq .Values.global.vault.type "hashicorp" }}
-                # Source the script containing vault-related functions
-                . /scripts/bevel-vault.sh
-
-                echo "Generate a customize token."
-                vaultBevelFunc "init"
-                
-                # Function to safely write keys
-                safeWriteSecret() {
-                  local key="$1"
-                  local payload_json="$2"
-                  
-                  # Read secret from vault
-                  vaultBevelFunc "readJson" "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}"
-                  # Check if secrets are available in the vault
-                  if [ "$SECRETS_AVAILABLE" == "yes" ]
-                    then
-                      # Extract secrets from JSON response
-                      local node_id=$(echo ${VAULT_SECRET} | jq -r '.["node_id"]')
-                      local node_key=$(echo ${VAULT_SECRET} | jq -r '.["node_key"]')
-                      local aura_seed=$(echo ${VAULT_SECRET} | jq -r '.["aura_seed"]')
-                      local aura_addr=$(echo ${VAULT_SECRET} | jq -r '.["aura_addr"]')
-                      local grandpa_seed=$(echo ${VAULT_SECRET} | jq -r '.["grandpa_seed"]')
-                      local grandpa_addr=$(echo ${VAULT_SECRET} | jq -r '.["grandpa_addr"]')
-                      local aura_file_b64=$(echo ${VAULT_SECRET} | jq -r '.["aura_file_b64"]' | base64 -d)
-                      local grandpa_file_b64=$(echo ${VAULT_SECRET} | jq -r '.["grandpa_file_b64"]' | base64 -d)
-                      
-                      # Check if Kubernetes secret exists, if not, create one
-                      if ! kubectl get secret substrate-node-validator-${i}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then                      
-                        kubectl create secret generic substrate-node-validator-${i}-keys --namespace {{ .Release.Namespace }} \
-                        --from-literal=node_id=${node_id} \
-                        --from-literal=node_key=${node_key} \
-                        --from-literal=aura_seed=${aura_seed} \
-                        --from-literal=aura_addr=${aura_addr} \
-                        --from-literal=grandpa_seed=${grandpa_seed} \
-                        --from-literal=grandpa_addr=${grandpa_addr} \
-                        --from-literal=aura_file_b64=${aura_file_b64}
-                        --from-literal=grandpa_file_b64=${grandpa_file_b64}
-                      fi
-                  else
-                    # Push data to vault
-                    vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}" "${payload_json}"
-                    rm nodePayload.json
-                  fi
-                }
-{{- else }}
-                safeWriteSecret() {
-                  # Placeholder:
-                  # - Implement code to fetch the keys if using any cloud-native service or platform different from HashiCorp to store the keys
-                  # - After fetching the keys, create Kubernetes secrets from them
-                  # - For guidance, refer to the code written for HashiCorp Vault for the same purpose
-                  return 0
-                }
-{{- end }}
                 
                 command={{ $.Values.node.command }}
                 
@@ -205,12 +150,6 @@ spec:
                     echo "creating secrets"
                     kubectl create secret generic "${secret_name}" --namespace {{ .Release.Namespace }} --from-file="substrate-node-keys"="finalJSON.json"
                   fi
-                  
-                  {{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
-                    # If using any cloud-native service or platform different from HashiCorp to store the keys
-                  {{- else }}
-                    safeWriteSecret "${secret_name}" finalJSON.json
-                  {{- end }}
                 done
       volumes:
         - name: scripts-volume
