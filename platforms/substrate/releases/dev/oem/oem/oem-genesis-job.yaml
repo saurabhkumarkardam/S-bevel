@@ -35,7 +35,6 @@ spec:
     chain: inteli
     aura_keys: ['5Gy52kxbuJbGQApyj3J7zGeKC92szNkGnyAm1PndcFeCzD2k']
     grandpa_keys: ['5E13E7cMmVt4FKBsAYmjWsghpCf5VBHHSKUv6XZ7CSBJSBat']
-    
     members: 
       -   account_id: 5G6nS6ht778BUF27JHZhE7eJQ6beZAiAZUeaTPohCVKbbWWe
           balance: 1152921504606846976
