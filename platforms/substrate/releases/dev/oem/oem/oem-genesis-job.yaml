@@ -1,0 +1,49 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: oem-genesis-job
+  namespace: oem-subs
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  interval: 1m
+  releaseName: oem-genesis-job
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-s
+        namespace: flux-s
+      chart: platforms/substrate/charts/substrate-genesis
+  values:
+    node:
+      name: oem-genesis-job
+      image: ghcr.io/inteli-poc/dscp-node
+      imageTag: v4.3.1
+      pullPolicy: IfNotPresent
+      command: ./dscp-node
+    metadata:
+      name: oem-genesis-job
+      namespace: oem-subs
+    vault:
+      address: http://98.64.226.131:20001
+      role: vault-role
+      authpath: soem
+      serviceaccountname: vault-auth
+      certsecretprefix: secretsv2/oem
+    chain: inteli
+    aura_keys: ['5Gy52kxbuJbGQApyj3J7zGeKC92szNkGnyAm1PndcFeCzD2k']
+    grandpa_keys: ['5E13E7cMmVt4FKBsAYmjWsghpCf5VBHHSKUv6XZ7CSBJSBat']
+    members: 
+      -   account_id: 5G6nS6ht778BUF27JHZhE7eJQ6beZAiAZUeaTPohCVKbbWWe
+          balance: 1152921504606846976
+          nodes:
+          - 002408011220762E8F338E19847A21580E0F288BAD4F9D39D1EBAF784E8CBB7A12E07B8BD20C
+          - 002408011220B96F37DBEFA980AD7B4AD1F17413A4DFE02B1F225CC31527D9DB7931FCBA8858
+          - 0024080112207D0C011D7E299E280084488D556C789037022A1AC6EB3B792CF17D8B1626A073
+          - 00240801122008E1489ACC3ACFC5374F8A537D7F19AC725CF560EA34EED6632D6A4CE50F9E1D
+      -   account_id: 5DZKaX8P23tXpSYwQyjCaqrXAXX4uiGWUC4uYk6Jb3A3NRrC
+          balance: 1152921504606846976
+          nodes:
+          - 002408011220A9C8501ACB483F2018D7AAEDB2F867BF959D7DE95014E7CDC70F151955A20008
