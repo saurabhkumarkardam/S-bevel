@@ -66,7 +66,7 @@ spec:
           {{- if ne $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template" }}
             . /scripts/package-manager.sh
             # Define the packages to install
-            packages_to_install="jq bc curl unzip"
+            packages_to_install="jq bc curl unzip base58 xxd"
             install_packages "$packages_to_install"
 
             # Check if jq is installed and download it if not installed
@@ -113,8 +113,7 @@ spec:
           
           echo "Inserting keys into genesis"
 
-          for ((i=1; i<=1; i++))
-          do
+          for ((i=1; i<= {{ $.Values.node.validator.count }}; i++)); do
             secret_data=$(kubectl get secret "substrate-node-validator-${i}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d)
             
             # Check if secret_data is empty or not
@@ -137,26 +136,42 @@ spec:
               fi
           done
           
-          {{- if eq $.Values.node.image "ghcr.io/inteli-poc/dscp-node" }}
-          echo "Adding member accounts and their balances to genesis"
-            {{- range $idx, $member := .Values.members }}
-              echo ">>>> 1 <<<<"
-              GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} --arg balance {{ $member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
-              GENESIS=$(echo $GENESIS | jq --arg account_id {{ $member.account_id }} '.genesis.runtime.membership.members += [$account_id]')
+          secret_names=$(kubectl get secret -n gensub | grep substrate-node | awk '{print $1}')
+          declare -a nodes
+          # Loop through each line of the output and add it to the array
+          while IFS= read -r line; do
+              nodes+=("$line")
+          done <<< "$secret_names"
+          echo "NODE ARRAY"
+          printf '%s\n' "${nodes[@]}"
+          echo "NODE ARRAY END"
 
-              {{- range $member.nodes }}
-                echo ">>>> 2 <<<<"
-                this_node_id={{ . }}
-                arr_node_id=($(echo $this_node_id | fold -w2))
-                GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
-                for byte in "${arr_node_id[@]}"
-                do
-                  echo ">>>> 3 <<<<"
-                  GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
-                done
-              {{- end }}
-            {{- end }}          
-          {{- end }}
+          for ((i=1; i<= {{ $.Values.node.member.count }}; i++)); do
+              account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
+              echo "account_addr: $account_addr"
+              GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" --arg balance {{ $.Values.node.member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
+              GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" '.genesis.runtime.membership.members += [$account_id]')
+
+              for node in "${nodes[@]}"; do
+                  node_id=$(kubectl get secret "$node" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                  echo "node_id: $node_id"
+                  
+                  base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+                  echo "base58: $base58"
+                  
+                  arr_node_id=($(echo $base58 | fold -w2))
+                  i=1
+                  GENESIS=$(echo $GENESIS | jq --arg owner "$account_addr" '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+                  for byte in "${arr_node_id[@]}"
+                  do
+                      echo ">>>> ${i} <<<<"
+                      echo "byte: $byte"
+                      GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
+                      i=${i}+1
+                  done
+                  # echo "GENESIS: $GENESIS"
+              done
+          done
           
           echo "$GENESIS" > certcheck/genesis.json
           echo "********* check genesis *********"

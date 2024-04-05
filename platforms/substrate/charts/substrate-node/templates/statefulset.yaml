@@ -67,22 +67,6 @@ spec:
 
               echo ">>> 4 <<<"
 
-              # ./dscp-node key insert --base-path /data \
-              #   --chain /data/chainspec.json \
-              #   --key-type gran \
-              #   --scheme ed25519 \
-              #   --suri /secrets/grandpa_seed \
-              #   && echo "Inserted key gran into Keystore" \
-              #   || echo "Failed to insert key gran into Keystore."
-              
-              # ./dscp-node key insert --base-path /data \
-              #   --chain /data/chainspec.json \
-              #   --key-type aura \
-              #   --scheme sr25519 \
-              #   --suri /secrets/aura_seed \
-              #   && echo "Inserted key aura into Keystore" \
-              #   || echo "Failed to insert key aura into Keystore."
-
               ./dscp-node key insert --base-path=/data --chain=/data/chainspec.json --key-type=aura --scheme=Sr25519 --suri="${aura_secretPhrase}" && echo "Inserted key aura into Keystore" || echo "Failed to insert key aura into Keystore."
               ./dscp-node key insert --base-path=/data --chain=/data/chainspec.json --key-type=gran --scheme=Ed25519 --suri="${gran_secretPhrase}" && echo "Inserted key gran into Keystore" || echo "Failed to insert key gran into Keystore."
 
