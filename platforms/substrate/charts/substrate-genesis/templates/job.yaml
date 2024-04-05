@@ -185,8 +185,8 @@ spec:
             kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           fi
 
-          echo "sleep 10m"
-          sleep 10m
+          # echo "sleep 10m"
+          # sleep 10m
           echo "Done"
       volumes:
         - name: certcheck

@@ -46,6 +46,13 @@ global:
     #Provide the vault path where the secrets will be stored
     secretPrefix: "data/supplychain" # certSecretPrefix
 
+removeGenesisOnDelete:
+  enabled: true
+  image:
+    repository: ghcr.io/hyperledger/bevel-k8s-hooks
+    tag: qgt-0.2.12
+    pullPolicy: IfNotPresent
+
 node:
   # Pull substrate Docker image
   image: ghcr.io/inteli-poc/dscp-node
