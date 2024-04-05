@@ -144,9 +144,14 @@ spec:
           {{- range $member.nodes }}
           this_node_id={{ . }}
           arr_node_id=($(echo $this_node_id | fold -w2))
+          echo "arr_node_id: $arr_node_id"
           GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+          echo "GENESIS: " && echo "$GENESIS" | tail -n 10
           for byte in "${arr_node_id[@]}"
           do
+            echo "byte: $byte"
+            byte_decimal=$(echo "obase=10; ibase=16; $byte" | bc)
+            echo "byte_decimal: $byte_decimal"
             GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
           done
           {{- end }}
@@ -186,7 +191,7 @@ spec:
           # Save the generated keys to VAULT
           vault kv put $vault_secret_key genesis="@${MOUNT_PATH}/genesis_base64" sudo_details="@${MOUNT_PATH}/sudoKeygenOutput.json"
 
-          sleep 5m
+          echo "sleep 10m" && sleep 10m
       volumes:
         - name: certcheck
           emptyDir:
