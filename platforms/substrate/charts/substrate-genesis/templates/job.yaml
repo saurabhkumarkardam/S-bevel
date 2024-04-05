@@ -143,10 +143,11 @@ spec:
 
           {{- range $member.nodes }}
           this_node_id={{ . }}
+          echo "this_node_id: $this_node_id"
           arr_node_id=($(echo $this_node_id | fold -w2))
           echo "arr_node_id: $arr_node_id"
           GENESIS=$(echo $GENESIS | jq --arg owner {{ $member.account_id }} '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
-          echo "GENESIS: " && echo "$GENESIS" | tail -n 10
+          echo "GENESIS: " && echo "$GENESIS" | tail -n 30
           for byte in "${arr_node_id[@]}"
           do
             echo "byte: $byte"
@@ -154,7 +155,9 @@ spec:
             echo "byte_decimal: $byte_decimal"
             GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
           done
+          echo "---------------------------- 1"
           {{- end }}
+          echo "---------------------------- 2"
           {{- end }}          
           {{- end }}
           
