@@ -60,7 +60,7 @@ node:
   type: validator # validator | member # NEW field added
   name: 
   validatorCount: 4
-  memberCount: 
+  memberCount: 1
 
 
 #############################################################
