@@ -152,10 +152,10 @@ spec:
                 echo ">>>>>>>>>> OUTSIDE <<<<<<<<<<"
                 
                 command={{ $.Values.node.command }}
-                secretName="substrate-node-{{ .Release.Name }}-keys"
-                if ! kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                secret_name="substrate-node-{{ .Release.Name }}-keys"
+                if ! kubectl get secret "${secret_name}" --namespace {{ .Release.Namespace }} &> /dev/null; then
                     echo "Secret for the node {{ .Release.Name }} does not exist. Creating..."
-                    generate_nodekey "{{ .Values.node.role }}"
+                    generate_nodekey "{{ .Values.node.role }}" 
                 else
                   echo "Already exist."
                 fi

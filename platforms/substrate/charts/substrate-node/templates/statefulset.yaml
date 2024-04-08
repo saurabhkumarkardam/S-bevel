@@ -244,11 +244,11 @@ spec:
 
             #!/bin/sh
 
+              echo ">>> 1 <<<"
               . /scripts/package-manager.sh
               packages_to_install="jq curl"
               install_packages "$packages_to_install"
 
-              echo ">>> 1 <<<"
               curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
               chmod +x kubectl
               mv kubectl /usr/local/bin/
@@ -306,11 +306,12 @@ spec:
               echo "EXTERNAL_ADDRESS:$EXTERNAL_ADDRESS"
               echo "EXTERNAL_P2P_PORT:$EXTERNAL_P2P_PORT"
 
+              echo ">>> 6 <<<"
               exec {{ .Values.node.command }} \
               --name=${POD_NAME} \
               --base-path=/data/ \
               --node-key=${NODE_KEY} \
-              --chain={{ .Values.node.customChainspecPath }} \
+              --chain={{ if .Values.node.customChainspecUrl }}{{ .Values.node.customChainspecPath }}{{ else }}${CHAIN}{{ end }} \
               {{- if or (eq .Values.node.role "authority") (eq .Values.node.role "validator") }}
               --validator \
               {{- else if eq .Values.node.role "collator" }}
@@ -331,6 +332,9 @@ spec:
               {{- end }}
               {{- if .Values.node.tracing.enabled }}
               --jaeger-agent=127.0.0.1:{{ .Values.jaegerAgent.ports.compactPort }} \
+              {{- end }}
+              {{- if .Values.node.collator.relayChainCustomChainspecUrl }}
+              --chain={{ .Values.node.relayChainCustomChainspecPath }} \
               {{- end }}
               {{- join " " .Values.node.flags | nindent 16 }} \
               {{- join " " .Values.node.collator.relayChainFlags | nindent 16 }}

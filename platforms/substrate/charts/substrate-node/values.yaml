@@ -287,10 +287,10 @@ node:
     enabled: true # false | true
     bootnodeAddr: validator-1-substrate-node-0-rc-p2p.gensub
     bootnodePort: 8080
-    bootnodeId: 12D3KooWQ5iLnBxCSS27NBuqtKMdjzwnpmrjrLkFD2nvLinF8QB7 # 12D3KooWLjUiCFHuPbs1jhyJ1opQejmzkH8XB4XhEmCoT1xfEETx
+    bootnodeId: 12D3KooWQ5iLnBxCSS27NBuqtKMdjzwnpmrjrLkFD2nvLinF8QB7 # 
   dataVolumeSize: 10Gi
   replicas: 1
-  role: validator # full # validator
+  role: validator # full | validator
   customChainspecUrl: true
   customChainspecPath: "/data/chainspec.json"
   collator:
