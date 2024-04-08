@@ -56,7 +56,7 @@ spec:
 
                 . /scripts/package-manager.sh
                 # Define the packages to install
-                packages_to_install="jq curl"
+                packages_to_install="jq curl bc base58 xxd"
                 install_packages "$packages_to_install"
                 
                 # Check if jq is installed
@@ -149,16 +149,60 @@ spec:
                     fi
                 }
 
-                echo ">>>>>>>>>> OUTSIDE <<<<<<<<<<"
+                # Function to add the node to Genesis
+                add_node_to_genesis() {
+                    echo "Inside add_node_to_genesis"
+                    # chain_spec=$(kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]')
+                    # echo "${chain_spec}" | base64 -d > ./genesisRaw.json
+
+                    GENESIS=$(cat ./genesisRaw.json)
+                    echo "GENESIS-1: $(echo "$GENESIS" | head -n 5)"
+
+                    node_id=$(kubectl get secret "$secret_name" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                    echo "node_id: $node_id"
+
+                    base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+                    echo "base58: $base58"
+
+                    arr_node_id=($(echo "$base58" | fold -w2))
+
+                    i=1
+                    for byte in "${arr_node_id[@]}"; do
+                        echo ">>>> ${i} <<<<"
+                        echo "byte: $byte"
+                        GENESIS=$(echo "$GENESIS" | jq --arg byte "$(echo "obase=10; ibase=16; $byte" | bc)" '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
+                        ((i++))
+                    done
+                    echo "GENESIS-2: $(echo "$GENESIS" | head -n 5)"
+                    echo " ########################### "
+                    echo "GENESIS-3: $(echo "$GENESIS" | tail -n 30)"
+
+                    mkdir certcheck
+                    echo "$GENESIS" > certcheck/genesis.json
+                    GENESIS=$($command build-spec --disable-default-bootnode --raw --chain certcheck/genesis.json)
+                    echo "$GENESIS" > certcheck/genesis_raw.json
+                    cat certcheck/genesis_raw.json | base64 -w0 > certcheck/genesis_base64
+
+                    kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json" --dry-run=client -o yaml | kubectl replace -f -
+                    echo " ########################### done"
+                    sleep 2m
+                }
                 
-                command={{ $.Values.node.command }}
+                echo ">>>>>>>>>> OUTSIDE <<<<<<<<<<"
+
+                command="{{ $.Values.node.command }}"
                 secret_name="substrate-node-{{ .Release.Name }}-keys"
-                if ! kubectl get secret "${secret_name}" --namespace {{ .Release.Namespace }} &> /dev/null; then
-                    echo "Secret for the node {{ .Release.Name }} does not exist. Creating..."
-                    generate_nodekey "{{ .Values.node.role }}" 
+                
+                if ! kubectl get secret "${secret_name}" --namespace "{{ .Release.Namespace }}" &> /dev/null; then
+                    echo "Secret for the node "{{ .Release.Name }}" does not exist. Creating..."
+                    generate_nodekey "{{ .Values.node.role }}"
+                    echo "sleep 2m" && sleep 1m
+                    echo "sleep 2m done"
+                    # add_node_to_genesis
                 else
-                  echo "Already exist."
+                    echo "Secret for the node "{{ .Release.Name }}" already exists."
                 fi
+
       volumes:
         - name: package-manager
           configMap:

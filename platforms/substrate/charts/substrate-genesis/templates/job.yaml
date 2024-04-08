@@ -153,7 +153,7 @@ spec:
               GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" '.genesis.runtime.membership.members += [$account_id]')
 
               for node in "${nodes[@]}"; do
-                  node_id=$(kubectl get secret "$node" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                  node_id=$(kubectl get secret "$node" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
                   echo "node_id: $node_id"
                   
                   base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
