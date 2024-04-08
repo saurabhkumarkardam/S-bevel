@@ -264,7 +264,12 @@ ingress:
 
 node:
   chain: inteli
-  command: ./dscp-node      
+  command: ./dscp-node
+  isBootnode:
+    enabled: true
+    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.gensub
+    bootnodePort: 8080
+    bootnodeId: 12D3KooWLjUiCFHuPbs1jhyJ1opQejmzkH8XB4XhEmCoT1xfEETx
   dataVolumeSize: 10Gi
   replicas: 1
   role: validator # full # validator
@@ -275,21 +280,21 @@ node:
 
   enableStartupProbe: false
   enableReadinessProbe: false
-  # flags:
-  #   - "--rpc-external"
-  #   - "--ws-external"
-  #   - "--rpc-methods=Unsafe"
-  #   - "--rpc-cors=all"
-  #   - "--unsafe-ws-external"
-  #   - "--unsafe-rpc-external"
-  #   - "--bootnodes '/dns4/oem-bn.saikb.dev.aws.blockchaincloudpoc-develop.com/tcp/15051/p2p/12D3KooWQEZhtFLMMDY15ZytTnd3KstkBY7JRvag58SSLtid9b2s'"
-  keys:
-    - type: "gran"
-      scheme: "ed25519"
-      seed: "grandpa_seed"
-    - type: "aura"
-      scheme: "sr25519"
-      seed: "aura_seed"
+  flags:
+    - "--rpc-external"
+    - "--ws-external"
+    - "--rpc-methods=Unsafe"
+    - "--rpc-cors=all"
+    - "--unsafe-ws-external"
+    - "--unsafe-rpc-external"
+    # - "--bootnodes '/dns4/oem-bn.saikb.dev.aws.blockchaincloudpoc-develop.com/tcp/15051/p2p/12D3KooWQEZhtFLMMDY15ZytTnd3KstkBY7JRvag58SSLtid9b2s'"
+  # keys:
+  #   - type: "gran"
+  #     scheme: "ed25519"
+  #     seed: "grandpa_seed"
+  #   - type: "aura"
+  #     scheme: "sr25519"
+  #     seed: "aura_seed"
   persistGeneratedNodeKey: false
 
   resources: {}
