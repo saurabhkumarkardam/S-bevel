@@ -27,68 +27,65 @@ spec:
       restartPolicy: "OnFailure"
       containers:
         - name: subs-new-node-keygen
-          image: {{ $.Values.image }}
+          image: {{ $.Values.image.repository }}
           securityContext:
             runAsUser: 0
           volumeMounts:
-            - name: scripts-volume
-              mountPath: /scripts/bevel-vault.sh
-              subPath: bevel-vault.sh
             - name: package-manager
               mountPath: /scripts/package-manager.sh
               subPath: package-manager.sh
-          env:
-          - name: VAULT_ADDR
-            value: {{ $.Values.global.vault.address }}
-          - name: KUBERNETES_AUTH_PATH
-            value: {{ $.Values.global.vault.authPath }}
-          - name: VAULT_APP_ROLE
-            value: {{ $.Values.global.vault.role }}
-          - name: MOUNT_PATH
-            value: "/certcheck"
-          - name: CERTS_SECRET_PREFIX
-            value: {{ .Values.global.vault.secretPrefix }}        
+            # - name: scripts-volume
+            #   mountPath: /scripts/bevel-vault.sh
+            #   subPath: bevel-vault.sh
+          # env:
+          # - name: VAULT_ADDR
+          #   value: {{ $.Values.global.vault.address }}
+          # - name: KUBERNETES_AUTH_PATH
+          #   value: {{ $.Values.global.vault.authPath }}
+          # - name: VAULT_APP_ROLE
+          #   value: {{ $.Values.global.vault.role }}
+          # - name: MOUNT_PATH
+          #   value: "/certcheck"
+          # - name: CERTS_SECRET_PREFIX
+          #   value: {{ .Values.global.vault.secretPrefix }}        
           command: ["bash", "-c"]
           args:
             - |
+
                 #!/usr/bin/env bash
-                {{- if ne $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template:latest" }}
-                    . /scripts/package-manager.sh
-                    # Define the packages to install
-                    packages_to_install="jq curl"
-                    install_packages "$packages_to_install"
+
+                . /scripts/package-manager.sh
+                # Define the packages to install
+                packages_to_install="jq curl"
+                install_packages "$packages_to_install"
+                
+                # Check if jq is installed
+                if ! command -v jq &> /dev/null; then
+                    # jq is not installed, download it
+                    cd ~
+                    curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+                    chmod +x jq
+                    export PATH="$PATH:$HOME"
+                else
+                    echo "jq is already installed via package-manager.sh."
+                fi
                     
-                    # Check if jq is installed
-                    if ! command -v jq &> /dev/null; then
-                        # jq is not installed, download it
-                        cd ~
-                        curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-                        chmod +x jq
-                        export PATH="$PATH:$HOME"
-                    else
-                        echo "jq is already installed via package-manager.sh."
-                    fi
-                    
-                    # Download the latest version of kubectl
-                    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                    # Make the kubectl binary executable
-                    chmod +x kubectl
-                    # Move the binary to a directory in your PATH
-                    mv kubectl /usr/local/bin/
-                    # Verify installation
-                    kubectl version --client
-                    
-                    if [[ $? > 0 ]]
-                    then
-                        # download jq
-                        cd ~;
-                        curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64;
-                        chmod +x jq;
-                        export PATH=$PATH:.;
-                    else
-                        echo "jq and curl was installed using apt-get."
-                    fi;
-                {{- end }}
+                # Download the latest version of kubectl
+                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                chmod +x kubectl
+                mv kubectl /usr/local/bin/
+                kubectl version --client
+                
+                if [[ $? > 0 ]]
+                then
+                    # download jq
+                    cd ~;
+                    curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64;
+                    chmod +x jq;
+                    export PATH=$PATH:.;
+                else
+                    echo "jq and curl was installed using apt-get."
+                fi;
 
                 generate_key() {
                     echo ">>>>>>>>>> 3 - generate_key <<<<<<<<<<"
@@ -100,21 +97,21 @@ spec:
                 generate_nodekey() {
                     echo ">>>>>>>>>> 2 - generate_nodekey <<<<<<<<<<"
                     local node_type="$1"
-                    # local node_index="$2"
+
                     local node_id="$($command key generate-node-key --file node_key 2>&1)"
                     
                     generate_key "Sr25519" "auraKeygenOutput.json"
-                    AURA_SEED=$(jq -r '.secretSeed' "auraKeygenOutput.json")
-                    AURA_ADDR=$(jq -r '.ss58Address' "auraKeygenOutput.json")
+                    local AURA_SEED=$(jq -r '.secretSeed' "auraKeygenOutput.json")
+                    local AURA_ADDR=$(jq -r '.ss58Address' "auraKeygenOutput.json")
                     
                     generate_key "Ed25519" "grandpaKeygenOutput.json"
-                    GRANDPA_SEED=$(jq -r '.secretSeed' "grandpaKeygenOutput.json")
-                    GRANDPA_ADDR=$(jq -r '.ss58Address' "grandpaKeygenOutput.json")
+                    local GRANDPA_SEED=$(jq -r '.secretSeed' "grandpaKeygenOutput.json")
+                    local GRANDPA_ADDR=$(jq -r '.ss58Address' "grandpaKeygenOutput.json")
                     
                     if [[ "$node_type" == "member" ]]; then
                         generate_key "Sr25519" "accKeygenOutput.json"
-                        ACCOUNT_SEED=$(jq -r '.secretSeed' "accKeygenOutput.json")
-                        ACCOUNT_ADDR=$(jq -r '.ss58Address' "accKeygenOutput.json")
+                        local ACCOUNT_SEED=$(jq -r '.secretSeed' "accKeygenOutput.json")
+                        local ACCOUNT_ADDR=$(jq -r '.ss58Address' "accKeygenOutput.json")
                         
                         echo "{
                             \"data\": {
@@ -151,19 +148,22 @@ spec:
                         kubectl create secret generic "${secret_name}" --namespace "{{ .Release.Namespace }}" --from-file="substrate-node-keys"="finalJSON.json"
                     fi
                 }
-                echo ">>>>>>>>>> OUTSIDE <<<<<<<<<<"
 
+                echo ">>>>>>>>>> OUTSIDE <<<<<<<<<<"
+                
                 command={{ $.Values.node.command }}
                 secretName="substrate-node-{{ .Release.Name }}-keys"
                 if ! kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} &> /dev/null; then
                     echo "Secret for the node {{ .Release.Name }} does not exist. Creating..."
-                    generate_nodekey "{{ .Values.node.role }}" "${secretName}"
+                    generate_nodekey "{{ .Values.node.role }}"
+                else
+                  echo "Already exist."
                 fi
       volumes:
-        - name: scripts-volume
-          configMap:
-            name: bevel-vault-script
-            defaultMode: 0777
         - name: package-manager
           configMap:
             name: package-manager
+        # - name: scripts-volume
+        #   configMap:
+        #     name: bevel-vault-script
+        #     defaultMode: 0777

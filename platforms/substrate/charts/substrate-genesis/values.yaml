@@ -67,7 +67,7 @@ node:
   type: validator # validator | member # NEW field added
   name: 
   validator:
-    count: 4
+    count: 2
   member:
     count: 1
     balance: 1152921504606846976

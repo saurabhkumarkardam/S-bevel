@@ -251,6 +251,22 @@ image:
 imagePullSecrets: 
   - name: "regcred"
 
+initContainer:
+  image:
+    repository: crazymax/7zip
+    tag: latest
+
+kubectl:
+  image:
+    repository: bitnami/kubectl
+    tag: latest
+
+googleCloudSdk:
+  image:
+    repository: google/cloud-sdk
+    tag: slim # more lightweight than the full image and still contains gsutil
+  #serviceAccountKey: ""
+
 serviceAccount:
   create: false
   name: vault-auth
@@ -263,13 +279,15 @@ ingress:
   enabled: false
 
 node:
+  chainDataSnapshotUrl: false # new
+  chainDataGcsBucketUrl: false # new
   chain: inteli
   command: ./dscp-node
   isBootnode:
-    enabled: true
+    enabled: true # false | true
     bootnodeAddr: validator-1-substrate-node-0-rc-p2p.gensub
     bootnodePort: 8080
-    bootnodeId: 12D3KooWLjUiCFHuPbs1jhyJ1opQejmzkH8XB4XhEmCoT1xfEETx
+    bootnodeId: 12D3KooWQ5iLnBxCSS27NBuqtKMdjzwnpmrjrLkFD2nvLinF8QB7 # 12D3KooWLjUiCFHuPbs1jhyJ1opQejmzkH8XB4XhEmCoT1xfEETx
   dataVolumeSize: 10Gi
   replicas: 1
   role: validator # full # validator
@@ -277,6 +295,8 @@ node:
   customChainspecPath: "/data/chainspec.json"
   collator:
     isParachain: false
+    relayChainDataSnapshotUrl: false # new
+    relayChainDataGcsBucketUrl: false # new
 
   enableStartupProbe: false
   enableReadinessProbe: false
@@ -305,7 +325,7 @@ node:
     createApiService: true
     createP2pService: true
     p2pServiceType: ClusterIP
-    setPublicAddressToExternalIp:
+    setPublicAddressToExternal:
       enabled: false
       ipRetrievalServiceUrl: https://ifconfig.io
   podManagementPolicy: Parallel
@@ -321,7 +341,7 @@ node:
     enabled: false
 
 proxy:
-  provider: ambassador # none # ambassador
+  provider: none # none # ambassador
   external_url: validator1.saikb.dev.aws.blockchaincloudpoc-develop.com
   p2p: 15052
   certSecret: oem-ambassador-certs
@@ -344,18 +364,18 @@ global:
     #Provide the kubernetes host url
     #Eg. kubernetesUrl: https://10.3.8.5:6443
     kubernetesUrl:
-  # vault:
-  #   #Provide the type of vault
-  #   type: "" # hashicorp
-  #   #Provide the vault role used.
-  #   role: vault-role
-  #   #Provide the network type
-  #   network: substrate
-  #   #Provide the vault server address
-  #   address: "http://98.64.226.131:20001"
-  #   #Provide the vault authPath configured to be used.
-  #   authPath: supplychain
-  #   #Provide the secret engine.
-  #   secretEngine: secretsv2
-  #   #Provide the vault path where the secrets will be stored
-  #   secretPrefix: "data/supplychain" 
+  vault:
+    #Provide the type of vault
+    type: "" # hashicorp
+    #Provide the vault role used.
+    role: vault-role
+    #Provide the network type
+    network: substrate
+    #Provide the vault server address
+    address: "http://98.64.226.131:20001"
+    #Provide the vault authPath configured to be used.
+    authPath: supplychain
+    #Provide the secret engine.
+    secretEngine: secretsv2
+    #Provide the vault path where the secrets will be stored
+    secretPrefix: "data/supplychain" 
