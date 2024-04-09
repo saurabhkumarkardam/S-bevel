@@ -70,7 +70,7 @@ spec:
   ports:
     - name: p2p
       port: {{ $.Values.node.ports.p2p }}
-      targetPort: 30333
+      targetPort: 8080
   {{- if and $.Values.node.collator.isParachain (or (eq $.Values.node.perNodeServices.p2pServiceType "LoadBalancer") (eq $.Values.node.perNodeServices.p2pServiceType "ClusterIP")) }}
     - name: pc-p2p
       port: 30334
