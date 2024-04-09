@@ -89,7 +89,7 @@ node:
   isBootnode:
     enabled: false # false | true
     bootnodeName: validator-1
-    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.gensub
+    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.supplychain-subs
     bootnodePort: 8080
     # bootnodeId: 12D3KooWQ5iLnBxCSS27NBuqtKMdjzwnpmrjrLkFD2nvLinF8QB7 #
   # Provide the size of the volume

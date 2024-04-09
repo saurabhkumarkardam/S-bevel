@@ -1,0 +1,90 @@
+[//]: # (##############################################################################################)
+[//]: # (Copyright Accenture. All Rights Reserved.)
+[//]: # (SPDX-License-Identifier: Apache-2.0)
+[//]: # (##############################################################################################)
+
+# Charts for Substrate components
+
+## About
+This folder contains the helm charts which are used for the deployment of the Hyperledger Substrate components. Each helm that you can use has the following keys and you need to set them. The `global.cluster.provider` is used as a key for the various cloud features enabled. Also you only need to specify one cloud provider, **not** both if deploying to cloud. As of writing this doc, AWS and Azure both are fully supported.
+
+```yaml
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: aws   # choose from: minikube | aws
+    cloudNativeServices: false  # future: set to true to use Cloud Native Services 
+    kubernetesUrl: "https://yourkubernetes.com" # Provide the k8s URL, ignore if not using Hashicorp Vault
+  vault:
+    type: hashicorp # choose from hashicorp | kubernetes
+    network: substrate   # must be substrate for these charts
+    # Following are necessary only when hashicorp vault is used.
+    address: http://vault.url:8200
+    authPath: supplychain
+    secretEngine: secretsv2
+    secretPrefix: "data/supplychain"
+    role: vault-role
+```
+
+## Usage
+
+### Pre-requisites
+
+- Kubernetes Cluster (either Managed cloud option like EKS or local like minikube)
+- Accessible and unsealed Hahsicorp Vault (if using Vault)
+- Configured Ambassador AES (if using Ambassador as proxy)
+- Update the dependencies
+  ```
+  helm dependency update substrate-genesis
+  helm dependency update substrate-node
+  ```
+
+
+## `Without Proxy and Vault`
+
+### 1. Install Genesis Node
+```bash
+# Install the genesis node
+helm install genesis ./substrate-genesis --namespace supplychain-subs --create-namespace --values ./values/noproxy-and-novault/genesis.yaml
+```
+
+### 2. Install Bootnode
+```bash
+# Install bootnode
+helm install validator-1 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/genesis.yaml --set node.isBootnode.enabled=false
+```
+
+### 3. Install Additional Nodes
+
+To deploy additional nodes, update the following section in the `./values/noproxy-and-novault/node.yaml` file only once:
+```yaml
+...
+node:
+  ...
+  isBootnode:
+    enabled: true
+    bootnodeName: <bootnode-name> # Here it'll be "validator-1" as defined above
+    bootnodeAddr: <bootnode-name>-substrate-node-0-rc-p2p.<bootnode-namespace>
+    bootnodePort: 8080
+  ...
+...
+```
+Then install the nodes using the following commands:
+```bash
+helm install validator-2 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml
+helm install validator-3 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml
+helm install validator-4 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml
+helm install    member-1 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml --set node.role=full
+```
+
+## Clean-up
+
+To clean up, simply uninstall the Helm releases. It's important to uninstall the genesis Helm chart at the end to prevent any cleanup failure.
+```bash
+helm uninstall validator-1 --namespace supplychain-subs
+helm uninstall validator-2 --namespace supplychain-subs
+helm uninstall validator-3 --namespace supplychain-subs
+helm uninstall validator-4 --namespace supplychain-subs
+helm uninstall member-1 --namespace supplychain-subs
+helm uninstall genesis --namespace supplychain-subs
+```

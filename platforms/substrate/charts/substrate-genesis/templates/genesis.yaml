@@ -7,7 +7,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-genesis
+  name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install
@@ -136,7 +136,7 @@ spec:
               fi
           done
           
-          secret_names=$(kubectl get secret -n gensub | grep substrate-node | awk '{print $1}')
+          secret_names=$(kubectl get secret -n {{ .Release.Namespace }} | grep substrate-node | awk '{print $1}')
           declare -a nodes
           # Loop through each line of the output and add it to the array
           while IFS= read -r line; do
@@ -147,7 +147,7 @@ spec:
           echo "NODE ARRAY END"
 
           for ((i=1; i<= {{ $.Values.node.member.count }}; i++)); do
-              account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
+              account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
               echo "account_addr: $account_addr"
               GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" --arg balance {{ $.Values.node.member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
               GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" '.genesis.runtime.membership.members += [$account_id]')
@@ -185,8 +185,8 @@ spec:
             kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           fi
 
-          echo "sleep 5m"
-          sleep 5m
+          # echo "sleep 5m"
+          # sleep 5m
           echo "Done"
       volumes:
         - name: certcheck

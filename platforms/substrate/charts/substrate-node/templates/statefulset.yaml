@@ -244,42 +244,56 @@ spec:
 
             #!/bin/sh
 
-              echo ">>> 1 <<<"
+              # STEP-1
+              echo "Step 1: Install necessary packages using custom package manager script"
               . /scripts/package-manager.sh
               packages_to_install="jq curl"
               install_packages "$packages_to_install"
 
+              # STEP-2
+              echo "STEP-2: Download and set up kubectl for Kubernetes management"
               curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
               chmod +x kubectl
               mv kubectl /usr/local/bin/
               kubectl version --client
 
-              echo ">>> 2 <<<"
+              # STEP-3
+              echo "Step 3: Extract chain specification (genesis) from Kubernetes ConfigMap and store it"
               chain_spec=$(kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]')
               echo "${chain_spec}" | base64 -d > {{ .Values.node.customChainspecPath }}
 
-              echo ">>> 3 <<<"
+              # STEP-4
+              echo "Step 4: Retrieve secret keys from Kubernetes Secrets if available"
               secretName="substrate-node-{{ .Release.Name }}-keys"
               if kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
-                AURA_SECRETPHRASE=$(kubectl get secret "${secretName}" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.aura_file_b64' | base64 -d | jq -r '.secretPhrase')
+                # Extract AURA secret phrase from Kubernetes Secret
+                AURA_SECRETPHRASE=$(kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.aura_file_b64' | base64 -d | jq -r '.secretPhrase')
                 echo "AURA_SECRETPHRASE: $AURA_SECRETPHRASE"
-                GRAN_SECRETPHRASE=$(kubectl get secret "${secretName}" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.grandpa_file_b64' | base64 -d | jq -r '.secretPhrase')
+                # Extract GRANDPA secret phrase from Kubernetes Secret
+                GRAN_SECRETPHRASE=$(kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.grandpa_file_b64' | base64 -d | jq -r '.secretPhrase')
                 echo "GRAN_SECRETPHRASE: $GRAN_SECRETPHRASE"
-                NODE_KEY=$(kubectl get secret "${secretName}" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_key')
+                # Extract NODE_KEY from Kubernetes Secret
+                NODE_KEY=$(kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_key')
                 echo "NODE_KEY: $NODE_KEY"
-                # node_id=$(kubectl get secret "$secretName" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                # node_id=$(kubectl get secret "$secretName" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
                 # echo "node_id: $node_id"
               fi
-
+              # Check if bootnode is enabled
               {{- if .Values.node.isBootnode.enabled }}
-                BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                # Retrieve BOOTNODE_ID from Kubernetes Secret
+                BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                echo "BOOTNODE_ID: $BOOTNODE_ID"
               {{- end }}
 
-              echo ">>> 4 <<<"
-              ./dscp-node key insert --base-path=/data --chain=/data/chainspec.json --key-type=aura --scheme=Sr25519 --suri="${AURA_SECRETPHRASE}" && echo "Inserted key aura into Keystore" || echo "Failed to insert key aura into Keystore."
-              ./dscp-node key insert --base-path=/data --chain=/data/chainspec.json --key-type=gran --scheme=Ed25519 --suri="${GRAN_SECRETPHRASE}" && echo "Inserted key gran into Keystore" || echo "Failed to insert key gran into Keystore."
+              # STEP-5
+              echo "Step 5: Insert keys into Keystore using dscp-node command-line tool"
+              # Insert AURA key into Keystore
+              ./{{ .Values.node.command }} key insert --base-path=/data --chain=/data/chainspec.json --key-type=aura --scheme=Sr25519 --suri="${AURA_SECRETPHRASE}" && echo "Inserted key aura into Keystore" || echo "Failed to insert key aura into Keystore."
+              # Insert GRANPA key into Keystore
+              ./{{ .Values.node.command }} key insert --base-path=/data --chain=/data/chainspec.json --key-type=gran --scheme=Ed25519 --suri="${GRAN_SECRETPHRASE}" && echo "Inserted key gran into Keystore" || echo "Failed to insert key gran into Keystore."
 
-              echo ">>> 5 <<<"
+              # STEP-6
+              echo "Step 6: Determine various ports and external addresses for P2P communication"
               POD_INDEX="${HOSTNAME##*-}"
               {{- if and (.Values.node.perNodeServices.createP2pService) (eq .Values.node.perNodeServices.p2pServiceType "NodePort") }}
                 RELAY_CHAIN_P2P_PORT=$(kubectl --namespace {{ .Release.Namespace }} get service {{ $fullname }}-${POD_INDEX}-rc-p2p -o jsonpath='{.spec.ports[*].nodePort}')
@@ -310,7 +324,8 @@ spec:
               echo "EXTERNAL_ADDRESS:$EXTERNAL_ADDRESS"
               echo "EXTERNAL_P2P_PORT:$EXTERNAL_P2P_PORT"
 
-              echo ">>> 6 <<<"
+              # STEP-7
+              echo "Step 7: Start the node"
               exec {{ .Values.node.command }} \
               --name=${POD_NAME} \
               --base-path=/data/ \
@@ -324,7 +339,7 @@ spec:
               --light \
               {{- end }}
               {{- if .Values.node.isBootnode.enabled }}
-              --bootnodes '/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/${BOOTNODE_ID}' \
+              --bootnodes "/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/${BOOTNODE_ID}" \
               {{- end }}
               {{- if (.Values.node.collator.isParachain) }}
               --base-path=/data/relay/ \

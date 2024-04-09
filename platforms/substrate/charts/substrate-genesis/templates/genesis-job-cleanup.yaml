@@ -44,7 +44,7 @@ spec:
         args:
         - |
             {{- if .Values.removeGenesisOnDelete.enabled }}
-                secret_names=$(kubectl get secret -n gensub | grep substrate-node | awk '{print $1}')
+                secret_names=$(kubectl get secret -n {{ .Release.Namespace }} | grep substrate-node | awk '{print $1}')
                 
                 while IFS= read -r nodeKeys; do
                     kubectl delete secret "$nodeKeys" --namespace {{ .Release.Namespace }}

@@ -14,7 +14,7 @@
 metadata:
   #Provide the namespace for organization's peer
   #Eg. namespace: carrier-subs
-  namespace: gensub # default
+  namespace: # default
 
   #Provide the name for substrate-key-mgmt job release
   #Eg. name: carrier-keys-job
