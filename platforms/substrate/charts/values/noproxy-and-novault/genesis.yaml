@@ -1,0 +1,30 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+#############################################################
+#                   Basic Configuration                     #
+#############################################################
+# Default values for substrate-key-mgmt.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# The following are for overriding global values
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: azure
+    cloudNativeServices: false
+  vault:
+    # Provide the type of vault
+    type: kubernetes # hashicorp | kubernetes
+
+node:
+  type: validator # validator | member
+  validator:
+    count: 2
+  member:
+    count: 1
+    balance: 1152921504606846976

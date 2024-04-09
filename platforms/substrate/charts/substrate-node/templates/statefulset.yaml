@@ -267,9 +267,13 @@ spec:
                 echo "GRAN_SECRETPHRASE: $GRAN_SECRETPHRASE"
                 NODE_KEY=$(kubectl get secret "${secretName}" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_key')
                 echo "NODE_KEY: $NODE_KEY"
-                # node_id=$(kubectl get secret ""$secretName" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                # node_id=$(kubectl get secret "$secretName" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
                 # echo "node_id: $node_id"
               fi
+
+              {{- if .Values.node.isBootnode.enabled }}
+                BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace gensub -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+              {{- end }}
 
               echo ">>> 4 <<<"
               ./dscp-node key insert --base-path=/data --chain=/data/chainspec.json --key-type=aura --scheme=Sr25519 --suri="${AURA_SECRETPHRASE}" && echo "Inserted key aura into Keystore" || echo "Failed to insert key aura into Keystore."
@@ -320,7 +324,7 @@ spec:
               --light \
               {{- end }}
               {{- if .Values.node.isBootnode.enabled }}
-              --bootnodes '/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/{{ .Values.node.isBootnode.bootnodeId }}' \
+              --bootnodes '/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/${BOOTNODE_ID}' \
               {{- end }}
               {{- if (.Values.node.collator.isParachain) }}
               --base-path=/data/relay/ \

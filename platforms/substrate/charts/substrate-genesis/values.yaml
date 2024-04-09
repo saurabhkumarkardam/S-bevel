@@ -11,18 +11,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# metadata:
-#   #Provide the namespace for organization's peer
-#   #Eg. namespace: carrier-subs
-#   namespace: gensub # default
-
-#   #Provide the name for substrate-key-mgmt job release
-#   #Eg. name: carrier-keys-job
-#   name: substrate-genesis-job
-
 # The following are for overriding global values
 global:
-  #Provide the service account name which will be created.
+  # Provide the service account name which will be created.
   serviceAccountName: vault-auth
   cluster:
     provider: azure  # choose from: minikube | aws
@@ -31,20 +22,20 @@ global:
     #Eg. kubernetesUrl: https://10.3.8.5:6443
     kubernetesUrl:
   vault:
-    #Provide the type of vault
-    type: "" # hashicorp
-    #Provide the vault role used.
+    # Provide the type of vault
+    type: kubernetes # hashicorp | kubernetes
+    # Provide the vault role used.
     role: vault-role
-    #Provide the network type
+    # Provide the network type
     network: substrate
-    #Provide the vault server address
-    address: "http://98.64.226.131:20001"
-    #Provide the vault authPath configured to be used.
+    # Provide the vault server address
+    address: # "http://vault_url"
+    # Provide the vault authPath configured to be used.
     authPath: supplychain
-    #Provide the secret engine.
+    # Provide the secret engine.
     secretEngine: secretsv2
-    #Provide the vault path where the secrets will be stored
-    secretPrefix: "data/supplychain" # certSecretPrefix
+    # Provide the vault path where the secrets will be stored
+    secretPrefix: "data/supplychain"
 
 removeGenesisOnDelete:
   enabled: true
@@ -52,6 +43,10 @@ removeGenesisOnDelete:
     repository: ghcr.io/hyperledger/bevel-k8s-hooks
     tag: qgt-0.2.12
     pullPolicy: IfNotPresent
+
+# Provide custom chain name
+# Eg. chain: inteli-gcp
+chain: inteli
 
 node:
   # Pull substrate Docker image
@@ -64,76 +59,10 @@ node:
   # Command to be invoked to perform operations on the node
   # Eg. command: substrate
   command: ./dscp-node
-  type: validator # validator | member # NEW field added
+  type: validator
   name: 
   validator:
     count: 2
   member:
     count: 1
     balance: 1152921504606846976
-
-
-#############################################################
-#               HashiCorp Vault Configuration               #
-#############################################################
-# NOTE: Make sure that the vault is already unsealed, intialized and configured to 
-# use Kubernetes service account token based authentication. 
-# For more info, see https://www.vaultproject.io/docs/auth/kubernetes
-
-# vault:
-#   # Provide the vault address
-#   # Eg. address: http://vault.example.com:8200
-#   address: "http://98.64.226.131:20001"
-#   # Provide the vault role used.
-#   # Eg. role: vault-role
-#   role: vault-role
-#   # Provide the authpath configured to be used.
-#   authpath: ""
-#   # Provide the service account name autheticated to vault.
-#   # NOTE: Make sure that the service account is already created and autheticated to use the vault.
-#   # Eg. serviceaccountname: vault-auth
-#   serviceAccountName: vault-auth
-#   # Provide the vault path where the certificates are stored
-#   # Eg. certsecretprefix: secret/cenm-org-name
-#   certSecretPrefix: ""
-#   type: "" # NEW
-
-# Provide custom chain name
-# Eg. chain: inteli-gcp
-# chain: inteli
-# # Provide the aura keys in a list format
-# # e.g.
-# # aura_keys:
-# # - 5DyCUqDTSgTXcL1B7i7KMBcVBvGdtxXLXZ6uEi5Ktekj5tQF
-# # - 5GBbtj2twDjJfncE6RtLibzjezH8xghRoRD1dDbZFxsKQjuk
-# aura_keys: ['5CSRfRUhRKNjwBp9F1j1qPeLxY2veDWppM28bdYxrMo8r8Xj']
-# # Provide the grandpa keys in a list format
-# # e.g.
-# # grandpa_keys:
-# # - 5EtJgUviLmr1RCNhb7jttY6bX5VUHneL6Uyno6rLyGtawGzA
-# # - 5FwRY6PZ1fkyJUcKgVN5Pv6hzzPZZ31A49UuSXjmciL36LH1
-# grandpa_keys: ['5FsqtU2DPAsLdmSE6jMCygwayUVyd6XPxNcT4nuCHK6tXF4U']
-
-# # Provide array of member details
-# # e.g.
-# # members:
-# #   - account_id: 5GHW6ZUNk8Hoh4ZEtRnYcx7hvbQdrqqvi7NUBo5YaGSkdxrS
-# #     balance: 1152921504606846976
-# #     nodes:
-# #       - 0024080112200B290101F0A19F007C6C70EE4CA8430FC349DF6E2C8EED770B69F09AFBD48A19
-# #       - 00240801122023F888BC544900B3876ED8F9C7BE6A92C4BB1A2A5030396DD70EE0E02EA534FA
-# members: []
-
-
-chain: inteli
-# aura_keys: ['5F7f6RfCEb4D8BxLgEz9mRjmtPcA5umraPv4H2nBrJKG7QBi']
-# grandpa_keys: ['5Fkb2DqGVu2wYbfCPEYDxZZsQukR1MgtwZ5D3DD9YYYvyyDZ']
-# members:
-#   - account_id: 5DCXroPbXgsPCAJzkzZMRHfXDWYdwF2uQH272ce5EW5HySSy
-#     balance: 1152921504606846976
-#     nodes:
-#       - 002408011220B2277A47EF4FC01443353C272C81E628C23187641C1A7F351AF1E6C1AA9CC157
-#       - 0024080112204AD5084E664D174ECE494ABD1D433B1D9CBE5E7BB2235EE4D6A104374A720617
-#       - 0024080112207B34AD95B28E1B38E1F0DC58BE754914D5F1BC9C1B1968012544D315E3B9C7DE
-#       - 00240801122034F30E2BFC7BC8499260D4C67EF5163AE43A58A079252B5A01A19F7533D739CA
-#       - 00240801122038D9CC17DBD36B0E2EA091C1FF9566C022B03A2E7723C495E5B7652CFD2C0A1D
