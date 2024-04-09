@@ -42,22 +42,26 @@ spec:
           - name: package-manager
             mountPath: /scripts/package-manager.sh
             subPath: package-manager.sh
+{{- if eq .Values.global.vault.type "hashicorp" }}
           - name: scripts-volume
             mountPath: /scripts/bevel-vault.sh
             subPath: bevel-vault.sh
-        env:    
+{{- end }}
+        env:
+{{- if eq .Values.global.vault.type "hashicorp" }}
         - name: VAULT_ADDR
           value: {{ $.Values.global.vault.address }}
         - name: KUBERNETES_AUTH_PATH
           value: {{ $.Values.global.vault.authPath }}
         - name: VAULT_APP_ROLE
           value: {{ $.Values.global.vault.role }}
-        - name: MOUNT_PATH
-          value: "certcheck"
         - name: VAULT_SECRET_PREFIX # CERTS_SECRET_PREFIX
           value: {{ .Values.global.vault.secretPrefix }}
         - name: VAULT_SECRET_ENGINE
           value: "{{ .Values.global.vault.secretEngine }}"
+{{- end }}
+        - name: MOUNT_PATH
+          value: "certcheck"
         command: ["bash", "-c"]
         args:
         - |-
@@ -71,7 +75,7 @@ spec:
             . /scripts/package-manager.sh
             packages_to_install="jq bc curl unzip base58 xxd"
             install_packages "$packages_to_install"
-
+            
             # Check if jq is installed and download it if not installed
             if ! command -v jq &> /dev/null; then
               cd ~
@@ -82,26 +86,25 @@ spec:
               echo "jq is already installed via package-manager.sh script."
             fi   
           {{- end }}
-
-          # STEP-2
-          echo "Step 2: Download and set up kubectl for Kubernetes management."
+          # Download and set up kubectl for Kubernetes management
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           mv kubectl /usr/local/bin/
           kubectl version --client
 
-          # STEP-3
-          echo "Step 3: Execute the provided command to generate the genesis block."
+          # STEP-2
+          echo "Step 2: Execute the provided command to generate the genesis block."
           mkdir certcheck
           command={{ $.Values.node.command }}
           echo "Generate genesis"
           GENESIS=$($command build-spec --disable-default-bootnode --chain local)
+
+          # STEP-3
+          echo "Step 3: Edit genesis configuration."
+          # Set values
           GENESIS=$(echo $GENESIS | jq '.name |= {{ .Values.chain | quote }}')
           GENESIS=$(echo $GENESIS | jq '.id |= {{ .Values.chain | replace "-" "_" | quote }}')
           GENESIS=$(echo $GENESIS | jq '.chainType |= "Live"')
-
-          # STEP-4
-          echo "Step 4: Edit genesis configuration."
           # Clear authorities and balances
           GENESIS=$(echo $GENESIS | jq '.genesis.runtime.aura.authorities |= []')
           GENESIS=$(echo $GENESIS | jq '.genesis.runtime.grandpa.authorities |= []')
@@ -111,8 +114,8 @@ spec:
             GENESIS=$(echo $GENESIS | jq '.genesis.runtime.membership.members |= []')
           {{- end }}
 
-          # STEP-5
-          echo "Step 5: Generate sudo key with Sr25519 scheme and add sudo account key and balance into genesis."
+          # STEP-4
+          echo "Step 4: Generate sudo key with Sr25519 scheme and add sudo account key and balance into genesis."
           # Generate sudo key with Sr25519 scheme        
           $command key generate --scheme Sr25519 --output-type json >> certcheck/sudoKeygenOutput.json
           SUDO_SEED=$(jq -r '.secretPhrase' certcheck/sudoKeygenOutput.json)
@@ -121,8 +124,8 @@ spec:
           GENESIS=$(echo $GENESIS | jq --arg sudo $SUDO_ADDR --arg balance 1152921504606846976 '.genesis.runtime.balances.balances += [[$sudo, ($balance | tonumber)]]')
           GENESIS=$(echo $GENESIS | jq --arg sudo $SUDO_ADDR '.genesis.runtime.sudo.key |= $sudo')
 
-          # STEP-6
-          echo "Step 6: Insert AURA & GRANDPA keys into genesis for validators."
+          # STEP-5
+          echo "Step 5: Insert AURA & GRANDPA keys into genesis for validators."
           echo "Inserting keys into genesis for validators"
           for ((i=1; i<= {{ $.Values.node.validator.count }}; i++)); do
             secret_data=$(kubectl get secret "substrate-node-validator-${i}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d)
@@ -153,8 +156,8 @@ spec:
               nodes+=("$line")
           done <<< "$secret_names"
 
-          # STEP-7
-          echo "Step 7: Insert keys into genesis for members."
+          # STEP-6
+          echo "Step 6: Insert keys into genesis for members."
           for ((i=1; i<= {{ $.Values.node.member.count }}; i++)); do
               account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
               # Add account address and balance into genesis block
@@ -182,8 +185,8 @@ spec:
               done
           done
           
-          # STEP-8
-          "Step 8: Update the format of the modified genesis JSON and create a config map if it doesn't exist."
+          # STEP-7
+          "Step 7: Update the format of the modified genesis JSON and create a config map if it doesn't exist."
           # Write the modified genesis JSON to a file
           echo "$GENESIS" > certcheck/genesis.json
           # Convert the genesis JSON to raw format
@@ -205,7 +208,9 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
+{{- if eq .Values.global.vault.type "hashicorp" }}
         - name: scripts-volume
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
+{{- end }}

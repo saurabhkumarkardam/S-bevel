@@ -36,7 +36,7 @@ googleCloudSdk:
   image:
     repository: google/cloud-sdk
     tag: slim # more lightweight than the full image and still contains gsutil
-  #serviceAccountKey: ""
+  # serviceAccountKey: ""
 
 imagePullSecrets: []
 

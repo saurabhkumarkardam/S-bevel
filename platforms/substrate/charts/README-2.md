@@ -18,8 +18,8 @@ global:
   vault:
     type: hashicorp # choose from hashicorp | kubernetes
     network: substrate   # must be substrate for these charts
-    # Following are necessary only when hashicorp vault is used.
-    address: http://vault.url:8200
+    # Following are necesupplychain-subsary only when hashicorp vault is used.
+    addresupplychain-subs: http://vault.url:8200
     authPath: supplychain
     secretEngine: secretsv2
     secretPrefix: "data/supplychain"
@@ -31,8 +31,8 @@ global:
 ### Pre-requisites
 
 - Kubernetes Cluster (either Managed cloud option like EKS or local like minikube)
-- Accessible and unsealed Hahsicorp Vault (if using Vault)
-- Configured Ambassador AES (if using Ambassador as proxy)
+- Accesupplychain-subsible and unsealed Hahsicorp Vault (if using Vault)
+- Configured Ambasupplychain-subsador AES (if using Ambasupplychain-subsador as proxy)
 - Update the dependencies
   ```
   helm dependency update substrate-genesis
