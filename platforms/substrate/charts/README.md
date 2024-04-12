@@ -51,7 +51,7 @@ helm install genesis ./substrate-genesis --namespace gensub --create-namespace -
 ### 2. Install Bootnode
 ```bash
 # Install bootnode
-helm install validator-1 ./substrate-node --namespace gensub --values ./values/noproxy-and-novault/genesis.yaml --set node.isBootnode.enabled=false
+helm install validator-1 ./substrate-node --namespace gensub --values ./values/noproxy-and-novault/node.yaml --set node.isBootnode.enabled=false
 ```
 
 ### 3. Install Additional Nodes
