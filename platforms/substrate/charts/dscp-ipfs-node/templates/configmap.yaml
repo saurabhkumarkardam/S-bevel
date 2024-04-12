@@ -9,15 +9,11 @@ data:
   healthCheckTimeout: {{ .Values.config.healthCheckTimeout | quote }}
   healthCheckPort: {{ .Values.config.healthCheckPort | quote }}
   logLevel: {{ .Values.config.logLevel }}
-  {{- if .Values.config.nodeHost }}
-  nodeHost: {{ .Values.config.nodeHost }}
-  {{- else if .Values.dscpNode.enabled }}
-  nodeHost: {{ include "dscp-ipfs-node.fullname" . }}
-  {{- end }}
+  nodeHost: {{ .Release.Name }}
   ipfsCommand: {{ .Values.config.ipfsCommand }}
   ipfsLogLevel: {{ .Values.config.ipfsLogLevel }}
   ipfsArgs: {{ .Values.config.ipfsArgs | toJson | quote }}
-  ipfsSwarmAddrFilters: {{ .Values.config.ipfsSwarmAddrFilters | toJson | quote }}
+  ipfsSwarmAddrFilters: {{ .Values.config.c | toJson | quote }}
   {{- if .Values.config.ipfsBootNodeAddress }}
   ipfsBootNodeAddress: {{ .Values.config.ipfsBootNodeAddress }}
   {{- end }}

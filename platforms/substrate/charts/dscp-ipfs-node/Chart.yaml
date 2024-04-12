@@ -19,6 +19,12 @@ dependencies:
       - dscp-node
     version: 4.x.x
     condition: dscpNode.enabled
+  - name: bevel-storageclass
+    alias: storage
+    repository: "file://../../../shared/charts/bevel-storageclass"
+    tags:
+      - storage
+    version: ~1.0.0
 home: https://github.com/hyperledger/bevel
 keywords:
   - DSCP

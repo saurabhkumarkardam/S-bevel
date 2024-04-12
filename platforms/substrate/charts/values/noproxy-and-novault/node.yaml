@@ -53,8 +53,8 @@ node:
   command: ./dscp-node
   isBootnode:
     enabled: true # false | true
-    bootnodeName:
-    bootnodeAddr:
+    bootnodeName: validator-1 # RM
+    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.gensub # RM
     bootnodePort: 8080
 
   dataVolumeSize: 10Gi

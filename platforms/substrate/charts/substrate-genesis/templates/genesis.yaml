@@ -186,7 +186,7 @@ spec:
           done
           
           # STEP-7
-          "Step 7: Update the format of the modified genesis JSON and create a config map if it doesn't exist."
+          echo "Step 7: Update the format of the modified genesis JSON and create a config map if it doesn't exist."
           # Write the modified genesis JSON to a file
           echo "$GENESIS" > certcheck/genesis.json
           # Convert the genesis JSON to raw format
