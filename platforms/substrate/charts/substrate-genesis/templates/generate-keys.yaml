@@ -102,9 +102,9 @@ spec:
                     
                     if [[ "$node_type" == "member" ]]; then
                         # For member nodes, also generate account keys
-                        generate_key "Sr25519" "accKeygenOutput.json"
-                        ACCOUNT_SEED=$(jq -r '.secretSeed' "accKeygenOutput.json")
-                        ACCOUNT_ADDR=$(jq -r '.ss58Address' "accKeygenOutput.json")
+                        generate_key "Sr25519" "accKeygenOutput_${node_type}${node_index}.json"
+                        ACCOUNT_SEED=$(jq -r '.secretSeed' "accKeygenOutput_${node_type}${node_index}.json")
+                        ACCOUNT_ADDR=$(jq -r '.ss58Address' "accKeygenOutput_${node_type}${node_index}.json")
                         
                         echo "{
                             \"data\": {
@@ -116,7 +116,7 @@ spec:
                                 \"grandpa_addr\": \"$GRANDPA_ADDR\",
                                 \"account_seed\": \"$ACCOUNT_SEED\",
                                 \"account_addr\": \"$ACCOUNT_ADDR\",
-                                \"account_file_b64\": \"$(cat accKeygenOutput.json | base64 -w 0)\",
+                                \"account_file_b64\": \"$(cat accKeygenOutput_${node_type}${node_index}.json | base64 -w 0)\",
                                 \"aura_file_b64\": \"$(cat auraKeygenOutput_${node_type}${node_index}.json | base64 -w 0)\",
                                 \"grandpa_file_b64\": \"$(cat grandpaKeygenOutput_${node_type}${node_index}.json | base64 -w 0)\"
                             }
@@ -150,12 +150,12 @@ spec:
                 main() {
                     command={{ $.Values.node.command }}
                     # Generate keys for member nodes
-                    for ((i=1; i<= {{ $.Values.node.member.count }}; i++)); do
+                    for ((i=1; i<= {{ $.Values.node.memberCount }}; i++)); do
                         echo "Generating nodekey for member-$i"
                         generate_nodekey "member" "$i"
                     done
                     # Generate keys for validator nodes
-                    for ((i=1; i<= {{ $.Values.node.validator.count }}; i++)); do
+                    for ((i=1; i<= {{ $.Values.node.validatorCount }}; i++)); do
                         echo "Generating nodekey for validator-$i"
                         generate_nodekey "validator" "$i"
                     done

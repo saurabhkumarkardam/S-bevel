@@ -18,9 +18,26 @@ global:
     type: kubernetes # hashicorp | kubernetes
 
 node:
-  type: validator # validator | member
-  validator:
-    count: 2
-  member:
-    count: 1
+  # type: validator # validator | member
+  # validator:
+  #   count: 2
+  # member:
+  #   count: 1
+  #   balance: 1152921504606846976
+
+  validatorCount: 2
+    # count: 2
+  memberCount: 1
+    # count: 1
+    # balance: 1152921504606846976
+  members:
+  - name: member-1
     balance: 1152921504606846976
+    nodes:
+    - validator-1
+    - validator-2
+  # - name: member-2
+  #   balance: 1152921504606846976
+  #   nodes:
+  #   - validator-3
+  #   - validator-4
