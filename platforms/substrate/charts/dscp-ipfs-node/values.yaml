@@ -9,7 +9,7 @@ config:
   healthCheckPollPeriod: 30000
   healthCheckTimeout: 2000
   # External DSCP-Node hostname to query, this overrides dscpNode.enabled
-  nodeHost: member-1-substrate-node # can't be set to empty and pass the member svc
+  nodeHost: member-1-substrate-node # validator-1-substrate-node # member-1-substrate-node # can't be set to empty and pass the member svc
   # External DSCP-Node port to query
   nodePort: 9944
   # Public key for the IPFS subsystem
@@ -36,7 +36,7 @@ config:
   ipfsLogLevel: info
   # IPFS boot node addresses in MultiAddress format for the IPFS subsystem
   ## ref: https://multiformats.io/multiaddr/
-  ipfsBootNodeAddress: "/dns4/dscp-ipfs-node-1-swarm.gensub/tcp/4001/p2p/12D3KooWQvYycNYDBr5L4YHBggDUKW8gkW9h8Drp3Zt4oexPnXTT"
+  ipfsBootNodeAddress: "/dns4/dscp-ipfs-node-1-swarm.gensub/tcp/4001/p2p/12D3KooWCmQAPP8SZJvyTzQ7bsudzfiMYu69gRNoiU4jXScM4ziD"
 
 service:
   # dscp-ipfs swarm service configuration
@@ -84,6 +84,8 @@ storage:
 dscpNode:
   # Enable DSCP-Node subchart
   enabled: false # true will cretae its own (to create custom ipfs specify details under .Values.dscpNode) | if false then we should have already running member node
+  member:
+    enabled: false # false | true
 
 # Proxy section contains the proxy provider and ports
 proxy:

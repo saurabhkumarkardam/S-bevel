@@ -12,3 +12,10 @@ dependencies:
     tags:
       - storage
     version: ~1.0.0
+  # - name: member-node
+  #   alias: memberss
+  #   repository: "file://../substrate-node"
+  #   tags:
+  #     - bevel
+  #   version: ~1.0.0
+  #   condition: dscpNode.member.enabled
