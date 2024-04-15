@@ -27,81 +27,9 @@ spec:
         {{- include "labels.custom" . | nindent 2 }}
     spec:
       restartPolicy: OnFailure
-      serviceAccountName: {{ $.Values.vault.serviceaccountname }}
+      serviceAccountName: {{ $.Values.vault.serviceAccountName }}
       securityContext:
         fsGroup: 1000
-      initContainers:
-      - name: crypto-init
-        image: {{ $.Values.initContainer.image }}
-        imagePullPolicy: {{ $.Values.initContainer.pullPolicy }}
-        env:
-        - name: VAULT_ADDR
-          value: {{ $.Values.vault.address }}
-        - name: KUBERNETES_AUTH_PATH
-          value: {{ $.Values.vault.authpath }}
-        - name: VAULT_APP_ROLE
-          value: {{ $.Values.vault.role }}
-        - name: CERTS_SECRET_PREFIX
-          value: {{ .Values.vault.certsecretprefix }}          
-        - name: MOUNT_PATH
-          value: "/certcheck"
-        - name: PEER_NAME
-          value: "{{ $.Values.node.name }}"                                          
-        volumeMounts:
-        - name: certcheck
-          mountPath: /certcheck  
-        command: ["sh", "-c"]
-        args:
-        - |-
-          #!/usr/bin/env bash
-          validateVaultResponse () {
-            if echo ${2} | grep "errors"; then
-              echo "ERROR: unable to retrieve ${1}: ${2}"
-              exit 1
-            fi
-            if  [ "$3" == "LOOKUPSECRETRESPONSE" ]
-            then
-              http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
-              --header "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" \
-              ${VAULT_ADDR}/v1/${vault_secret_key})
-              curl_response=$?
-              if test "$http_code" != "200" ; then
-                  echo "Http response code from Vault - $http_code"
-                  if test "$curl_response" != "0"; then
-                     echo "Error: curl command failed with error code - $curl_response"
-                     exit 1
-                  fi
-              fi
-            fi
-          }
-          KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-          echo "Getting secrets from Vault Server: ${VAULT_ADDR}"
-          # Login to Vault and so I can get an approle token
-          VAULT_CLIENT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login \
-            -H "Content-Type: application/json" \
-            -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | \
-            jq -r 'if .errors then . else .auth.client_token end')
-
-          validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
-          mkdir -p ${MOUNT_PATH}
-          LOOKUP_SECRET_RESPONSE=$(curl -sS --header "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" ${VAULT_ADDR}/v1/${CERTS_SECRET_PREFIX}/${PEER_NAME}/substrate | jq -r 'if .errors then . else . end')
-          if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors"
-          then
-            echo "Certificates absent in vault. Ignore error warning"
-            touch ${MOUNT_PATH}/absent.txt
-          else
-            checknodekey=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["node_key"]')
-            if [ -z "$checknodekey" ] || [ "$checknodekey" == "null" ]
-            then
-              echo "Certificates absent in vault. Ignore error warning"
-              touch ${MOUNT_PATH}/absent.txt
-            else
-              validateVaultResponse " secret (${CERTS_SECRET_PREFIX}/${PEER_NAME}/substrate)" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-              echo "Certificates present in vault"
-              touch ${MOUNT_PATH}/present.txt
-            fi    
-          fi 
-          echo "Done checking for certificates in vault"
       containers:
       - name: generate-cryptomaterials
         image: {{ $.Values.node.image }}
@@ -128,75 +56,61 @@ spec:
         command: ["bash", "-c"]
         args:
         - |-
-          #!/usr/bin/env bash
+            #!/usr/bin/env bash
+            {{- if ne $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template:latest" }}
+              . /scripts/package-manager.sh
+              # Define the packages to install
+              packages_to_install="jq curl"
+              install_packages "$packages_to_install"
+              # Download the latest version of kubectl
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
-          {{- if ne $.Values.node.image "docker.io/paritytech/substrate-playground-template-node-template:latest" }}
-          . /scripts/package-manager.sh
-          # Define the packages to install
-          packages_to_install="jq curl"
-          install_packages "$packages_to_install"
+              # Make the kubectl binary executable
+              chmod +x kubectl
 
-          if [[ $? > 0 ]]
-          then
-            # download jq
-            cd ~;
-            curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64;
-            chmod +x jq;
-            export PATH=$PATH:.;
-          else
-            echo "jq and curl was installed using apt-get."
-          fi;
-          {{- end }}
-        
-          validateVaultResponse () {
-            if echo ${2} | grep "errors"; then
-              echo "ERROR: unable to retrieve ${1}: ${2}"
-              exit 1
-            fi
-            if  [ "$3" == "LOOKUPSECRETRESPONSE" ]
-            then
-              http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
-              --header "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" \
-              ${VAULT_ADDR}/v1/${vault_secret_key})
-              curl_response=$?
-              if test "$http_code" != "200" ; then
-                  echo "Http response code from Vault - $http_code"
-                  if test "$curl_response" != "0"; then
-                      echo "Error: curl command failed with error code - $curl_response"
-                      exit 1
-                  fi
-              fi
-            fi
-          }
-          if [ -e ${MOUNT_PATH}/present.txt ]
-            then
-              echo "Certificates already present in the vault. Skipping.."
-              exit 0
-          fi
+              # Move the binary to a directory in your PATH
+              mv kubectl /usr/local/bin/
 
-          command={{ $.Values.node.command }}
+              # Verify installation
+              kubectl version --client
 
-          echo "Generate nodekey"
-          node_id=$($command key generate-node-key --file node_key 2>&1)
+              # kubectl create namespace subs-new
+              if [[ $? > 0 ]]
+              then
+              # download jq
+              cd ~;
+              curl -k -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64;
+              chmod +x jq;
+              export PATH=$PATH:.;
+              else
+              echo "jq and curl was installed using apt-get."
+              fi;
+            {{- end }}
+            echo "Done saving keys in vault"
 
-          echo "Generate aura key"
-          $command key generate --scheme Sr25519 --output-type json >> auraKeygenOutput.json
-          AURA_SEED=$(jq -r '.secretSeed' auraKeygenOutput.json)
-          AURA_ADDR=$(jq -r '.ss58Address' auraKeygenOutput.json)
+            command={{ $.Values.node.command }}
 
-          echo "Generate grandpa key"
-          $command key generate --scheme Ed25519 --output-type json >> grandpaKeygenOutput.json
-          GRANDPA_SEED=$(jq -r '.secretSeed' grandpaKeygenOutput.json)
-          GRANDPA_ADDR=$(jq -r '.ss58Address' grandpaKeygenOutput.json)
+            echo "Generate nodekey"
+            node_id=$($command key generate-node-key --file node_key 2>&1)
 
-          {{- if eq .Values.node.type "member" }}
-            echo "Generate Account key for member/owner node"
-            $command key generate --scheme Sr25519 --output-type Json >> accKeygenOutput.json          
-            ACCOUNT_SEED=$(jq -r '.secretSeed' accKeygenOutput.json)
-            ACCOUNT_ADDR=$(jq -r '.ss58Address' accKeygenOutput.json)
+            echo "Generate aura key"
+            $command key generate --scheme Sr25519 --output-type json >> auraKeygenOutput.json
+            AURA_SEED=$(jq -r '.secretSeed' auraKeygenOutput.json)
+            AURA_ADDR=$(jq -r '.ss58Address' auraKeygenOutput.json)
 
-            echo "
-              {
+            echo "Generate grandpa key"
+            $command key generate --scheme Ed25519 --output-type json >> grandpaKeygenOutput.json
+            GRANDPA_SEED=$(jq -r '.secretSeed' grandpaKeygenOutput.json)
+            GRANDPA_ADDR=$(jq -r '.ss58Address' grandpaKeygenOutput.json)
+
+            {{- if eq .Values.node.type "member" }}
+              echo "Generate Account key for member/owner node"
+              $command key generate --scheme Sr25519 --output-type Json >> accKeygenOutput.json          
+              ACCOUNT_SEED=$(jq -r '.secretSeed' accKeygenOutput.json)
+              ACCOUNT_ADDR=$(jq -r '.ss58Address' accKeygenOutput.json)
+
+              echo "
+                {
                 \"data\": {
                 \"node_id\": \"$node_id\",
                 \"node_key\": \"$(cat node_key)\",
@@ -209,10 +123,10 @@ spec:
                 \"account_file_b64\": \"$(cat accKeygenOutput.json | base64 -w 0)\",
                 \"aura_file_b64\": \"$(cat auraKeygenOutput.json | base64 -w 0)\",
                 \"grandpa_file_b64\":\"$(cat grandpaKeygenOutput.json | base64 -w 0)\"
-            }}" > finalJSON.json
-           {{- else }}
-            echo "
-              {
+              }}" > finalJSON.json
+            {{- else }}
+              echo "
+                {
                 \"data\": {
                 \"node_id\": \"$node_id\",
                 \"node_key\": \"$(cat node_key)\",
@@ -222,29 +136,29 @@ spec:
                 \"grandpa_addr\": \"$GRANDPA_ADDR\",
                 \"aura_file_b64\": \"$(cat auraKeygenOutput.json | base64 -w 0)\",
                 \"grandpa_file_b64\":\"$(cat grandpaKeygenOutput.json | base64 -w 0)\"
-            }}" > finalJSON.json
-           {{- end }}
+              }}" > finalJSON.json
+            {{- end }}
 
-          KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-          echo "Getting secrets from Vault Server: ${VAULT_ADDR}"
-          # Login to Vault and so I can get an approle token
-          VAULT_CLIENT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login \
-            -H "Content-Type: application/json" \
-            -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | \
-            jq -r 'if .errors then . else .auth.client_token end')
-
-          validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
-          vault_secret_key="${CERTS_SECRET_PREFIX}/${PEER_NAME}/substrate"
-          # Save the generated keys to VAULT
-          LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -X POST \
-            -d @finalJSON.json \
-            ${VAULT_ADDR}/v1/${vault_secret_key} | \
-            jq -r 'if .errors then . else .auth.client_token end')
-          validateVaultResponse " secret $vault_secret_key" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-          touch ${MOUNT_PATH}/done.txt
-          echo "Done saving keys in vault"
+            if ! kubectl get secret "${PEER_NAME}-substrate" --namespace {{ .Release.Namespace }} &> /dev/null; then
+              echo "creating secrets"
+              kubectl create secret generic "${PEER_NAME}-substrate" --namespace {{ .Release.Namespace }} --from-file="${PEER_NAME}-substrate-creds"="finalJSON.json"
+            fi
+            
+            secret_data=$(kubectl get secret "substrate-substrate" --namespace gensub -o json | jq -r '.data["substrate-substrate-creds"]' | base64 -d)
+            echo "secret_data: $secret_data"
+            # Check if secret_data is empty or not
+            if [ -n "$secret_data" ]; then
+                echo "Parse aura_addr from decoded JSON"
+                aura_addr=$(echo "$secret_data" | jq -r '.data.aura_addr')
+                echo "aura_addr: $aura_addr"
+            else
+                echo "Error: Unable to retrieve data from Kubernetes secret."
+            fi
+            {{- if eq .Values.vault.type "hashicorp" }}
+              vaultBevelFunc "init"
+              vault_secret_key="${CERTS_SECRET_PREFIX}/${PEER_NAME}/substrate"
+              vaultBevelFunc 'write' "${VAULT_ADDR}/v1/${vault_secret_key}" 'finalJSON.json'
+            {{- end }}
       volumes:
         - name: certcheck
           emptyDir:
@@ -252,4 +166,3 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
-

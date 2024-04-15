@@ -49,7 +49,11 @@ image:
   pullPolicy: IfNotPresent
   besu:
     repository: hyperledger/besu
+<<<<<<< HEAD
+    tag: 22.10.2 # (original) # 23.10.2 (updated besu image)
+=======
     tag: 23.10.2
+>>>>>>> upstream/develop
   hooks:
     repository: ghcr.io/hyperledger/bevel-k8s-hooks
     tag: qgt-0.2.12

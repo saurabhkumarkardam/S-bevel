@@ -13,7 +13,7 @@ global:
     #Eg. kubernetesUrl: https://10.3.8.5:6443
     kubernetesUrl: 
   vault:
-    type: hashicorp # chose from hashicorp | kubernetes
+    type: "" # hashicorp # chose from hashicorp | kubernetes
     #Provide the vaultrole for an organization
     #Eg. vaultrole: org1-vault-role
     role: vault-role
@@ -22,7 +22,7 @@ global:
     address:
     #Provide the kubernetes auth backed configured in vault for an organization
     #Eg. authPath: supplychain
-    authPath: supplychain
+    authPath: gensub # supplychain
     #Provide the network type for which the policy will be configured
     #Eg. network: besu
     network: besu # choose from: besu | corda | fabric | corda-ent | quorum
@@ -31,7 +31,7 @@ global:
     secretEngine: secretsv2
     #Provide the value for vault secret prefix. MUST use data
     #Eg. secretPrefix: data/org1
-    secretPrefix: "data/supplychain"
+    secretPrefix: "data/gensub" # "data/supplychain"
     #Kuberenetes secret for vault ca.cert
     #Enable or disable TLS for vault communication if value present or not
     #Eg. tls: vaultca
