@@ -36,7 +36,7 @@ config:
   ipfsLogLevel: info
   # IPFS boot node addresses in MultiAddress format for the IPFS subsystem
   ## ref: https://multiformats.io/multiaddr/
-  ipfsBootNodeAddress: "/dns4/dscp-ipfs-node-1-swarm.gensub/tcp/4001/p2p/12D3KooWCmQAPP8SZJvyTzQ7bsudzfiMYu69gRNoiU4jXScM4ziD"
+  ipfsBootNodeAddress: "/dns4/dscp-ipfs-node-2-swarm.gensub/tcp/4001/p2p/12D3KooWN8erDd2P1jmZctNSDGqZd7VdekKRr4xGeRhjNDDi7uym"
 
 service:
   # dscp-ipfs swarm service configuration

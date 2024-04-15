@@ -1,0 +1,49 @@
+global:
+  serviceAccountName: vault-auth
+  vault:
+    type: kubernetes # kubernetes | hashicorp
+
+proxy:
+  provider: none # none | ambassador
+
+config:
+  healthCheckPort: 80
+  healthCheckPollPeriod: 30000
+  healthCheckTimeout: 2000
+  nodeHost: member-1-substrate-node
+  nodePort: 9944
+  publicKey: # ""
+  privateKey: # ""
+  logLevel: "info"
+  ipfsApiPort: 5001
+  ipfsSwarmPort: 4001
+  ipfsDataPath: "/ipfs"
+  ipfsCommand: "/usr/local/bin/ipfs"
+  ipfsArgs:
+    - daemon
+    - "--migrate"
+  ipfsSwarmAddrFilters: null
+  ipfsLogLevel: info
+  ipfsBootNodeAddress: "/dns4/dscp-ipfs-node-2-swarm.gensub/tcp/4001/p2p/12D3KooWN8erDd2P1jmZctNSDGqZd7VdekKRr4xGeRhjNDDi7uym"
+
+service:
+  # dscp-ipfs swarm service configuration
+  swarm:
+    annotations: {}
+    enabled: true
+    port: 4001
+  # dscp-ipfs api service configuration
+  api:
+    annotations: {}
+    enabled: true
+    port: 5001
+
+statefulSet:
+  annotations: {}
+  livenessProbe:
+    enabled: false # false | true
+
+dscpNode:
+  enabled: false # true will cretae its own (to create custom ipfs specify details under .Values.dscpNode) | if false then we should have already running member node
+  member:
+    enabled: false # false | true
