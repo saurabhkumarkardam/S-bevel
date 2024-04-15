@@ -78,6 +78,8 @@ helm install validator-3 ./substrate-node --namespace gensub --values ./values/n
 helm install validator-4 ./substrate-node --namespace gensub --values ./values/noproxy-and-novault/node.yaml
 
 helm install    member-1 ./substrate-node --namespace gensub --values ./values/noproxy-and-novault/node.yaml --set node.role=full
+
+helm install    member-2 ./substrate-node --namespace gensub --values ./values/noproxy-and-novault/node.yaml --set node.role=full
 ```
 
 ## Clean-up
