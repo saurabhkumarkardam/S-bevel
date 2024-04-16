@@ -6,4 +6,4 @@ dependencies:
   repository: file://../../../shared/charts/bevel-storageclass
   version: 1.0.0
 digest: sha256:d2d3f82984b7b1a2c776f31f1824280674daf65cf8b59f1b5d0a806e6bde564c
-generated: "2024-04-15T07:50:38.610363485Z"
+generated: "2024-04-16T06:14:18.685426171Z"
