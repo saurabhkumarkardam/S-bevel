@@ -14,11 +14,14 @@
 metadata:
   #Provide the namespace for organization's peer
   #Eg. namespace: carrier-subs
-  namespace: default
+  namespace: # default
 
   #Provide the name for substrate-key-mgmt job release
   #Eg. name: carrier-keys-job
   name: substrate-keys-job
+  labels:
+
+labels:
 
 node:
   # Provide the name of the peer
@@ -53,6 +56,7 @@ initContainer:
 # For more info, see https://www.vaultproject.io/docs/auth/kubernetes
 
 vault:
+  type: "" # hashicorp
   # Provide the vault address
   # Eg. address: http://vault.example.com:8200
   address: ""
