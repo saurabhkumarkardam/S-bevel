@@ -79,7 +79,7 @@ helm install validator-4 ./substrate-node --namespace supplychain-subs --values 
 
 helm install    member-1 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml --set node.role=full
 
-helm install    member-1 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml --set node.role=full
+helm install    member-2 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml --set node.role=full
 ```
 
 ## Clean-up
@@ -96,6 +96,8 @@ helm uninstall validator-3 --namespace supplychain-subs
 helm uninstall validator-4 --namespace supplychain-subs
 
 helm uninstall member-1 --namespace supplychain-subs
+
+helm uninstall member-2 --namespace supplychain-subs
 
 helm uninstall genesis --namespace supplychain-subs
 ```
