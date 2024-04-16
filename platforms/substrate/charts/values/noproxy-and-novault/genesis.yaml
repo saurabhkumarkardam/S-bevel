@@ -1,0 +1,35 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+---
+# helm install genesis -f values/noproxy-and-novault/genesis.yaml -n supplychain-subs substrate-genesis
+
+# The following are for overriding global values
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: azure
+    cloudNativeServices: false
+  vault:
+    # Provide the type of vault
+    type: kubernetes # hashicorp | kubernetes
+
+node:
+  validatorCount: 4
+  memberCount: 2
+  members:
+  - name: member-1
+    balance: 1152921504606846976
+    nodes:
+    - validator-1
+    - validator-2
+    - member-1
+  - name: member-2
+    balance: 1152921504606846976
+    nodes:
+    - validator-3
+    - validator-4
+    - member-2
