@@ -158,11 +158,8 @@ spec:
 
           # STEP-6
           echo "Step 6: Adding member accounts and their balances to genesis."
-          echo "-------------------------------------------------------------"
           {{- range $idx, $member := .Values.node.members }}
-            echo "MEMBER NAME: {{ $member.name }}"
             this_account_addr=$(kubectl get secret "substrate-node-{{ $member.name }}-keys" --namespace {{ $.Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
-            echo "this_account_addr: $this_account_addr"
             # Add account address and balance into genesis block
             GENESIS=$(echo "$GENESIS" | jq --arg account_id "${this_account_addr}" --arg balance {{ $member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
             GENESIS=$(echo "$GENESIS" | jq --arg account_id "${this_account_addr}" '.genesis.runtime.membership.members += [$account_id]')
@@ -170,25 +167,20 @@ spec:
             # Loop through each node to add authorization for the current member
             {{- range $member.nodes }}
               this_node={{ . }}
-              echo "this_node: $this_node"
               # Retrieve node ID for the current node
               this_node_id=$(kubectl get secret "substrate-node-${this_node}-keys" --namespace {{ $.Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
-              echo "this_node: $this_node_id"
               
               # Convert node ID to base58 format
               this_node_base58=$(echo -n "${this_node_id}" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
-              echo "this_node: $this_node_base58"
               
               # Split the base58 string into an array of bytes
               arr_this_node_id=($(echo ${this_node_base58} | fold -w2))
-              echo "this_node: ${arr_this_node_id[@]}"
               
               # Add authorization for the current member to the node
               GENESIS=$(echo $GENESIS | jq --arg owner "${this_account_addr}" '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
               for byte in "${arr_this_node_id[@]}"
               do
                 # Add each byte of the node ID to the authorization
-                echo "Add each byte of the node ID to the authorization"
                 GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
               done
             {{- end }}          
