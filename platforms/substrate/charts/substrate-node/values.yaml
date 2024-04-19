@@ -116,11 +116,9 @@ node:
     bootnodeName:
     bootnodeAddr:
     bootnodePort: 30333
-  isPersistentVolume:
-    enabled: false
     # Provide the size of the volume
     # Eg. dataVolumeSize: 1Gi
-    dataVolumeSize: 10Gi
+  dataVolumeSize: 10Gi
   # Provide the number of replicas for your pods.
   # replicas: 1
   replicas: 1

@@ -37,8 +37,6 @@ global:
     # Provide the vault path where the secrets will be stored
     secretPrefix: "data/supplychain"
 
-settings:
-  secondaryGenesis: false
 removeGenesisOnDelete:
   enabled: true
   image:
@@ -62,13 +60,13 @@ node:
   # Eg. command: substrate
   command: ./dscp-node
 
-# -------------------------------------- New approach ----------------------------------------------- #
+# ------------------------------------------------------------------------------------- #
   validator:
     count: 4
   member:
     count: 1
     balance: 1152921504606846976
-# -------------------------------------- Old approach ----------------------------------------------- #
+# ------------------------------------------------------------------------------------- #
 # validatorCount: 4
 # memberCount: 2
 # members:

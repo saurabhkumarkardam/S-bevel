@@ -6,7 +6,6 @@
 ##############################################################################################
 
 ---
-{{- if not .Values.settings.secondaryGenesis }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -176,4 +175,3 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
-{{- end }}

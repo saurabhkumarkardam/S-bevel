@@ -62,10 +62,8 @@ spec:
             - name: SNAPSHOT_FORMAT
               value: {{ default "tar" .Values.node.chainDataSnapshotFormat }}
           volumeMounts:
-            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
-            {{- end }}
         {{- end }}
         {{- if .Values.node.collator.relayChainDataSnapshotUrl }}
         - name: download-relay-chain-snapshot
@@ -98,10 +96,8 @@ spec:
             - name: RELAY_CHAIN_PATH
               value: {{ default .Values.node.collator.relayChain .Values.node.collator.relayChainPath }}
           volumeMounts:
-            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
-            {{- end }}
         {{- end }}
         {{- if .Values.node.chainDataGcsBucketUrl }}
         - name: sync-chain-gcs
@@ -129,10 +125,8 @@ spec:
             - name: CHAIN_PATH
               value: {{ default .Values.node.chain .Values.node.chainPath }}
           volumeMounts:
-            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
-            {{- end }}
             {{- if .Values.googleCloudSdk.serviceAccountKey }}
             - name: service-account-key
               mountPath: /tmp
@@ -165,10 +159,8 @@ spec:
             - name: RELAY_CHAIN_PATH
               value: {{ default .Values.node.collator.relayChain .Values.node.collator.relayChainPath }}
           volumeMounts:
-            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
-            {{- end }}
             {{- if .Values.googleCloudSdk.serviceAccountKey }}
             - name: service-account-key
               mountPath: /tmp
@@ -192,11 +184,9 @@ spec:
                 wget -O {{ .Values.node.relayChainCustomChainspecPath }} {{ .Values.node.collator.relayChainCustomChainspecUrl }}
               fi
               {{- end }}
-          {{- if .Values.node.isPersistentVolume.enabled }}
           volumeMounts:
             - name: chain-data
               mountPath: /data
-          {{- end }}
         {{- end }}
       containers:
         - name: {{ .Values.node.chain }}
@@ -370,10 +360,8 @@ spec:
           volumeMounts:
           - mountPath: /secrets
             name: keystore
-          {{- if .Values.node.isPersistentVolume.enabled }}
           - mountPath: /data
             name: chain-data
-          {{- end }}
           {{- if .Values.node.persistGeneratedNodeKey }}
           {{- else if .Values.node.customNodeKey }}
           - mountPath: /tmp/
@@ -473,7 +461,6 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
-  {{- if .Values.node.isPersistentVolume.enabled }}
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -490,5 +477,4 @@ spec:
         storageClassName: storage-{{ .Release.Name }}
         resources:
           requests:
-            storage: {{ .Values.node.isPersistentVolume.dataVolumeSize }}
-  {{- end }}
+            storage: {{ .Values.node.dataVolumeSize }}
