@@ -37,6 +37,8 @@ global:
     # Provide the vault path where the secrets will be stored
     secretPrefix: "data/supplychain"
 
+settings:
+  secondaryGenesis: false
 removeGenesisOnDelete:
   enabled: true
   image:

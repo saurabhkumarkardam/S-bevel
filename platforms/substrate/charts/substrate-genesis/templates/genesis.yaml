@@ -4,6 +4,8 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 
+---
+{{- if not .Values.settings.secondaryGenesis }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -216,14 +218,15 @@ spec:
           GENESIS=$($command build-spec --disable-default-bootnode --raw --chain certcheck/genesis.json)
           echo "$GENESIS" > certcheck/genesis_raw.json
           # Encode the raw genesis JSON to base64
-          # cat certcheck/genesis_raw.json | base64 -w0 > certcheck/genesis_base64 # No need to encode it if you wanna store genesis as a K8s secret
+          cat certcheck/genesis_raw.json | base64 -w0 > certcheck/genesis_base64 # No need to encode it if you wanna store genesis as a K8s secret
 
-          # Create the config map "substrate-genesis" using the base64 encoded genesis JSON and sudoKeygenOutput.json if it doesn't exist
-          if ! kubectl get secret "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
-            kubectl create secret generic "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_raw.json" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
+          if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+            echo "_________________________________________________________"
+            kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           fi
-          # if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
-          #   kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
+          # # Create the config map "substrate-genesis" using the base64 encoded genesis JSON and sudoKeygenOutput.json if it doesn't exist
+          # if ! kubectl get secret "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+          #   kubectl create secret generic "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_raw.json" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           # fi
 
           echo "COMPLETED!"
@@ -239,4 +242,5 @@ spec:
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
+{{- end }}
 {{- end }}

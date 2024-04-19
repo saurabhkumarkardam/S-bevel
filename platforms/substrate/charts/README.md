@@ -74,18 +74,18 @@ Then install the nodes using the following commands:
 ```bash
 helm install validator-2 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml
 
-helm install validator-3 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml
+helm install validator-3 ./substrate-node --namespace supplychain-subs-2 --values ./values/noproxy-and-novault/node.yaml
 
-helm install validator-4 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml
+helm install validator-4 ./substrate-node --namespace supplychain-subs-2 --values ./values/noproxy-and-novault/node.yaml
 
 helm install    member-1 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml --set node.role=full
 
 helm install    member-2 ./substrate-node --namespace supplychain-subs --values ./values/noproxy-and-novault/node.yaml --set node.role=full
 
 ```
-### 4. Install IPFS Nodes
+## 4. Install IPFS Nodes
 
-Update the following section in the `./values/noproxy-and-novault/ipfs.yaml` file only once:
+**4.1.** Update the following section in the `./values/noproxy-and-novault/ipfs.yaml` file only once:
 
 ```yaml
 config:
@@ -93,18 +93,21 @@ config:
   nodeHost: <member-node>-substrate-node # Here, it can be modified either as member-1-substrate-node or member-2-substrate-node
 ```
 
-Then, proceed to install the IPFS nodes:
+**4.2.** Retrieve the `NODE_ID` from the Kubernetes secret:
+
+```bash
+NODE_ID=$(kubectl get secret "substrate-node-<member-node>-keys" --namespace supplychain-subs -o jsonpath="{.data['substrate-node-keys']}" | base64 -d | jq -r '.data.node_id')
+```
+
+**4.3.** Now, install the IPFS nodes:
 
 ```bash
 helm install dscp-ipfs-node-1 ./dscp-ipfs-node --namespace supplychain-subs --values ./values/noproxy-and-novault/ipfs.yaml \
---set config.ipfsBootNodeAddress="/dns4/dscp-ipfs-node-1-swarm.supplychain-subs/tcp/4001/p2p/<bootnode-nodeId>"
+--set config.ipfsBootNodeAddress="/dns4/dscp-ipfs-node-1-swarm.supplychain-subs/tcp/4001/p2p/$NODE_ID"
 
 helm install dscp-ipfs-node-2 ./dscp-ipfs-node --namespace supplychain-subs --values ./values/noproxy-and-novault/ipfs.yaml \
---set config.ipfsBootNodeAddress="/dns4/dscp-ipfs-node-2-swarm.supplychain-subs/tcp/4001/p2p/<bootnode-nodeId>"
+--set config.ipfsBootNodeAddress="/dns4/dscp-ipfs-node-2-swarm.supplychain-subs/tcp/4001/p2p/$NODE_ID"
 ```
-
-**Note: Obtain `<bootnode-nodeId>` from its Kubernetes secret.**
-
 
 ## Clean-up
 
@@ -112,8 +115,8 @@ To clean up, simply uninstall the Helm releases. It's important to uninstall the
 ```bash
 helm uninstall validator-1      --namespace supplychain-subs
 helm uninstall validator-2      --namespace supplychain-subs
-helm uninstall validator-3      --namespace supplychain-subs
-helm uninstall validator-4      --namespace supplychain-subs
+helm uninstall validator-3      --namespace supplychain-subs-2
+helm uninstall validator-4      --namespace supplychain-subs-2
 helm uninstall member-1         --namespace supplychain-subs
 helm uninstall member-2         --namespace supplychain-subs
 helm uninstall dscp-ipfs-node-1 --namespace supplychain-subs

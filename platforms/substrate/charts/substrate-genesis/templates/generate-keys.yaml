@@ -1,4 +1,12 @@
+
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
 ---
+{{- if not .Values.settings.secondaryGenesis }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -168,3 +176,4 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
+{{- end }}

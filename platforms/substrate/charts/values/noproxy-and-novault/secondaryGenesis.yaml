@@ -38,3 +38,6 @@ node:
 #   - validator-3
 #   - validator-4
 #   - member-2
+
+settings:
+  secondaryGenesis: true

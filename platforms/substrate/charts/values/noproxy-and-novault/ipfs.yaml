@@ -7,43 +7,4 @@ proxy:
   provider: none # none | ambassador
 
 config:
-  healthCheckPort: 80
-  healthCheckPollPeriod: 30000
-  healthCheckTimeout: 2000
-  nodeHost:
-  nodePort: 9944
-  publicKey:
-  privateKey:
-  logLevel: "info"
-  ipfsApiPort: 5001
-  ipfsSwarmPort: 4001
-  ipfsDataPath: "/ipfs"
-  ipfsCommand: "/usr/local/bin/ipfs"
-  ipfsArgs:
-    - daemon
-    - "--migrate"
-  ipfsSwarmAddrFilters: null
-  ipfsLogLevel: info
-  ipfsBootNodeAddress: ""
-
-service:
-  # dscp-ipfs swarm service configuration
-  swarm:
-    annotations: {}
-    enabled: true
-    port: 4001
-  # dscp-ipfs api service configuration
-  api:
-    annotations: {}
-    enabled: true
-    port: 5001
-
-statefulSet:
-  annotations: {}
-  livenessProbe:
-    enabled: false
-
-dscpNode:
-  enabled: false
-  member:
-    enabled: false
+  nodeHost: member-1-substrate-node

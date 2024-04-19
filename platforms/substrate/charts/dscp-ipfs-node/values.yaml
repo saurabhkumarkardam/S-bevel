@@ -11,7 +11,7 @@ config:
   # External DSCP-Node hostname to query, this overrides dscpNode.enabled
   nodeHost: ""
   # External DSCP-Node port to query
-  nodePort: ""
+  nodePort: 9944
   # Public key for the IPFS subsystem
   publicKey: ""
   # Private key for the IPFS subsystem
