@@ -62,8 +62,10 @@ spec:
             - name: SNAPSHOT_FORMAT
               value: {{ default "tar" .Values.node.chainDataSnapshotFormat }}
           volumeMounts:
+            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
+            {{- end }}
         {{- end }}
         {{- if .Values.node.collator.relayChainDataSnapshotUrl }}
         - name: download-relay-chain-snapshot
@@ -96,8 +98,10 @@ spec:
             - name: RELAY_CHAIN_PATH
               value: {{ default .Values.node.collator.relayChain .Values.node.collator.relayChainPath }}
           volumeMounts:
+            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
+            {{- end }}
         {{- end }}
         {{- if .Values.node.chainDataGcsBucketUrl }}
         - name: sync-chain-gcs
@@ -125,8 +129,10 @@ spec:
             - name: CHAIN_PATH
               value: {{ default .Values.node.chain .Values.node.chainPath }}
           volumeMounts:
+            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
+            {{- end }}
             {{- if .Values.googleCloudSdk.serviceAccountKey }}
             - name: service-account-key
               mountPath: /tmp
@@ -159,8 +165,10 @@ spec:
             - name: RELAY_CHAIN_PATH
               value: {{ default .Values.node.collator.relayChain .Values.node.collator.relayChainPath }}
           volumeMounts:
+            {{- if .Values.node.isPersistentVolume.enabled }}
             - mountPath: /data
               name: chain-data
+            {{- end }}
             {{- if .Values.googleCloudSdk.serviceAccountKey }}
             - name: service-account-key
               mountPath: /tmp
@@ -184,9 +192,11 @@ spec:
                 wget -O {{ .Values.node.relayChainCustomChainspecPath }} {{ .Values.node.collator.relayChainCustomChainspecUrl }}
               fi
               {{- end }}
+          {{- if .Values.node.isPersistentVolume.enabled }}
           volumeMounts:
             - name: chain-data
               mountPath: /data
+          {{- end }}
         {{- end }}
       containers:
         - name: {{ .Values.node.chain }}
@@ -198,25 +208,28 @@ spec:
 
             #!/bin/sh
 
-              # STEP-1
               echo "Step 1: Install necessary packages using custom package manager script"
               . /scripts/package-manager.sh
               packages_to_install="jq curl"
               install_packages "$packages_to_install"
 
-              # STEP-2
               echo "STEP-2: Download and set up kubectl for Kubernetes management"
               curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
               chmod +x kubectl
               mv kubectl /usr/local/bin/
               kubectl version --client
 
-              # STEP-3
-              echo "Step 3: Extract chain specification (genesis) from Kubernetes ConfigMap and store it"
-              chain_spec=$(kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]')
-              echo "${chain_spec}" | base64 -d > {{ .Values.node.customChainspecPath }}
+              echo "Step 3: Extract chain specification (genesis) from Kubernetes secret and store it"
+              if ! kubectl get secret "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                chain_spec=$(kubectl get secret "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]')
+                echo "${chain_spec}" | base64 -d > {{ .Values.node.customChainspecPath }}
+              fi
+              # echo "Step 3: Extract chain specification (genesis) from Kubernetes configmap and store it"
+              # if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                # chain_spec=$(kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]')
+                # echo "${chain_spec}" | base64 -d > {{ .Values.node.customChainspecPath }}
+              # fi
 
-              # STEP-4
               echo "Step 4: Retrieve secret keys from Kubernetes Secrets if available"
               secretName="substrate-node-{{ .Release.Name }}-keys"
               if kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
@@ -233,14 +246,12 @@ spec:
                 BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
               {{- end }}
 
-              # STEP-5
               echo "Step 5: Insert keys into Keystore using dscp-node command-line tool"
               # Insert AURA key into Keystore
               ./{{ .Values.node.command }} key insert --base-path=/data --chain=/data/chainspec.json --key-type=aura --scheme=Sr25519 --suri="${AURA_SECRETPHRASE}" && echo "Inserted key aura into Keystore" || echo "Failed to insert key aura into Keystore."
               # Insert GRANPA key into Keystore
               ./{{ .Values.node.command }} key insert --base-path=/data --chain=/data/chainspec.json --key-type=gran --scheme=Ed25519 --suri="${GRAN_SECRETPHRASE}" && echo "Inserted key gran into Keystore" || echo "Failed to insert key gran into Keystore."
 
-              # STEP-6
               echo "Step 6: Determine various ports and external addresses for P2P communication"
               POD_INDEX="${HOSTNAME##*-}"
               {{- if and (.Values.node.perNodeServices.createP2pService) (eq .Values.node.perNodeServices.p2pServiceType "NodePort") }}
@@ -272,7 +283,6 @@ spec:
               echo "EXTERNAL_ADDRESS:$EXTERNAL_ADDRESS"
               echo "EXTERNAL_P2P_PORT:$EXTERNAL_P2P_PORT"
 
-              # STEP-7
               echo "Step 7: Start the node"
               exec {{ .Values.node.command }} \
               --name=${POD_NAME} \
@@ -325,7 +335,7 @@ spec:
             - containerPort: 9615
               name: prometheus
               protocol: TCP
-            - containerPort: 30333
+            - containerPort: 8080 # 30333
               name: p2p
               protocol: TCP
           {{- if .Values.node.collator.isParachain }}
@@ -360,8 +370,10 @@ spec:
           volumeMounts:
           - mountPath: /secrets
             name: keystore
+          {{- if .Values.node.isPersistentVolume.enabled }}
           - mountPath: /data
             name: chain-data
+          {{- end }}
           {{- if .Values.node.persistGeneratedNodeKey }}
           {{- else if .Values.node.customNodeKey }}
           - mountPath: /tmp/
@@ -461,6 +473,7 @@ spec:
         - name: package-manager
           configMap:
             name: package-manager
+  {{- if .Values.node.isPersistentVolume.enabled }}
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -477,4 +490,5 @@ spec:
         storageClassName: storage-{{ .Release.Name }}
         resources:
           requests:
-            storage: {{ .Values.node.dataVolumeSize }}
+            storage: {{ .Values.node.isPersistentVolume.dataVolumeSize }}
+  {{- end }}

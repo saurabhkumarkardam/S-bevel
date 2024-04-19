@@ -37,6 +37,7 @@ global:
   ```
   helm dependency update substrate-genesis
   helm dependency update substrate-node
+  helm dependency update dscp-ipfs-node
   ```
 
 

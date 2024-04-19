@@ -9,6 +9,31 @@
 # Declare variables to be passed into your templates.
 
 ---
+global:
+  #Provide the service account name which will be created.
+  serviceAccountName: vault-auth
+  cluster:
+    provider: azure  # choose from: minikube | aws
+    cloudNativeServices: false # 'false' is implemented
+    #Provide the kubernetes host url
+    #Eg. kubernetesUrl: https://10.3.8.5:6443
+    kubernetesUrl:
+  vault:
+    # Provide the type of vault
+    type: "" # hashicorp
+    # Provide the vault role used.
+    role: vault-role
+    # Provide the network type
+    network: substrate
+    # Provide the vault server address
+    address: ""
+    # Provide the vault authPath configured to be used.
+    authPath: supplychain
+    # Provide the secret engine.
+    secretEngine: secretsv2
+    # Provide the vault path where the secrets will be stored
+    secretPrefix: "data/supplychain"
+
 # substrate node runtime image
 # Eg. repository: parity/substrate
 image:
@@ -91,9 +116,11 @@ node:
     bootnodeName:
     bootnodeAddr:
     bootnodePort: 30333
-  # Provide the size of the volume
-  # Eg. dataVolumeSize: 1Gi 
-  dataVolumeSize: 10Gi
+  isPersistentVolume:
+    enabled: false
+    # Provide the size of the volume
+    # Eg. dataVolumeSize: 1Gi
+    dataVolumeSize: 10Gi
   # Provide the number of replicas for your pods.
   # replicas: 1
   replicas: 1
@@ -114,16 +141,14 @@ node:
   # chainDataGcsBucketUrl: ""
   collator:
     isParachain: false
-    # relayChainDataSnapshotUrl: false # new
-    # relayChainDataGcsBucketUrl: false # new
-    #  relayChainCustomChainspecUrl: ""
-    #  relayChainCustomChainspecPath: "/data/relay_chain_chainspec.json"
-    #  relayChainDataSnapshotUrl: "https://dot-rocksdb.polkashots.io/snapshot"
-    #  relayChainDataSnapshotFormat: 7z
-    #  relayChainPath: ""
-    #  relayChainDataKubernetesVolumeSnapshot: ""
-    #  relayChainDataGcsBucketUrl: ""
-    #  relayChainFlags:
+    # relayChainCustomChainspecUrl: ""
+    # relayChainCustomChainspecPath: "/data/relay_chain_chainspec.json"
+    # relayChainDataSnapshotUrl: "https://dot-rocksdb.polkashots.io/snapshot"
+    # relayChainDataSnapshotFormat: 7z
+    # relayChainPath: ""
+    # relayChainDataKubernetesVolumeSnapshot: ""
+    # relayChainDataGcsBucketUrl: ""
+    # relayChainFlags:
 
   enableStartupProbe: false
   enableReadinessProbe: false
@@ -156,7 +181,7 @@ node:
   ports:
     # Specifies the port to listen on for peer-to-peer (p2p) traffic
     # Eg. p2p: 30333
-    p2p: 30333
+    p2p: 8080 # 30333
     # Specifies the port to listen on for incoming WebSocket traffic
     # Eg. ws: 9944
     ws: 9944
@@ -225,28 +250,3 @@ tolerations: []
 affinity: {}
 
 extraContainers: []
-
-global:
-  #Provide the service account name which will be created.
-  serviceAccountName: vault-auth
-  cluster:
-    provider: azure  # choose from: minikube | aws
-    cloudNativeServices: false # 'false' is implemented
-    #Provide the kubernetes host url
-    #Eg. kubernetesUrl: https://10.3.8.5:6443
-    kubernetesUrl:
-  vault:
-    # Provide the type of vault
-    type: "" # hashicorp
-    # Provide the vault role used.
-    role: vault-role
-    # Provide the network type
-    network: substrate
-    # Provide the vault server address
-    address: ""
-    # Provide the vault authPath configured to be used.
-    authPath: supplychain
-    # Provide the secret engine.
-    secretEngine: secretsv2
-    # Provide the vault path where the secrets will be stored
-    secretPrefix: "data/supplychain"

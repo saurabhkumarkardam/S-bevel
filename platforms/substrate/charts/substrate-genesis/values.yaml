@@ -59,18 +59,26 @@ node:
   # Command to be invoked to perform operations on the node
   # Eg. command: substrate
   command: ./dscp-node
-  validatorCount: 4
-  memberCount: 2
-  members:
-  - name: member-1
+
+# -------------------------------------- New approach ----------------------------------------------- #
+  validator:
+    count: 4
+  member:
+    count: 1
     balance: 1152921504606846976
-    nodes:
-    - validator-1
-    - validator-2
-    - member-1
-  - name: member-2
-    balance: 1152921504606846976
-    nodes:
-    - validator-3
-    - validator-4
-    - member-2
+# -------------------------------------- Old approach ----------------------------------------------- #
+# validatorCount: 4
+# memberCount: 2
+# members:
+# - name: member-1
+#   balance: 1152921504606846976
+#   nodes:
+#   - validator-1
+#   - validator-2
+#   - member-1
+# - name: member-2
+#   balance: 1152921504606846976
+#   nodes:
+#   - validator-3
+#   - validator-4
+#   - member-2

@@ -16,90 +16,90 @@ global:
   vault:
     type: kubernetes # hashicorp | kubernetes
 
-image:
-  repository: ghcr.io/inteli-poc/dscp-node
-  tag: v4.3.1
-  pullPolicy: IfNotPresent
+# image:
+#   repository: ghcr.io/inteli-poc/dscp-node
+#   tag: v4.3.1
+#   pullPolicy: IfNotPresent
 
-initContainer:
-  image:
-    repository: crazymax/7zip
-    tag: latest
+# initContainer:
+#   image:
+#     repository: crazymax/7zip
+#     tag: latest
 
-kubectl:
-  image:
-    repository: bitnami/kubectl
-    tag: latest
+# kubectl:
+#   image:
+#     repository: bitnami/kubectl
+#     tag: latest
 
-googleCloudSdk:
-  image:
-    repository: google/cloud-sdk
-    tag: slim
+# googleCloudSdk:
+#   image:
+#     repository: google/cloud-sdk
+#     tag: slim
 
-serviceAccount:
-  create: false
-  name: vault-auth
+# serviceAccount:
+#   create: false
+#   name: vault-auth
 
-podSecurityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
-  fsGroup: 1000
+# podSecurityContext:
+#   runAsUser: 1000
+#   runAsGroup: 1000
+#   fsGroup: 1000
 
-ingress:
-  enabled: false
+# ingress:
+#   enabled: false
 
 node:
-  chain: inteli
-  command: ./dscp-node
+  # chain: inteli
+  # command: ./dscp-node
   isBootnode:
     enabled: true # false | true
-    bootnodeName: 
-    bootnodeAddr: 
-    bootnodePort: 30333
+    bootnodeName: validator-1
+    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.supplychain-subs
+    bootnodePort: 8080 # 30333
+    role: validator # full | validator
 
-  dataVolumeSize: 10Gi
-  replicas: 1
-  role: validator # full | validator
-  customChainspecUrl: true
-  chainDataSnapshotUrl: false
-  customChainspecPath: "/data/chainspec.json"
-  chainDataGcsBucketUrl: false
-  collator:
-    isParachain: false
-    relayChainDataSnapshotUrl: false
-    relayChainDataGcsBucketUrl: false
+  # dataVolumeSize: 10Gi
+  # replicas: 1
+  # customChainspecUrl: true
+  # chainDataSnapshotUrl: false
+  # customChainspecPath: "/data/chainspec.json"
+  # chainDataGcsBucketUrl: false
+  # collator:
+  #   isParachain: false
+  #   relayChainDataSnapshotUrl: false
+  #   relayChainDataGcsBucketUrl: false
     
-  enableStartupProbe: false
-  enableReadinessProbe: false
-  flags:
-    - "--rpc-external"
-    - "--ws-external"
-    - "--rpc-methods=Unsafe"
-    - "--rpc-cors=all"
-    - "--unsafe-ws-external"
-    - "--unsafe-rpc-external"
-  persistGeneratedNodeKey: false
+  # enableStartupProbe: false
+  # enableReadinessProbe: false
+  # flags:
+  #   - "--rpc-external"
+  #   - "--ws-external"
+  #   - "--rpc-methods=Unsafe"
+  #   - "--rpc-cors=all"
+  #   - "--unsafe-ws-external"
+  #   - "--unsafe-rpc-external"
+  # persistGeneratedNodeKey: false
   
-  resources: {}
-  serviceMonitor:
-    enabled: false
+  # resources: {}
+  # serviceMonitor:
+  #   enabled: false
     
-  perNodeServices:
-    createApiService: true
-    createP2pService: true
-    p2pServiceType: ClusterIP
-    setPublicAddressToExternal:
-      enabled: false
-      ipRetrievalServiceUrl: https://ifconfig.io
-  podManagementPolicy: Parallel
+  # perNodeServices:
+  #   createApiService: true
+  #   createP2pService: true
+  #   p2pServiceType: ClusterIP
+  #   setPublicAddressToExternal:
+  #     enabled: false
+  #     ipRetrievalServiceUrl: https://ifconfig.io
+  # podManagementPolicy: Parallel
   
-  ports:
-    p2p: 30333
-    ws: 9944
-    rpc: 9933
+  # ports:
+  #   p2p: 30333
+  #   ws: 9944
+  #   rpc: 9933
     
-  tracing:
-    enabled: false
+  # tracing:
+  #   enabled: false
       
-  substrateApiSidecar:
-    enabled: false
+  # substrateApiSidecar:
+  #   enabled: false
