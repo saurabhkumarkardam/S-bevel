@@ -49,8 +49,24 @@ helm uninstall genesis
 
 This command eliminates all Kubernetes components associated with the chart and deletes the release.
 
-
 ## Parameters
+
+#### Global Parameters
+These parameters remain consistent across parent or child charts.
+
+| Name   | Description  | Default Value |
+|--------|---------|-------------|
+| `global.serviceAccountName` | Name of the service account for Vault Auth and Kubernetes Secret management | `vault-auth` |
+| `global.cluster.provider` | Kubernetes cluster provider (e.g., AWS EKS, minikube). Currently tested with `aws` and `minikube`. | `aws` |
+| `global.cluster.cloudNativeServices` | Future implementation for utilizing Cloud Native Services (`true` for SecretsManager and IAM for AWS; KeyVault & Managed Identities for Azure). | `false`  |
+| `global.cluster.kubernetesUrl` | URL of the Kubernetes Cluster  | `""`  |
+| `global.vault.type`  | Vault type support for other providers. Currently supports `hashicorp` and `kubernetes`. | `hashicorp` |
+| `global.vault.role`  | Role used for authentication with Vault | `vault-role` |
+| `global.vault.network`  | Deployed network type | `substrate` |
+| `global.vault.address`| URL of the Vault server.    | `""` |
+| `global.vault.authPath`    | Authentication path for Vault  | `supplychain` |
+| `global.vault.secretEngine` | Vault secret engine name   | `secretsv2` |
+| `global.vault.secretPrefix` | Vault secret prefix; must start with `data/`   | `data/supplychain` |
 
 ### Genesis image config parameters
 
@@ -60,32 +76,9 @@ This command eliminates all Kubernetes components associated with the chart and 
 | `node.imageTag` | The dscp-node or substrate image tag | `v4.3.1`                |
 | `node.pullPolicy` | dscp-node image pull | `IfNotPresent`           |
 | `node.command` | The binary that will be executed to generate the genesis (this corresponds to the node.image) | `./dscp-node`   |
-| `node.validatorCount` | Specify the count of validator nodes |  |
-| `node.memberCount` | Specify the count of member nodes |  |
-| `node.members.name` | Node that has account information |  |
-| `node.members.balance` | Pre-allocate some balance for the nodes |  |
-| `node.members.nodes` | list of nodes that needs to be authorized along with account's address |  |
-
-### Vault Parameters
-
-| Name | Description | Default Value  |
-| - | - | - |
-| `vault.address` | URL of the Vault server | `""` |
-| `vault.role` | The Vault role which will access the | `vault-role` |
-| `vault.authpath` | The Auth Path configured on Hashicorp | `""` |
-| `vault.serviceAccountName` | The service account that has been authenticated with Hashicorp Vault | `vault-auth` |
-| `vault.certSecretPrefix` | The path where certificates are stored | `""` |
-
-### DSCP-Node/Substrate Account Parameters
-
-| Name                        | Description                                                                               | Default Value  |
-| --------------------------- | ----------------------------------------------------------------------------------------- | ------ |
-| `chain`          | The name of the chain which is embedded in the genesis               | `inteli` |
-| `aura_keys`          | List of aura keys that will be added to the genesis               | `[]` |
-| `grandpa_keys`          | List of grandpa keys that will be added to the genesis               | `[]` |
-| `members`          | List of members with these attributes: `account_id`, `balance` and `nodes` list.               | `[]` |
-
-
+| `node.validator.count` | Specify the count of validator nodes | `4` |
+| `node.member.count` | Specify the count of member nodes | `1` |
+| `node.members.balance` | Pre-allocate some balance for the nodes | `1152921504606846976` |
 
 ## License
 
