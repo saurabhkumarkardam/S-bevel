@@ -5,9 +5,7 @@
 
 # substrate-genesis
 
-This Helm chart performs two tasks as follows:
-1. Generates keys for the specified number of nodes using the `dscp-node` CLI tool. The generated keys will be stored as Kubernetes secrets. If HashiCorp Vault is enabled, the keys will also be saved to HashiCorp Vault.
-2. Generates a customized Genesis with the information provided by the user via the values.yaml of the same chart.
+This Helm chart generates keys for a specified number of nodes using the dscp-node CLI tool, storing them as Kubernetes secrets and, if enabled, saving them to HashiCorp Vault, while also generating a customized Genesis based on user-provided information.
 
 ## TL;DR
 
@@ -85,3 +83,21 @@ These parameters remain consistent across parent or child charts.
 This chart is licensed under the Apache v2.0 license.
 
 Copyright &copy; 2023 Accenture
+
+### Attribution
+
+This chart is adapted from the [charts](https://hyperledger.github.io/bevel/) which is licensed under the Apache v2.0 License which is reproduced here:
+
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
