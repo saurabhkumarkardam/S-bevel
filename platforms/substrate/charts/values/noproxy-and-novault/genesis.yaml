@@ -23,3 +23,6 @@ node:
   member:
     count: 1
     balance: 1152921504606846976
+
+settings:
+  genesis: true

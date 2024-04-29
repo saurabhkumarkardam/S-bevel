@@ -16,4 +16,4 @@ proxy:
   provider: none # none | ambassador
 
 config:
-  nodeHost:
+  nodeHost: member-1-substrate-node

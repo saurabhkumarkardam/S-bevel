@@ -43,6 +43,8 @@ removeGenesisOnDelete:
     repository: ghcr.io/hyperledger/bevel-k8s-hooks
     tag: qgt-0.2.12
     pullPolicy: IfNotPresent
+settings:
+  genesis: true
 
 # Provide custom chain name
 # Eg. chain: inteli-gcp

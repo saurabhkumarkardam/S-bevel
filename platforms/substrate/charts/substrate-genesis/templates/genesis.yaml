@@ -5,6 +5,7 @@
 ##############################################################################################
 
 ---
+{{- if .Values.settings.genesis }} # NEW
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -208,3 +209,4 @@ spec:
             name: bevel-vault-script
             defaultMode: 0777
 {{- end }}
+{{- end }} # NEW

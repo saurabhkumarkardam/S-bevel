@@ -1,0 +1,30 @@
+- name: Initialize counts
+  set_fact:
+    validator_count: 0
+    member_count: 0
+
+- name: Count validator nodes
+  set_fact:
+    validator_count: "{{ validator_count + 1 }}"
+  loop: "{{ peers }}"
+  loop_control:
+    loop_var: peer
+  when: peer.type == 'bootnode' or peer.type == 'validator'
+
+- name: Count member nodes
+  set_fact:
+    member_count: "{{ member_count + 1 }}"
+  loop: "{{ peers }}"
+  loop_control:
+    loop_var: peer
+  when: peer.type == 'member'
+
+- name: Create key and genesis
+  include_role:
+    name: create/helm_component
+  vars:    
+    component_type: "key_mgmt"    
+    type: "substrate_keys_job"
+    name: "{{ org.name | lower }}"
+    component_name: "{{ peer.name }}-keys-job"
+  when: vault_keys_result.failed

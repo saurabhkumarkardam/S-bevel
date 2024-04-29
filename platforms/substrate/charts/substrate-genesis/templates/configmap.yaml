@@ -1,0 +1,23 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+{{- if not .Values.settings.genesis }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: substrate-genesis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: substrate-genesis-job
+    app.kubernetes.io/component: substrate-job
+    app.kubernetes.io/part-of: substrate-genesis-job
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+data:  
+  genesis.json: |-
+    {{ .Files.Get "files/genesis.json" | nindent 8 }}
+{{- end }}
