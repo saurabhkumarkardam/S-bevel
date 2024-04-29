@@ -195,6 +195,10 @@ spec:
           if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
             kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           fi
+
+          if ! kubectl get secret "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+            kubectl create secret generic "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_raw.json" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
+          fi
           echo "COMPLETED!"
       volumes:
         - name: certcheck

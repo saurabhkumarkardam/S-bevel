@@ -23,3 +23,10 @@ node:
     bootnodeAddr: validator-1-substrate-node-0-rc-p2p.supplychain-subs
     bootnodePort: 8080
     role: validator # full | validator
+  diffNamespace: 
+    enabled: true
+    auraSecretPhraseKey: "mirror accident garden style such museum universe sweet disagree smile wing theme"
+    granSecretPhraseKey: "keen tower comic coast pond hub garage beyond vapor word tissue shove"
+    nodeKey: ec4bc694bea8a9fa798a4e53a76784b0ee78434ccadf892b35b1720cb83d9f05
+    bootnodeId: 12D3KooWByHfabLDGdDzUYx8QTiL9Kk8ejA3UHNdbktQefP2NFdz
+genesisNamespace: supplychain-subs # New

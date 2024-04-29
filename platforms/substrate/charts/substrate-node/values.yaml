@@ -257,3 +257,5 @@ storage:
   volumeBindingMode: Immediate # choose from: Immediate | WaitForFirstConsumer
   allowedTopologies:
     enabled: false
+
+genesisNamespace: supplychain-subs # New
