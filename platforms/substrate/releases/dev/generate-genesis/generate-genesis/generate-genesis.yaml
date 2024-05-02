@@ -10,12 +10,11 @@ spec:
   releaseName: generate-genesis
   chart:
     spec:
-      interval: 1m
+      chart: platforms/substrate/charts/substrate-genesis
       sourceRef:
         kind: GitRepository
         name: flux-s
         namespace: flux-s
-      chart: platforms/substrate/charts/substrate-genesis
   values:
     global:
       serviceAccountName: vault-auth
