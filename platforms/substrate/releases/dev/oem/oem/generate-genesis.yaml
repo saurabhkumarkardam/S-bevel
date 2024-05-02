@@ -1,0 +1,38 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: generate-genesis
+  namespace: oem-subs
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  interval: 1m
+  releaseName: generate-genesis
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-s
+        namespace: flux-s
+      chart: platforms/substrate/charts/substrate-genesis
+  values:
+    node:
+      name: generate-genesis
+      image: ghcr.io/inteli-poc/dscp-node
+      imageTag: v4.3.1
+      pullPolicy: IfNotPresent
+      command: ./dscp-node
+      validator:
+        count: 4
+      member:
+        count: 0
+        balance: 1152921504606846976
+    vault:
+      address: http://98.64.226.131:20001
+      role: vault-role
+      authpath: soem
+      serviceaccountname: vault-auth
+      certsecretprefix: secretsv2/oem
+    chain: inteli
+
