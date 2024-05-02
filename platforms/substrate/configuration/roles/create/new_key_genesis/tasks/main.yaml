@@ -33,7 +33,7 @@
     # component_ns: "{{ item.name | lower }}-subs"
     vault: "{{ item.vault }}"
     peers: "{{ item.services.peers }}"
-    charts_dir: "{{ item.gitops.chart_source }}"
+    # charts_dir: "{{ item.gitops.chart_source }}"
     # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
     org: "{{ item }}"
     gitops: "{{ item.gitops }}"
@@ -57,9 +57,11 @@
     component_type: "key_mgmt"    
     type: "genesis_key"
     name: "generate-genesis" # "{{ org.name | lower }}"
-    component_ns: "{{ item.name | lower }}-subs"
+    component_ns: "oem-subs"
+    charts_dir: "platforms/substrate/charts" # "{{ item.gitops.chart_source }}"
     # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
     values_dir: "{{playbook_dir}}/../../../platforms/substrate/releases/dev/generate-genesis"
+    vault: "{{ network.organizations[0].vault }}"
     component_name: "generate-genesis" # "{{ peer.name }}-keys-job"
 
 # Push the created deployment files to repository
@@ -67,8 +69,10 @@
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
   vars:
+    component_ns: "oem-subs"
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
+    gitops: "{{ network.organizations[0].gitops }}" # "{{ item.gitops }}"
   tags: notest
   # when: vault_keys_result.failed
 
