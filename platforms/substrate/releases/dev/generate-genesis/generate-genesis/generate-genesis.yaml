@@ -17,8 +17,29 @@ spec:
         namespace: flux-s
       chart: platforms/substrate/charts/substrate-genesis
   values:
+    global:
+      serviceAccountName: vault-auth
+      cluster:
+        provider: azure  # choose from: minikube | aws
+        cloudNativeServices: false # 'false' is implemented
+        #Provide the kubernetes host url
+        kubernetesUrl:
+      vault:
+        type: kubernetes # hashicorp | kubernetes
+        role: 
+        network: 
+        address:
+        authPath:
+        secretEngine:
+        secretPrefix:
+    removeGenesisOnDelete:
+      enabled: true
+      image:
+        repository: ghcr.io/hyperledger/bevel-k8s-hooks
+        tag: qgt-0.2.12
+        pullPolicy: IfNotPresent
+    chain: inteli
     node:
-      name: generate-genesis
       image: ghcr.io/inteli-poc/dscp-node
       imageTag: v4.3.1
       pullPolicy: IfNotPresent
@@ -28,11 +49,3 @@ spec:
       member:
         count: 1
         balance: 1152921504606846976
-    vault:
-      address: http://98.64.226.131:20001
-      role: vault-role
-      authpath: sgenerate-genesis
-      serviceaccountname: vault-auth
-      certsecretprefix: secretsv2/generate-genesis
-    chain: inteli
-
