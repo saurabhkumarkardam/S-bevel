@@ -50,7 +50,6 @@ spec:
         balance: 1152921504606846976
 
 
-
     # node:
     #   name: generate-genesis
     #   image: ghcr.io/inteli-poc/dscp-node
