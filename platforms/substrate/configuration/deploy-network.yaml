@@ -159,17 +159,17 @@
   #   include_role:
   #     name: create/bootnodefile
 
-  # # Deploy Substrate validator nodes
-  # - name: "Deploy Substrate validators"
-  #   include_role:
-  #     name: create/validator_node
-  #   vars:
-  #     build_path: "./build"
-  #     kubernetes: "{{ item.k8s }}"
-  #     component_ns: "{{ item.name | lower }}-subs"
-  #     name: "{{ item.name | lower }}"
-  #     peers: "{{ item.services.peers }}"
-  #   loop: "{{ network['organizations'] }}"
+  # Deploy Substrate validator nodes
+  - name: "Deploy Substrate validators"
+    include_role:
+      name: create/validator_node
+    vars:
+      build_path: "./build"
+      kubernetes: "{{ item.k8s }}"
+      component_ns: "{{ item.name | lower }}-subs"
+      name: "{{ item.name | lower }}"
+      peers: "{{ item.services.peers }}"
+    loop: "{{ network['organizations'] }}"
 
   # # Deploy ipfs bootnodes
   # - name: "Deploy ipfs bootnodes"
