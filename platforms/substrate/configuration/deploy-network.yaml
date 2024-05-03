@@ -27,6 +27,11 @@
       path: "./build"
       state: absent
 
+  - name: Pull push from 2-ansible
+    shell: |
+      git pull origin 2-ansible
+      git pull origin 2-ansible
+
   # Create namespace
   - name: "Create namespace"
     include_role: 
