@@ -16,7 +16,6 @@ spec:
         name: flux-{{ network.env.type }}
         namespace: flux-{{ network.env.type }}
       chart: {{ charts_dir }}/substrate-node
-
   values:
     image:
       repository: {{ network.docker.url }}/{{ network.config.node_image }}
@@ -44,7 +43,12 @@ spec:
     node:
       name: {{ peer.name }}
       chain: {{ network.config.chain }}
-      command: {{ command }}      
+      command: {{ command }}
+      isBootnode:
+        enabled: {{ isBootnode }}
+        bootnodeName:
+        bootnodeAddr:
+        bootnodePort: 30333
       dataVolumeSize: 10Gi
       replicas: 1
       role: {{ role }}
@@ -68,13 +72,6 @@ spec:
 {% if peer.type == 'member' %}
         - "--pruning=archive"
 {% endif %}
-      keys:
-        - type: "gran"
-          scheme: "ed25519"
-          seed: "grandpa_seed"
-        - type: "aura"
-          scheme: "sr25519"
-          seed: "aura_seed"
       persistGeneratedNodeKey: false
 
       resources: {}
@@ -101,7 +98,7 @@ spec:
         enabled: false
 
     proxy:
-      provider: ambassador
+      provider: none
       external_url: {{ peer.name }}.{{ external_url }}
       p2p: {{ peer.p2p.ambassador }}
       certSecret: {{ org.name | lower }}-ambassador-certs

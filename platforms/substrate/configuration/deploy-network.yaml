@@ -137,17 +137,17 @@
   #     sudo_org_query: "organizations[?type=='superuser']"
   #     org: "{{ network | json_query(sudo_org_query) | first }}"
 
-  # # Deploy Substrate bootnodes
-  # - name: "Deploy Bootnodes"
-  #   include_role:
-  #     name: create/bootnode
-  #   vars:
-  #     build_path: "./build"
-  #     kubernetes: "{{ item.k8s }}"
-  #     component_ns: "{{ item.name | lower }}-subs"
-  #     name: "{{ item.name | lower }}"
-  #     peers: "{{ item.services.peers }}"
-  #   loop: "{{ network['organizations'] }}"
+  # Deploy Substrate bootnodes
+  - name: "Deploy Bootnodes"
+    include_role:
+      name: create/bootnode
+    vars:
+      build_path: "./build"
+      kubernetes: "{{ item.k8s }}"
+      component_ns: "{{ item.name | lower }}-subs"
+      name: "{{ item.name | lower }}"
+      peers: "{{ item.services.peers }}"
+    loop: "{{ network['organizations'] }}"
 
   # # Generate the bootnode list file
   # - name: "Generate bootnode file list for the network"

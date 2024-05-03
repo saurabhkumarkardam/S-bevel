@@ -17,6 +17,27 @@ spec:
         namespace: flux-{{ network.env.type }}
       chart: {{ charts_dir }}/substrate-genesis
   values:
+    global:
+      serviceAccountName: vault-auth
+      cluster:
+        provider: azure
+        cloudNativeServices: false
+        kubernetesUrl:
+      vault:
+        type: kubernetes
+        role: vault-role
+        network: substrate
+        address: {{ vault.url }}
+        authPath: {{ network.env.type }}{{ name }}
+        secretEngine: {{ vault.secret_path | default("secretsv2") }}
+        secretPrefix: "data/{{ network.env.type }}{{ name }}"
+    removeGenesisOnDelete:
+      enabled: true
+      image:
+        repository: ghcr.io/hyperledger/bevel-k8s-hooks
+        tag: qgt-0.2.12
+        pullPolicy: IfNotPresent
+    chain: {{ network.config.chain }}
     node:
       name: {{ component_name }}
       image: {{ network.docker.url }}/{{ network.config.node_image }}
@@ -28,11 +49,3 @@ spec:
       member:
         count: {{ member_count }}
         balance: 1152921504606846976
-    vault:
-      address: {{ vault.url }}
-      role: vault-role
-      authpath: {{ network.env.type }}{{ name }}
-      serviceaccountname: vault-auth
-      certsecretprefix: {{ vault.secret_path | default('secretsv2') }}/{{ name }}
-    chain: {{ network.config.chain }}
-

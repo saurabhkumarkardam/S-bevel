@@ -22,6 +22,7 @@
     values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"
     command: "{{ network.config.command }}"
     role: "full"
+    isBootnode: false
   loop: "{{ peers }}"
   loop_control:
     loop_var: peer
