@@ -9,7 +9,7 @@
   include_role:
     name: create/helm_component
   vars:
-    component_name: "{{ name }}{{ peer.name }}bootnode"
+    component_name: "{{ peer.name }}" # "{{ name }}{{ peer.name }}bootnode"
     type: "node_substrate"  
     storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
     external_url: "{{ item.external_url_suffix }}"
