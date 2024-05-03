@@ -9,7 +9,7 @@
   include_role:
     name: create/helm_component
   vars:
-    component_name: "{{ name }}{{ peer.name }}validatornode"
+    component_name: "{{ peer.name }}" # "{{ name }}{{ peer.name }}validatornode"
     type: "node_substrate"
     storageclass_name: "{{ item.cloud_provider }}storageclass"
     external_url: "{{ item.external_url_suffix }}"
