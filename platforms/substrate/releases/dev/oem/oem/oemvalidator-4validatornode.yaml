@@ -103,4 +103,4 @@ spec:
       secretPrefix: secretsv2/data/oem
       authPath: soem
       appRole: vault-role
-      image: ghcr.io/hyperledger/alpine-utils:1.0 
+      image: ghcr.io/hyperledger/alpine-utils:1.0
