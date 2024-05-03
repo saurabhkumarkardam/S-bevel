@@ -233,6 +233,11 @@ spec:
                 BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
               {{- end }}
 
+              echo "AURA_SECRETPHRASE: $AURA_SECRETPHRASE"
+              echo "GRAN_SECRETPHRASE: $GRAN_SECRETPHRASE"
+              echo "NODE_KEY: $NODE_KEY"
+              echo "BOOTNODE_ID: $BOOTNODE_ID"
+
               # STEP-5
               echo "Step 5: Insert keys into Keystore using dscp-node command-line tool"
               # Insert AURA key into Keystore
