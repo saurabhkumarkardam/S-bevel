@@ -113,9 +113,9 @@ node:
   command: ./dscp-node
   isBootnode:
     enabled: false # false | true
-    bootnodeName:
-    bootnodeAddr:
-    bootnodePort: 30333
+    bootnodeName: validator-1
+    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.supplychain-subs
+    bootnodePort: 8080 # 30333
   # Provide the size of the volume
   # Eg. dataVolumeSize: 1Gi
   dataVolumeSize: 10Gi
