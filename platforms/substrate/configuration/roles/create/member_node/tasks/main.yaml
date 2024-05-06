@@ -22,6 +22,7 @@
     values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"    
     bootnode_data: "{{ lookup('file', '{{ network.config.bootnodes }}').splitlines() }}"
     command: "{{ network.config.command }}"
+    isBootnode: true
     role: "full"
   loop: "{{ peers }}"
   loop_control:
