@@ -46,9 +46,9 @@ spec:
       command: {{ command }}
       isBootnode:
         enabled: {{ isBootnode }}
-        bootnodeName:
-        bootnodeAddr:
-        bootnodePort: 30333
+        bootnodeName: validator-1
+        bootnodeAddr: validator-1-substrate-node-0-rc-p2p.supplychain-subs
+        bootnodePort: 8080
       dataVolumeSize: 10Gi
       replicas: 1
       role: {{ role }}
