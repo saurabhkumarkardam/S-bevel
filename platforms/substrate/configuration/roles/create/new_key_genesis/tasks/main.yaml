@@ -93,6 +93,6 @@
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
     component_type: Job
-    namespace: "{{ component_ns }}"
+    namespace: "oem-subs" # "{{ component_ns }}"
   tags:
   - notest
