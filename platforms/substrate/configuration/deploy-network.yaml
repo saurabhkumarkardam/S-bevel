@@ -201,24 +201,24 @@
     loop: "{{ network['organizations'] }}"
     when: network.config.node_image == "inteli-poc/dscp-node"
 
-  # Generate the ipfsbootnode list file
-  - name: "Generate ipfsbootnode file list for the network"
-    include_role:
-      name: create/ipfsbootnodefile
-    when: network.config.node_image == "inteli-poc/dscp-node"
+  # # Generate the ipfsbootnode list file
+  # - name: "Generate ipfsbootnode file list for the network"
+  #   include_role:
+  #     name: create/ipfsbootnodefile
+  #   when: network.config.node_image == "inteli-poc/dscp-node"
 
-  # Deploy Substrate member nodes
-  - name: "Deploy Substrate members"
-    include_role:
-      name: create/member_node
-    vars:
-      build_path: "./build"
-      kubernetes: "{{ item.k8s }}"
-      vault: "{{ item.vault }}"
-      component_ns: "{{ item.name | lower }}-subs"
-      name: "{{ item.name | lower }}"
-      peers: "{{ item.services.peers }}"
-    loop: "{{ network['organizations'] }}"
+  # # Deploy Substrate member nodes
+  # - name: "Deploy Substrate members"
+  #   include_role:
+  #     name: create/member_node
+  #   vars:
+  #     build_path: "./build"
+  #     kubernetes: "{{ item.k8s }}"
+  #     vault: "{{ item.vault }}"
+  #     component_ns: "{{ item.name | lower }}-subs"
+  #     name: "{{ item.name | lower }}"
+  #     peers: "{{ item.services.peers }}"
+  #   loop: "{{ network['organizations'] }}"
   
   # These variables can be overriden from the command line
   vars:
