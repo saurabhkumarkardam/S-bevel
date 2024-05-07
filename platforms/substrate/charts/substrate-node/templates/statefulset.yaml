@@ -265,12 +265,12 @@ spec:
                 EXTERNAL_ADDRESS=$(curl -sS {{ .Values.node.perNodeServices.setPublicAddressToExternal.ipRetrievalServiceUrl }})
               {{- else if and .Values.node.perNodeServices.setPublicAddressToExternal.enabled (eq .Values.node.perNodeServices.p2pServiceType "LoadBalancer") }}
                 EXTERNAL_ADDRESS=$(kubectl --namespace {{ .Release.Namespace }} get service {{ $fullname }}-${POD_INDEX}-rc-p2p -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+              {{- else if eq .Values.proxy.provider "ambassador" }}
+                EXTERNAL_ADDRESS="{{ $fullname }}-${POD_INDEX}.{{ .Values.proxy.external_url }}" # EXTERNAL_ADDRESS="{{ .Values.proxy.external_url }}"
+                EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
               {{- else if eq .Values.node.perNodeServices.p2pServiceType "ClusterIP" }}
                 EXTERNAL_ADDRESS={{ $fullname }}-${POD_INDEX}-rc-p2p.{{ .Release.Namespace }}.svc.cluster.local
                 EXTERNAL_P2P_PORT="{{ .Values.node.ports.p2p }}"
-              {{- else if eq .Values.proxy.provider "ambassador" }}
-                EXTERNAL_ADDRESS="{{ .Values.proxy.external_url }}"
-                EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
               {{- end }}
 
               echo "PARA_CHAIN_P2P_PORT:$PARA_CHAIN_P2P_PORT"
