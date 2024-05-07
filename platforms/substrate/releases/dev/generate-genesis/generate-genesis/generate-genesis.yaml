@@ -46,6 +46,7 @@ spec:
       command: ./dscp-node
       validator:
         count: 4
+        
       member:
         count: 1
         balance: 1152921504606846976
