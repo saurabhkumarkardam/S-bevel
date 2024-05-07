@@ -53,7 +53,7 @@
 # This tasks gets the kubernetes server url
 - name: Get the kubernetes server url
   shell: |
-    KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+    KUBECONFIG={{ network.organizations[0].k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
   register: kubernetes_server_url
 
 # - name: Debug kubernetes_server_url
