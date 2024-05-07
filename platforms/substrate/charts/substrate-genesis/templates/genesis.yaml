@@ -208,7 +208,7 @@ spec:
           
           vault_secret_key="${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/genesis"
           vaultBevelFunc "readJson" "$vault_secret_key"
-          
+          echo "211-------------------------"
           # The vault CLI is required for this job as the genesis file is too large to be passed in via a vault API call
           echo "Installing Vault CLI"
           curl -O -L https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip
