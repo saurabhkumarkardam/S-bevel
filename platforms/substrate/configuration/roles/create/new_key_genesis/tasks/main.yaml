@@ -94,6 +94,6 @@
   vars:
     component_type: Job
     namespace: "oem-subs" # "{{ component_ns }}"
-    kubernetes: "{{ network.organizations[0].k8s.config_file }}"
+    kubernetes: "{{ network.organizations[0].k8s }}"
   tags:
   - notest
