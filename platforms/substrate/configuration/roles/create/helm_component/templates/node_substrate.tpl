@@ -98,7 +98,7 @@ spec:
         enabled: false
 
     proxy:
-      provider: none
+      provider: ambassador
       external_url: {{ peer.name }}.{{ external_url }}
       p2p: {{ peer.p2p.ambassador }}
       certSecret: {{ org.name | lower }}-ambassador-certs
