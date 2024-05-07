@@ -26,6 +26,7 @@ spec:
     nameOverride: validator-1
     fullnameOverride: validator-1
     namespace: oem-subs
+
     serviceAccount:
       create: false
       name: vault-auth
@@ -89,7 +90,7 @@ spec:
         enabled: false
 
     proxy:
-      provider: none
+      provider: ambassador
       external_url: validator-1.sub.blockchaincloudpoc-develop.com
       p2p: 15051
       certSecret: oem-ambassador-certs
