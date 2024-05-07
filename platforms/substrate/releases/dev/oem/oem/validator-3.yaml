@@ -64,7 +64,7 @@ spec:
         - "--rpc-cors=all"
         - "--unsafe-ws-external"
         - "--unsafe-rpc-external"
-        - "--bootnodes '/dns4/oem-bn-1s.sub.blockchaincloudpoc-develop.com/tcp/15051/p2p/12D3KooWPjpXpurwhWd3K6USeVsZ4xSVJKLPV17DPzjiFniEoGNm'"
+        - "--bootnodes ''"
       persistGeneratedNodeKey: false
 
       resources: {}
