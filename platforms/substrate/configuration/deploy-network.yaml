@@ -201,11 +201,11 @@
     loop: "{{ network['organizations'] }}"
     when: network.config.node_image == "inteli-poc/dscp-node"
 
-  # # Generate the ipfsbootnode list file
-  # - name: "Generate ipfsbootnode file list for the network"
-  #   include_role:
-  #     name: create/ipfsbootnodefile
-  #   when: network.config.node_image == "inteli-poc/dscp-node"
+  # Generate the ipfsbootnode list file
+  - name: "Generate ipfsbootnode file list for the network"
+    include_role:
+      name: create/ipfsbootnodefile
+    when: network.config.node_image == "inteli-poc/dscp-node"
 
   # # Deploy Substrate member nodes
   # - name: "Deploy Substrate members"
