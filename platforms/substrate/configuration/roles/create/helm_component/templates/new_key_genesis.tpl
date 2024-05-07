@@ -30,6 +30,7 @@ spec:
         address: {{ vault.url }}
         authPath: {{ network.env.type }}
         secretEngine: {{ vault.secret_path | default("secretsv2") }}
+        certPrefix: {{ network.env.type }}
         secretPrefix: "data/{{ network.env.type }}"
     removeGenesisOnDelete:
       enabled: true

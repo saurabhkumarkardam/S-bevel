@@ -223,7 +223,7 @@ spec:
           if [ "$SECRETS_AVAILABLE" == "no" ]; then
             ################################################################# NEW
             echo "VAULT_SECRET_ENGINE: $VAULT_SECRET_ENGINE"
-            echo "VAULT_SECRET_PREFIX: $VAULT_SECRET_PREFIX"
+            echo "CERTS_SECRET_PREFIX: $CERTS_SECRET_PREFIX"
             ################################################################# NEW
             vault_secret_key="${VAULT_SECRET_ENGINE}/${CERTS_SECRET_PREFIX}/genesis"
             vault kv put "$vault_secret_key" genesis=@"${MOUNT_PATH}/genesis_base64" sudo_details=@"${MOUNT_PATH}/sudoKeygenOutput.json"

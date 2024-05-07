@@ -31,6 +31,7 @@ spec:
         authPath: s
         secretEngine: secretsv2
         secretPrefix: "data/s"
+        certPrefix: s
     removeGenesisOnDelete:
       enabled: true
       image:
