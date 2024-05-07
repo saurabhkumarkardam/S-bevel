@@ -22,7 +22,7 @@ spec:
       cluster:
         provider: azure
         cloudNativeServices: false
-        kubernetesUrl:
+        kubernetesUrl: https://devcluster-devresourcegroup-d1d33f-kncld871.hcp.westeurope.azmk8s.io:443
       vault:
         type: hashicorp
         role: vault-role
@@ -46,7 +46,6 @@ spec:
       command: ./dscp-node
       validator:
         count: 4
-        
       member:
         count: 1
         balance: 1152921504606846976
