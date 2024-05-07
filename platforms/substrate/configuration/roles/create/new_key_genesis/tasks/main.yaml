@@ -87,13 +87,12 @@
   tags: notest
   # when: vault_keys_result.failed
 
-# # Check if key job is completed
-# - name: Check if key generation job is completed
-#   include_role:
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/checjk/helm_component"
-#   vars:
-#     component_name: "" # "{{ peer.name }}-keys-job"
-#     component_type: Job
-#     namespace: "{{ component_ns }}"
-#   when: vault_keys_result.failed
-#   tags: notest
+# Check if vault_kubernetes is completed
+- name: Check if vault_kubernetes job is completed
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_type: Job
+    namespace: "{{ component_ns }}"
+  tags:
+  - notest

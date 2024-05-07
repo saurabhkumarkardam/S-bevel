@@ -17,6 +17,21 @@ spec:
         namespace: flux-{{ network.env.type }}
       chart: {{ charts_dir }}/substrate-node
   values:
+    global:
+      serviceAccountName: vault-auth
+      cluster:
+        provider: azure
+        cloudNativeServices: false
+        kubernetesUrl: {{ kubernetes_url }}
+      vault:
+        type: hashicorp
+        role: vault-role
+        network: substrate
+        address: {{ vault.url }}
+        authPath: {{ network.env.type }}
+        secretEngine: {{ vault.secret_path | default("secretsv2") }}
+        certPrefix: {{ network.env.type }}
+        secretPrefix: "data/{{ network.env.type }}"
     image:
       repository: {{ network.docker.url }}/{{ network.config.node_image }}
       tag: {{ network.version }}
@@ -111,3 +126,5 @@ spec:
       authPath: {{ network.env.type }}{{ name }}
       appRole: vault-role
       image: ghcr.io/hyperledger/alpine-utils:1.0
+
+

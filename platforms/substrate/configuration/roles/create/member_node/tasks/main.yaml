@@ -9,7 +9,7 @@
   include_role:
     name: create/helm_component
   vars:
-    component_name: "{{ name }}{{ peer.name }}membernode"
+    component_name: "{{ peer.name }}" # "{{ name }}{{ peer.name }}membernode"
     type: "node_substrate"
     storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
     external_url: "{{ item.external_url_suffix }}"
@@ -23,6 +23,7 @@
     bootnode_data: "{{ lookup('file', '{{ network.config.bootnodes }}').splitlines() }}"
     command: "{{ network.config.command }}"
     role: "full"
+    isBootnode: true
   loop: "{{ peers }}"
   loop_control:
     loop_var: peer
