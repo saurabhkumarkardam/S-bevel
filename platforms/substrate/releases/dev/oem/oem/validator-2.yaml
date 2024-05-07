@@ -91,7 +91,7 @@ spec:
         enabled: false
 
     proxy:
-      provider: none
+      provider: ambassador
       external_url: validator-2.sub.blockchaincloudpoc-develop.com
       p2p: 15052
       certSecret: oem-ambassador-certs
