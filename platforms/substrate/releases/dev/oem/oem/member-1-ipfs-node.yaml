@@ -23,7 +23,7 @@ spec:
       healthCheckPort: 80
       healthCheckPollPeriod: 30000
       healthCheckTimeout: 2000
-      nodeHost: "tierone"
+      nodeHost: "member-1"
       nodePort: "9944"
       logLevel: info
       ipfsApiPort: 5001
