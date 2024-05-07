@@ -34,7 +34,7 @@
   include_role:
     name: create/helm_component
   vars:    
-    component_name: "{{ peer.name }}-ipfs-node"
+    component_name: "{{ peer.name }}" # "{{ peer.name }}-ipfs-node"
     type: "dscp_ipfs_node"
     storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
     external_url: "{{ item.external_url_suffix }}"
