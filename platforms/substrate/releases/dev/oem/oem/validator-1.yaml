@@ -26,7 +26,6 @@ spec:
     nameOverride: validator-1
     fullnameOverride: validator-1
     namespace: oem-subs
-
     serviceAccount:
       create: false
       name: vault-auth
