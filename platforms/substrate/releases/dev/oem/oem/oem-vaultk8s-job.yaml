@@ -31,7 +31,9 @@ spec:
         secretEngine: secretsv2
         secretPrefix: "data/oem"
         tls:
+    
     image:
       repository: ghcr.io/hyperledger/bevel-alpine
       tag: latest
       pullSecret: "regcred"
+
