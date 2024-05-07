@@ -95,5 +95,6 @@
     component_type: Job
     namespace: "oem-subs" # "{{ component_ns }}"
     kubernetes: "{{ network.organizations[0].k8s }}"
+    component_name: "generate-genesis" # "{{ peer.name }}-keys-job"
   tags:
   - notest
