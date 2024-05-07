@@ -36,7 +36,6 @@ spec:
       ipfsSwarmAddrFilters: null
       ipfsLogLevel: info
       ipfsBootNodeAddress: member-1-ipfs-swarm.sub.blockchaincloudpoc-develop.com:15058
-      
     service:
       swarm:
         annotations: {}
