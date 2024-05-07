@@ -219,6 +219,7 @@ spec:
               # STEP-4
               echo "Step 4: Retrieve secret keys from Kubernetes Secrets if available"
               secretName="substrate-node-{{ .Release.Name }}-keys"
+              echo "secretName: $secretName"
               if kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} >/dev/null 2>&1; then
                 # Extract AURA secret phrase from Kubernetes Secret
                 AURA_SECRETPHRASE=$(kubectl get secret "${secretName}" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.aura_file_b64' | base64 -d | jq -r '.secretPhrase')
@@ -232,6 +233,11 @@ spec:
                 # Retrieve BOOTNODE_ID from Kubernetes Secret
                 BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
               {{- end }}
+
+              echo "AURA_SECRETPHRASE: $AURA_SECRETPHRASE"
+              echo "GRAN_SECRETPHRASE: $GRAN_SECRETPHRASE"
+              echo "NODE_KEY: $NODE_KEY"
+              echo "BOOTNODE_ID: $BOOTNODE_ID"
 
               # STEP-5
               echo "Step 5: Insert keys into Keystore using dscp-node command-line tool"
@@ -263,9 +269,8 @@ spec:
                 EXTERNAL_ADDRESS={{ $fullname }}-${POD_INDEX}-rc-p2p.{{ .Release.Namespace }}.svc.cluster.local
                 EXTERNAL_P2P_PORT="{{ .Values.node.ports.p2p }}"
               {{- else if eq .Values.proxy.provider "ambassador" }}
-                EXTERNAL_ADDRESS="{{ $fullname }}-${POD_INDEX}.{{ .Values.proxy.external_url }}"
+                EXTERNAL_ADDRESS="{{ .Values.proxy.external_url }}"
                 EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
-                echo "test-one"
               {{- end }}
 
               echo "PARA_CHAIN_P2P_PORT:$PARA_CHAIN_P2P_PORT"
@@ -326,7 +331,7 @@ spec:
             - containerPort: 9615
               name: prometheus
               protocol: TCP
-            - containerPort: 30333
+            - containerPort: 8080 # 30333
               name: p2p
               protocol: TCP
           {{- if .Values.node.collator.isParachain }}
@@ -478,4 +483,4 @@ spec:
         storageClassName: storage-{{ .Release.Name }}
         resources:
           requests:
-            storage: {{ .Values.storage.size }}
+            storage: {{ .Values.node.dataVolumeSize }}

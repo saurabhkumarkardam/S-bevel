@@ -201,9 +201,14 @@ spec:
           # Initialize the token
           . /scripts/bevel-vault.sh
           vaultBevelFunc "init"
+          ################################################################# NEW
+          echo "VAULT_SECRET_ENGINE: $VAULT_SECRET_ENGINE"
+          echo "VAULT_SECRET_PREFIX: $VAULT_SECRET_PREFIX"
+          ################################################################# NEW
+          
           vault_secret_key="${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/genesis"
           vaultBevelFunc "readJson" "$vault_secret_key"
-
+          
           # The vault CLI is required for this job as the genesis file is too large to be passed in via a vault API call
           echo "Installing Vault CLI"
           curl -O -L https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip
@@ -216,6 +221,10 @@ spec:
           vault --version
           # Save the generated keys to VAULT
           if [ "$SECRETS_AVAILABLE" == "no" ]; then
+            ################################################################# NEW
+            echo "VAULT_SECRET_ENGINE: $VAULT_SECRET_ENGINE"
+            echo "VAULT_SECRET_PREFIX: $VAULT_SECRET_PREFIX"
+            ################################################################# NEW
             vault_secret_key="${VAULT_SECRET_ENGINE}/${CERTS_SECRET_PREFIX}/genesis"
             vault kv put "$vault_secret_key" genesis=@"${MOUNT_PATH}/genesis_base64" sudo_details=@"${MOUNT_PATH}/sudoKeygenOutput.json"
           fi

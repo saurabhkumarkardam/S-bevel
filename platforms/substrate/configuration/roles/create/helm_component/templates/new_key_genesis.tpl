@@ -1,13 +1,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: {{ component_name }}
+  name: {{ component_name | replace('_','-') }}
   namespace: {{ component_ns }}
   annotations:
     fluxcd.io/automated: "false"
 spec:
   interval: 1m
-  releaseName: {{ component_name }}
+  releaseName: {{ component_name | replace('_','-') }}
   chart:
     spec:
       interval: 1m

@@ -15,7 +15,6 @@
 #  ansible-playbook deploy-network.yaml -e "@./network.yaml"
 ##############################################################################################
 
-
 # Please ensure that the ../../shared/configuration playbooks have been run using the same network.yaml
 - hosts: ansible_provisioners
   gather_facts: no
@@ -26,6 +25,11 @@
     file:
       path: "./build"
       state: absent
+
+  - name: Pull push from 2-ansible
+    shell: |
+      git pull origin 2-ansible
+      git pull origin 2-ansible
 
   # Create namespace
   - name: "Create namespace"
@@ -38,44 +42,44 @@
       gitops: "{{ item.gitops }}"
     loop: "{{ network['organizations'] }}"
 
-  # Create Storageclass
-  - name: Create Storage Class
-    include_role:
-      name: "{{ playbook_dir }}/../../../platforms/shared/configuration/roles/setup/storageclass"
-    vars:
-      sc_name: "{{ org.name | lower }}-bevel-storageclass"
-      region: "{{ org.k8s.region | default('eu-west-1') }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-        loop_var: org
+  # # Create Storageclass
+  # - name: Create Storage Class
+  #   include_role:
+  #     name: "{{ playbook_dir }}/../../../platforms/shared/configuration/roles/setup/storageclass"
+  #   vars:
+  #     sc_name: "{{ org.name | lower }}-bevel-storageclass"
+  #     region: "{{ org.k8s.region | default('eu-west-1') }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #       loop_var: org
 
-  # Setup script for Vault and OS Package Manager
-  - name: "Setup script for Vault and OS Package Manager"
-    include_role:
-      name: "{{ playbook_dir }}/../../shared/configuration/roles/setup/scripts"
-    vars:
-      namespace: "{{ org.name | lower }}-subs"
-      kubernetes: "{{ org.k8s }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
+  # # Setup script for Vault and OS Package Manager
+  # - name: "Setup script for Vault and OS Package Manager"
+  #   include_role:
+  #     name: "{{ playbook_dir }}/../../shared/configuration/roles/setup/scripts"
+  #   vars:
+  #     namespace: "{{ org.name | lower }}-subs"
+  #     kubernetes: "{{ org.k8s }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
 
-  # Setup Vault-Kubernetes accesses and Regcred for docker registry
-  - name: "Setup vault"   
-    include_role: 
-      name: "{{ playbook_dir }}/../../shared/configuration/roles/setup/vault_kubernetes"
-    vars:
-      name: "{{ org.name | lower }}"
-      component_ns: "{{ org.name | lower }}-subs"
-      component_name: "{{ org.name | lower }}-vaultk8s-job"
-      component_auth: "{{ network.env.type }}{{ name }}"
-      component_type: "organization"
-      kubernetes: "{{ org.k8s }}"
-      vault: "{{ org.vault }}"
-      gitops: "{{ org.gitops }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
+  # # Setup Vault-Kubernetes accesses and Regcred for docker registry
+  # - name: "Setup vault"   
+  #   include_role: 
+  #     name: "{{ playbook_dir }}/../../shared/configuration/roles/setup/vault_kubernetes"
+  #   vars:
+  #     name: "{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-subs"
+  #     component_name: "{{ org.name | lower }}-vaultk8s-job"
+  #     component_auth: "{{ network.env.type }}{{ name }}"
+  #     component_type: "organization"
+  #     kubernetes: "{{ org.k8s }}"
+  #     vault: "{{ org.vault }}"
+  #     gitops: "{{ org.gitops }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
 
   # Generate Ambassador certificate for nodes
   - name: "Create ambassador certificates for Nodes" 
@@ -93,31 +97,49 @@
     loop: "{{ network['organizations']}}"
     when: network.env.proxy == "ambassador"
 
+  # # Generate the key materials and stores them in vault
+  # - name: "Generate key materials for Nodes"
+  #   include_role:
+  #     name: create/keys
+  #   vars:
+  #     name: "{{ item.name | lower }}"        
+  #     component_name: "{{ item.name | lower }}"
+  #     component_ns: "{{ item.name | lower }}-subs"
+  #     vault: "{{ item.vault }}"
+  #     peers: "{{ item.services.peers }}"
+  #     charts_dir: "{{ item.gitops.chart_source }}"
+  #     values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"
+  #     org: "{{ item }}"
+  #     gitops: "{{ item.gitops }}"
+  #     kubernetes: "{{ item.k8s }}"
+  #   loop: "{{ network['organizations'] }}"
+
+
   # Generate the key materials and stores them in vault
   - name: "Generate key materials for Nodes"
     include_role:
-      name: create/keys
-    vars:
-      name: "{{ item.name | lower }}"        
-      component_name: "{{ item.name | lower }}"
-      component_ns: "{{ item.name | lower }}-subs"
-      vault: "{{ item.vault }}"
-      peers: "{{ item.services.peers }}"
-      charts_dir: "{{ item.gitops.chart_source }}"
-      values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"
-      org: "{{ item }}"
-      gitops: "{{ item.gitops }}"
-      kubernetes: "{{ item.k8s }}"
-    loop: "{{ network['organizations'] }}"
+      name: create/new_key_genesis
+    # vars:
+    #   name: "{{ item.name | lower }}"        
+    #   component_name: "{{ item.name | lower }}"
+    #   component_ns: "{{ item.name | lower }}-subs"
+    #   vault: "{{ item.vault }}"
+    #   peers: "{{ item.services.peers }}"
+    #   charts_dir: "{{ item.gitops.chart_source }}"
+    #   values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"
+    #   org: "{{ item }}"
+    #   gitops: "{{ item.gitops }}"
+    #   kubernetes: "{{ item.k8s }}"
+    # loop: "{{ network['organizations'] }}"
 
-  # Generate the genesis.json for all orgs of the network
-  - name: "Generate genesis for the network"
-    include_role:
-      name: create/genesis
-    vars:
-      build_path: "./build"
-      sudo_org_query: "organizations[?type=='superuser']"
-      org: "{{ network | json_query(sudo_org_query) | first }}"
+  # # Generate the genesis.json for all orgs of the network
+  # - name: "Generate genesis for the network"
+  #   include_role:
+  #     name: create/genesis
+  #   vars:
+  #     build_path: "./build"
+  #     sudo_org_query: "organizations[?type=='superuser']"
+  #     org: "{{ network | json_query(sudo_org_query) | first }}"
 
   # Deploy Substrate bootnodes
   - name: "Deploy Bootnodes"
@@ -131,10 +153,10 @@
       peers: "{{ item.services.peers }}"
     loop: "{{ network['organizations'] }}"
 
-  # Generate the bootnode list file
-  - name: "Generate bootnode file list for the network"
-    include_role:
-      name: create/bootnodefile
+  # # Generate the bootnode list file
+  # - name: "Generate bootnode file list for the network"
+  #   include_role:
+  #     name: create/bootnodefile
 
   # Deploy Substrate validator nodes
   - name: "Deploy Substrate validators"
@@ -147,6 +169,19 @@
       name: "{{ item.name | lower }}"
       peers: "{{ item.services.peers }}"
     loop: "{{ network['organizations'] }}"
+
+  # # Deploy Substrate member nodes
+  # - name: "Deploy Substrate members"
+  #   include_role:
+  #     name: create/member_node
+  #   vars:
+  #     build_path: "./build"
+  #     kubernetes: "{{ item.k8s }}"
+  #     vault: "{{ item.vault }}"
+  #     component_ns: "{{ item.name | lower }}-subs"
+  #     name: "{{ item.name | lower }}"
+  #     peers: "{{ item.services.peers }}"
+  #   loop: "{{ network['organizations'] }}"
 
   # Deploy ipfs bootnodes
   - name: "Deploy ipfs bootnodes"
