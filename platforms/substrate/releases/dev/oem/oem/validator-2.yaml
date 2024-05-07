@@ -1,0 +1,108 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: validator-2
+  namespace: oem-subs
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  interval: 1m
+  releaseName: validator-2
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-s
+        namespace: flux-s
+      chart: platforms/substrate/charts/substrate-node
+  values:
+    image:
+      repository: ghcr.io/inteli-poc/dscp-node
+      tag: v4.3.1
+      pullPolicy: IfNotPresent
+    imagePullSecrets: 
+      - name: "regcred"
+    nameOverride: validator-2
+    fullnameOverride: validator-2
+    namespace: oem-subs
+
+    serviceAccount:
+      create: false
+      name: vault-auth
+
+    podSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    ingress:
+      enabled: false
+
+    node:
+      name: validator-2
+      chain: inteli
+      command: ./dscp-node
+      isBootnode:
+        enabled: True
+        bootnodeName: validator-1
+        bootnodeAddr: validator-1-0-rc-p2p.oem-subs
+        bootnodePort: 8080
+      dataVolumeSize: 10Gi
+      replicas: 1
+      role: validator
+      customChainspecUrl: true
+      customChainspecPath: "/data/chainspec.json"
+      collator:
+        isParachain: false
+
+      enableStartupProbe: false
+      enableReadinessProbe: false
+      flags:
+        - "--rpc-external"
+        - "--ws-external"
+        - "--rpc-methods=Unsafe"
+        - "--rpc-cors=all"
+        - "--unsafe-ws-external"
+        - "--unsafe-rpc-external"
+        - "--bootnodes '/dns4/oem-bn-1s.sub.blockchaincloudpoc-develop.com/tcp/15051/p2p/12D3KooWPjpXpurwhWd3K6USeVsZ4xSVJKLPV17DPzjiFniEoGNm'"
+      persistGeneratedNodeKey: false
+
+      resources: {}
+      serviceMonitor:
+        enabled: false
+
+      perNodeServices:
+        createApiService: true
+        createP2pService: true
+        p2pServiceType: ClusterIP
+        setPublicAddressToExternalIp:
+          enabled: false
+          ipRetrievalServiceUrl: https://ifconfig.io
+      podManagementPolicy: Parallel
+
+      ports:
+        p2p: 8080
+        ws: 9944
+        rpc: 9933
+
+      tracing:
+        enabled: false
+      substrateApiSidecar:
+        enabled: false
+
+    proxy:
+      provider: none
+      external_url: validator-2.sub.blockchaincloudpoc-develop.com
+      p2p: 15052
+      certSecret: oem-ambassador-certs
+
+    storageClass: azurestorageclass
+
+    vault:
+      address: http://98.64.226.131:20001      
+      secretPrefix: secretsv2/data/oem
+      authPath: soem
+      appRole: vault-role
+      image: ghcr.io/hyperledger/alpine-utils:1.0
+
+
