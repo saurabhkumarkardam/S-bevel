@@ -26,10 +26,10 @@
       path: "./build"
       state: absent
 
-  - name: Pull push from 2-ansible
+  - name: Pull push from 3-ansible
     shell: |
-      git pull origin 2-ansible
-      git pull origin 2-ansible
+      git pull origin 3-ansible
+      git pull origin 3-ansible
 
   # Create namespace
   - name: "Create namespace"
