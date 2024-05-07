@@ -50,6 +50,16 @@
   debug:
     msg: "Validator count: {{ validator_count }}, Member count: {{ member_count }}"
 
+# This tasks gets the kubernetes server url
+- name: Get the kubernetes server url
+  shell: |
+    KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+  register: kubernetes_server_url
+
+# - name: Debug kubernetes_server_url
+#   debug:
+#     msg: "kubernetes_server_url: {{ kubernetes_server_url }}, Member count: {{ member_count }}"
+
 - name: Create key and genesis
   include_role:
     name: create/helm_component
@@ -62,6 +72,7 @@
     # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
     values_dir: "{{playbook_dir}}/../../../platforms/substrate/releases/dev/generate-genesis"
     vault: "{{ network.organizations[0].vault }}"
+    kubernetes_url: "{{ kubernetes_server_url.stdout }}"
     component_name: "generate-genesis" # "{{ peer.name }}-keys-job"
 
 # Push the created deployment files to repository

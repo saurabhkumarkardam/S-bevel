@@ -22,7 +22,7 @@ spec:
       cluster:
         provider: azure
         cloudNativeServices: false
-        kubernetesUrl:
+        kubernetesUrl: {{ kubernetes_url }}
       vault:
         type: hashicorp
         role: vault-role
