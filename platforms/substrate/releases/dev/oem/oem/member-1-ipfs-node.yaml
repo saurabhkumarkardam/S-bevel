@@ -35,7 +35,7 @@ spec:
         - "--migrate"
       ipfsSwarmAddrFilters: null
       ipfsLogLevel: info
-      ipfsBootNodeAddress: 
+      ipfsBootNodeAddress: member-1-ipfs-swarm.sub.blockchaincloudpoc-develop.com:15059
       
     service:
       swarm:
