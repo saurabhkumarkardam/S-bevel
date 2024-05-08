@@ -4,26 +4,34 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 
+# # Generate member node helmrelease file
+# - name: Create value file for member nodes
+#   include_role:
+#     name: create/helm_component
+#   vars:
+#     component_name: "{{ peer.name }}" # "{{ name }}{{ peer.name }}membernode"
+#     type: "node_substrate"
+#     storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
+#     external_url: "{{ item.external_url_suffix }}"
+#     vault: "{{ item.vault }}"
+#     git_url: "{{ item.gitops.git_url }}"
+#     git_branch: "{{ item.gitops.branch }}"
+#     org: "{{ item }}"
+#     docker_url: "{{ network.docker.url }}"
+#     charts_dir: "{{ item.gitops.chart_source }}"
+#     values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"    
+#     bootnode_data: "{{ lookup('file', '{{ network.config.bootnodes }}').splitlines() }}"
+#     command: "{{ network.config.command }}"
+#     role: "full"
+#     isBootnode: true
+#   loop: "{{ peers }}"
+#   loop_control:
+#     loop_var: peer
+#   when: peer.type == "member"
+
 # Generate member node helmrelease file
-- name: Create value file for member nodes
-  include_role:
-    name: create/helm_component
-  vars:
-    component_name: "{{ peer.name }}" # "{{ name }}{{ peer.name }}membernode"
-    type: "node_substrate"
-    storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
-    external_url: "{{ item.external_url_suffix }}"
-    vault: "{{ item.vault }}"
-    git_url: "{{ item.gitops.git_url }}"
-    git_branch: "{{ item.gitops.branch }}"
-    org: "{{ item }}"
-    docker_url: "{{ network.docker.url }}"
-    charts_dir: "{{ item.gitops.chart_source }}"
-    values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"    
-    bootnode_data: "{{ lookup('file', '{{ network.config.bootnodes }}').splitlines() }}"
-    command: "{{ network.config.command }}"
-    role: "full"
-    isBootnode: true
+- name: "Create value file for member nodes"
+  include_tasks: member_node.yaml
   loop: "{{ peers }}"
   loop_control:
     loop_var: peer
