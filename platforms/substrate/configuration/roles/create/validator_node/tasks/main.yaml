@@ -39,11 +39,11 @@
     msg: "[ci skip] Pushing Peer files"
 
 # Check if validator is running
-- name: Check if {{ peer.name }} is running
+- name: Check if {{ peers.name }} is running
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    component_name: "{{ peer.name }}"
+    component_name: "{{ peers.name }}"
     component_type: Pod
     label_selectors:
       - name = {{ component_name }}
