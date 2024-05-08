@@ -30,6 +30,12 @@
   vars:
     internal_url: "{{ peer.name }}-ipfs-swarm.{{ component_ns }}.svc.cluster.local"
 
+# Create a file, if it doesn't exist, to store bootnode information
+- name: Create bootnode file
+  template:
+    src: "ipfsbootnode.tpl"
+    dest: "{{ network.config.ipfsbootnodes }}"
+
 # Generate ipfs node helmrelease file
 - name: "Create ipfs node release file"
   include_role:
