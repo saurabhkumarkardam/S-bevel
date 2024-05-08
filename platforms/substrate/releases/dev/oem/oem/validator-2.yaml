@@ -37,7 +37,6 @@ spec:
       fsGroup: 1000
     ingress:
       enabled: false
-
     node:
       name: validator-2
       chain: inteli
