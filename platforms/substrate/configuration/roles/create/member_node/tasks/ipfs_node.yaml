@@ -1,3 +1,37 @@
+# Set node_list to empty
+- name: Set node_list to []
+  set_fact:
+    node_list: []
+
+# Check if ipfs-bootnode is running
+- name: Check if {{ peer.name }} is running
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_name: "{{ peer.name }}-ipfs"
+    component_type: Pod
+    label_selectors:
+      - name = {{ component_name }}
+    namespace: "{{ component_ns }}"
+  tags: notest
+
+# Fetch the bootnode's peer id from vault
+- name: Fetch node_id of {{ peer.name }} node
+  shell: |
+    # vault kv get -field=peer_id {{ vault.secret_path | default('secretsv2') }}/{{ org.name }}/{{ peer.name }}/ipfs # OLD
+    # vault kv get -field=peer_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ peer.name }}-ipfs" # NEW
+    vault kv get -field=peer_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ peer.name }}" # NEW-2
+  environment:
+    VAULT_ADDR: "{{ vault.url }}"
+    VAULT_TOKEN: "{{ vault.root_token }}"
+  register: node_id
+
+- name: Collect Bootnode data
+  set_fact:
+    node_list={{ node_list|default([]) + [ {'bootnode_id':node_id.stdout, 'external_url':internal_url, 'p2p_port':peer.ipfs.swarmPort} ] }}
+  vars:
+    internal_url: "{{ peer.name }}-ipfs-swarm.{{ component_ns }}.svc.cluster.local"
+
 # Generate ipfs node helmrelease file
 - name: "Create ipfs node release file"
   include_role:
@@ -23,12 +57,3 @@
     GIT_DIR: "{{ playbook_dir }}/../../../"
     gitops: "{{ item.gitops }}"
     msg: "[ci skip] Pushing Peer files"
-
-# # Git Push : Push the above generated files to git directory 
-# - name: Git Push
-#   include_role: 
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
-#   vars:
-#     GIT_DIR: "{{ playbook_dir }}/../../../"
-#     gitops: "{{ item.gitops }}"
-#     msg: "[ci skip] Pushing Peer files"
