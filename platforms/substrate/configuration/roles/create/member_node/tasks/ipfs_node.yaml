@@ -8,7 +8,7 @@
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    component_name: "{{ peer.name }}-ipfs"
+    component_name: "{{ peer.name }}"
     component_type: Pod
     label_selectors:
       - name = {{ component_name }}
