@@ -280,6 +280,12 @@ spec:
               echo "BOOTNODE_ID: $BOOTNODE_ID"
               echo "boot_node_addr: {{ .Values.node.isBootnode.bootnodeAddr }}"
               echo "boot_node_port: {{ .Values.node.isBootnode.bootnodePort }}"
+              echo "POD_NAME: ${POD_NAME}"
+              echo "NODE_KEY: ${NODE_KEY}"
+
+
+              echo "SLEEPING---------------"
+              sleep 10m
 
               # STEP-7
               echo "Step 7: Start the node"
