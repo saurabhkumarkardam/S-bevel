@@ -231,7 +231,7 @@ spec:
               # Check if bootnode is enabled
               {{- if .Values.node.isBootnode.enabled }}
                 # Retrieve BOOTNODE_ID from Kubernetes Secret
-                BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                export BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
               {{- end }}
 
               echo "AURA_SECRETPHRASE: $AURA_SECRETPHRASE"
