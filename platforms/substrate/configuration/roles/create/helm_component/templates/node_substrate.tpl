@@ -47,8 +47,8 @@ spec:
       isBootnode:
         enabled: {{ isBootnode }}
         bootnodeName: validator-1
-        bootnodeAddr: validator-1-0-rc-p2p.oem-subs
-        bootnodePort: 8080
+        bootnodeAddr: validator-1.{{ external_url }}
+        bootnodePort: 15051 # 8080
       dataVolumeSize: 10Gi
       replicas: 1
       role: {{ role }}
