@@ -296,7 +296,7 @@ spec:
               --light \
               {{- end }}
               {{- if .Values.node.isBootnode.enabled }}
-              --bootnodes "/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/${BOOTNODE_ID}" \
+              --bootnodes "/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/12D3KooWRWLxVohrcwg8dZrvLWc7RhgbNLStD7nf1wEwmU9X4Jsu" \
               {{- end }}
               {{- if (.Values.node.collator.isParachain) }}
               --base-path=/data/relay/ \
