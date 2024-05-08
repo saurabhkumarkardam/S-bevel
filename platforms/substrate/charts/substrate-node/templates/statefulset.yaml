@@ -283,10 +283,6 @@ spec:
               echo "POD_NAME: ${POD_NAME}"
               echo "NODE_KEY: ${NODE_KEY}"
 
-
-              echo "SLEEPING---------------"
-              sleep 10m
-
               # STEP-7
               echo "Step 7: Start the node"
               exec {{ .Values.node.command }} \
