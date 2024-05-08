@@ -66,9 +66,6 @@ spec:
         - "--rpc-cors=all"
         - "--unsafe-ws-external"
         - "--unsafe-rpc-external"
-{% if bootnode_data is defined %}
-        - "--bootnodes '{{ bootnode_data[1:] | join(',') }}'"
-{% endif %}
 {% if peer.type == 'member' %}
         - "--pruning=archive"
 {% endif %}
