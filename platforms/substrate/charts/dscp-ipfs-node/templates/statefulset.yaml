@@ -169,7 +169,8 @@ spec:
                 jq -r 'if .errors then . else .auth.client_token end')
 
               validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
-              vault_secret_key="${VAULT_SECRET_ENGINE}"/"${VAULT_SECRET_PREFIX}/ipfs"
+              # vault_secret_key="${VAULT_SECRET_ENGINE}"/"${VAULT_SECRET_PREFIX}/ipfs" # OLD
+              vault_secret_key="${VAULT_SECRET_ENGINE}"/"${VAULT_SECRET_PREFIX}-ipfs" # NEW
               # Save the generated keys to VAULT
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" \
                 -H "Content-Type: application/json" \
