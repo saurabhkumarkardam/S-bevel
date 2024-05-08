@@ -278,8 +278,8 @@ spec:
               echo "EXTERNAL_ADDRESS:$EXTERNAL_ADDRESS"
               echo "EXTERNAL_P2P_PORT:$EXTERNAL_P2P_PORT"
               echo "BOOTNODE_ID: $BOOTNODE_ID"
-              echo "boot_node_addr: ${{ .Values.node.isBootnode.bootnodeAddr }}"
-              echo "boot_node_port: ${{ .Values.node.isBootnode.bootnodePort }}"
+              echo "boot_node_addr: {{ .Values.node.isBootnode.bootnodeAddr }}"
+              echo "boot_node_port: {{ .Values.node.isBootnode.bootnodePort }}"
 
               # STEP-7
               echo "Step 7: Start the node"
