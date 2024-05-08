@@ -18,8 +18,6 @@
 # Fetch the bootnode's peer id from vault
 - name: Fetch node_id of {{ peer.name }} node
   shell: |
-    # vault kv get -field=peer_id {{ vault.secret_path | default('secretsv2') }}/{{ org.name }}/{{ peer.name }}/ipfs # OLD
-    # vault kv get -field=peer_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ peer.name }}-ipfs" # NEW
     vault kv get -field=peer_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ peer.name }}" # NEW-2
   environment:
     VAULT_ADDR: "{{ vault.url }}"
