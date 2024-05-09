@@ -120,7 +120,6 @@
     VAULT_TOKEN: "{{ item.vault.root_token }}"
   ignore_errors: yes
 
-
 - name: Print statement after deleting genesis crypto material
   debug:
     msg: "Genesis crypto material has been deleted successfully. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
