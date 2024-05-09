@@ -1,3 +1,4 @@
+###########################################################################################
 # - name: Initialize counts
 #   set_fact:
 #     validator_count: 0
@@ -18,6 +19,11 @@
 #   loop_control:
 #     loop_var: peer
 #   when: peer.type == 'member'
+###########################################################################################
+
+- name: Set organization variable
+  set_fact:
+    organization: "{{ network.organizations[0] }}"
 
 - name: Initialize counts
   set_fact:
@@ -28,16 +34,16 @@
 - name: Create keys for each node
   include_tasks: nodes.yaml
   vars:
-    name: "generate-genesis" # "{{ item.name | lower }}"        
-    component_name: "{{ item.name | lower }}"
-    # component_ns: "{{ item.name | lower }}-subs"
-    vault: "{{ item.vault }}"
     peers: "{{ item.services.peers }}"
+    # name: "generate-genesis" # "{{ item.name | lower }}"        
+    # component_name: "{{ item.name | lower }}"
+    # component_ns: "{{ item.name | lower }}-subs"
+    # vault: "{{ item.vault }}"
     # charts_dir: "{{ item.gitops.chart_source }}"
     # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
-    org: "{{ item }}"
-    gitops: "{{ item.gitops }}"
-    kubernetes: "{{ item.k8s }}"
+    # org: "{{ item }}"
+    # gitops: "{{ item.gitops }}"
+    # kubernetes: "{{ item.k8s }}"
   loop: "{{ network['organizations'] }}"
   # vars:
   #   peer: "{{ peer }}"
@@ -53,7 +59,7 @@
 # This tasks gets the kubernetes server url
 - name: Get the kubernetes server url
   shell: |
-    KUBECONFIG={{ network.organizations[0].k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+    KUBECONFIG={{ organization.k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
   register: kubernetes_server_url
 
 # - name: Debug kubernetes_server_url
@@ -63,27 +69,27 @@
 - name: Create key and genesis
   include_role:
     name: create/helm_component
-  vars:    
-    component_type: "key_mgmt"    
+  vars:
+    name: "genesis" # name: "generate-genesis" # "{{ org.name | lower }}"
     type: "genesis_key"
-    name: "generate-genesis" # "{{ org.name | lower }}"
-    component_ns: "oem-subs"
-    charts_dir: "platforms/substrate/charts" # "{{ item.gitops.chart_source }}"
-    # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
-    values_dir: "{{playbook_dir}}/../../../platforms/substrate/releases/dev/generate-genesis"
-    vault: "{{ network.organizations[0].vault }}"
+    component_name: "genesis" # "{{ peer.name }}-keys-job"
+    component_ns: "{{ organization.name }}" # "oem-subs"
+    vault: "{{ organization.vault }}"
     kubernetes_url: "{{ kubernetes_server_url.stdout }}"
-    component_name: "generate-genesis" # "{{ peer.name }}-keys-job"
+    charts_dir: "{{ organization.gitops.chart_source }}" # "platforms/substrate/charts" # "{{ item.gitops.chart_source }}"
+    values_dir: "{{playbook_dir}}/../../../{{ organization.gitops.chart_source }}/" # "{{playbook_dir}}/../../../platforms/substrate/releases/dev/genesis"
+    # component_type: "key_mgmt" 
+    # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
 
 # Push the created deployment files to repository
 - name: "Push the created deployment files to repository"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
   vars:
-    component_ns: "oem-subs"
+    component_ns: "{{ organization.name }}"
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
-    gitops: "{{ network.organizations[0].gitops }}" # "{{ item.gitops }}"
+    gitops: "{{ organization.gitops }}" # "{{ item.gitops }}"
   tags: notest
   # when: vault_keys_result.failed
 
@@ -92,9 +98,9 @@
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
+    component_name: "genesis" # "{{ peer.name }}-keys-job"
     component_type: Job
-    namespace: "oem-subs" # "{{ component_ns }}"
-    kubernetes: "{{ network.organizations[0].k8s }}"
-    component_name: "generate-genesis" # "{{ peer.name }}-keys-job"
+    namespace: "{{ organization.name }}-subs" # "{{ component_ns }}"
+    kubernetes: "{{ organization.k8s }}"
   tags:
   - notest
