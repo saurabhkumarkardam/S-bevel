@@ -121,7 +121,6 @@
   #   loop: "{{ network['organizations'] }}"
   #########################################################################################################################
 
-
   # Generate the key materials and stores them in vault
   - name: "Generate key materials for Nodes"
     include_role:
