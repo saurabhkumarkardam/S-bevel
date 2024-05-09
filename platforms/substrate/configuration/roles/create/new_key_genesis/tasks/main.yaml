@@ -70,10 +70,10 @@
   include_role:
     name: create/helm_component
   vars:
-    name: "genesis" # name: "generate-genesis" # "{{ org.name | lower }}"
+    name: "{{ organization.name }}" # genesis" # name: "generate-genesis" # "{{ org.name | lower }}"
     org_name: "{{ organization.name }}"
     type: "genesis_key"
-    component_name: "{{ name }}" # "genesis" # "{{ peer.name }}-keys-job"
+    component_name: "genesis" # "{{ name }}" # "genesis" # "{{ peer.name }}-keys-job"
     component_ns: "{{ organization.name }}-subs" # "oem-subs"
     vault: "{{ organization.vault }}"
     kubernetes_url: "{{ kubernetes_server_url.stdout }}"
