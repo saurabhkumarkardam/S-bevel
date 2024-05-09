@@ -72,7 +72,7 @@
   vars:
     name: "genesis" # name: "generate-genesis" # "{{ org.name | lower }}"
     type: "genesis_key"
-    component_name: {{ name }} # "genesis" # "{{ peer.name }}-keys-job"
+    component_name: "{{ name }}" # "genesis" # "{{ peer.name }}-keys-job"
     component_ns: "{{ organization.name }}" # "oem-subs"
     vault: "{{ organization.vault }}"
     kubernetes_url: "{{ kubernetes_server_url.stdout }}"
