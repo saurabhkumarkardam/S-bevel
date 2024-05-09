@@ -18,7 +18,7 @@
 # Fetch the bootnode's peer id from vault
 - name: Fetch node_id of {{ peer.name }} node
   shell: |
-    vault kv get -field=node_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ item.name | lower }}/substrate-node-{{ peer.name }}-keys" # NEW-2
+    vault kv get -field=node_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ name }}/substrate-node-{{ peer.name | lower }}-ipfs-keys" # NEW-2
   environment:
     VAULT_ADDR: "{{ vault.url }}"
     VAULT_TOKEN: "{{ vault.root_token }}"
@@ -45,6 +45,7 @@
     type: "dscp_ipfs_node"
     storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
     external_url: "{{ item.external_url_suffix }}"
+    vault_key: "{{ name }}/substrate-node-{{ peer.name | lower }}"
     git_url: "{{ item.gitops.git_url }}"
     git_branch: "{{ item.gitops.branch }}"
     org: "{{ item }}"

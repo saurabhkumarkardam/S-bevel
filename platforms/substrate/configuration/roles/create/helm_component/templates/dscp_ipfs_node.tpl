@@ -26,7 +26,7 @@ spec:
           address: {{ vault.url }}
           authPath: {{ network.env.type }}
           secretEngine: {{ vault.secret_path | default("secretsv2") }}
-          secretPrefix: "data/{{ network.env.type }}/{{ org.name | lower }}/{{ peer.name }}"
+          secretPrefix: "data/{{ network.env.type }}/{{ vault_key }}"
     fullnameOverride: {{ peer.name }}-ipfs
     namespace: {{ component_ns }}
     config:

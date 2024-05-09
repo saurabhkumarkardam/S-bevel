@@ -69,14 +69,52 @@
     loop_var: peer
   ignore_errors: yes
 
-# Delete Peer Crypto material
-- name: Delete Peer Crypto material 
+# # Delete Peer Crypto material
+# - name: Delete Peer Crypto material 
+#   shell: |
+#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-keys
+#   environment:
+#     VAULT_ADDR: "{{ item.vault.url }}"
+#     VAULT_TOKEN: "{{ item.vault.root_token }}"
+#   loop: "{{ services.peers }}"
+#   loop_control:
+#     loop_var: peer
+#   ignore_errors: yes
+
+# # Delete Peer Crypto material
+# - name: Delete Peer Crypto material 
+#   shell: |
+#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-ipfs-keys
+#   environment:
+#     VAULT_ADDR: "{{ item.vault.url }}"
+#     VAULT_TOKEN: "{{ item.vault.root_token }}"
+#   loop: "{{ services.peers }}"
+#   loop_control:
+#     loop_var: peer
+#   when: peer.type == "member" and peer.ipfs is defined
+#   ignore_errors: yes
+
+- name: Delete Peer Crypto material
   shell: |
-    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/substrate-node-{{ peer.name }}-keys
+    {% if peer.type == "member" %}
+      {% if peer.ipfs is defined %}
+        vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-ipfs-keys
+      {% endif %}
+    {% endif %}
+    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-keys
   environment:
     VAULT_ADDR: "{{ item.vault.url }}"
     VAULT_TOKEN: "{{ item.vault.root_token }}"
   loop: "{{ services.peers }}"
   loop_control:
     loop_var: peer
+  ignore_errors: yes
+
+# Delete genesis crypto material
+- name: Delete genesis crypto material
+  shell: |
+    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/genesis
+  environment:
+    VAULT_ADDR: "{{ item.vault.url }}"
+    VAULT_TOKEN: "{{ item.vault.root_token }}"
   ignore_errors: yes

@@ -21,8 +21,8 @@
     - include_role:
         name: "delete/vault_secrets"
       vars:
-        org_namespace: "{{ item.name | lower }}-subs"
         org_name: "{{ item.name | lower}}"
+        org_namespace: "{{ item.name | lower }}-subs"
         services: "{{ item.services }}"
         kubernetes: "{{ item.k8s }}"
       loop: "{{ network['organizations'] }}"
