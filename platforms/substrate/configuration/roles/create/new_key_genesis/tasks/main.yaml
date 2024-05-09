@@ -72,12 +72,12 @@
   vars:
     name: "genesis" # name: "generate-genesis" # "{{ org.name | lower }}"
     type: "genesis_key"
-    component_name: "genesis" # "{{ peer.name }}-keys-job"
+    component_name: {{ name }} # "genesis" # "{{ peer.name }}-keys-job"
     component_ns: "{{ organization.name }}" # "oem-subs"
     vault: "{{ organization.vault }}"
     kubernetes_url: "{{ kubernetes_server_url.stdout }}"
     charts_dir: "{{ organization.gitops.chart_source }}" # "platforms/substrate/charts" # "{{ item.gitops.chart_source }}"
-    values_dir: "{{playbook_dir}}/../../../{{ organization.gitops.chart_source }}/" # "{{playbook_dir}}/../../../platforms/substrate/releases/dev/genesis"
+    values_dir: "{{playbook_dir}}/../../../{{ organization.gitops.release_dir }}/{{ name }}" # "{{playbook_dir}}/../../../platforms/substrate/releases/dev/genesis"
     # component_type: "key_mgmt" 
     # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
 
