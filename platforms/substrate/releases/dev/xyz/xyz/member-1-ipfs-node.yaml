@@ -1,0 +1,77 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: member-1-ipfs-node
+  namespace: xyz-subs
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  interval: 1m
+  releaseName: member-1-ipfs-node
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-subgen
+        namespace: flux-subgen
+      chart: platforms/substrate/charts/dscp-ipfs-node
+  values:
+    global:
+        serviceAccountName: vault-auth
+        vault:
+          type: hashicorp
+          role: vault-role
+          network: substrate
+          address: http://98.64.226.131:20001
+          authPath: subgen
+          secretEngine: secretsv2
+          secretPrefix: "data/subgen/member-1"
+    fullnameOverride: member-1-ipfs
+    namespace: xyz-subs
+    config:
+      healthCheckPort: 80
+      healthCheckPollPeriod: 30000
+      healthCheckTimeout: 2000
+      nodeHost: "member-1"
+      nodePort: "9944"
+      logLevel: info
+      ipfsApiPort: 5001
+      ipfsSwarmPort: 4001
+      ipfsDataPath: "/ipfs"
+      ipfsCommand: "/usr/local/bin/ipfs"
+      ipfsArgs:
+        - daemon
+        - "--migrate"
+      ipfsSwarmAddrFilters: null
+      ipfsLogLevel: info
+      ipfsBootNodeAddress: /dns4/member-1-ipfs-swarm.xyz-subs.svc.cluster.local/tcp/4001/p2p/12D3KooWRb4xXGqcDZ6PawsCUpP1aRLzhuG4kmq1biDiSiV2j9tS
+      
+    service:
+      swarm:
+        annotations: {}
+        enabled: true
+        port: 4001
+      api:
+        annotations: {}
+        enabled: true
+        port: 5001
+
+    statefulSet:
+      annotations: {}
+      livenessProbe:
+        enabled: true
+    image:
+      repository: ghcr.io/inteli-poc/dscp-ipfs
+      pullPolicy: IfNotPresent
+      tag: 'v2.6.2'
+    storage:
+      storageClass: "xyz-bevel-storageclass"
+      dataVolumeSize: 20  # in Gigabytes
+    dscpNode:
+      enabled: false
+    proxy:
+      provider: ambassador
+      external_url: member-1-ipfs-swarm.sub.blockchaincloudpoc-develop.com
+      port: 15061
+      certSecret: xyz-ambassador-certs
