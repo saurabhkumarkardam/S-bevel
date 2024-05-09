@@ -68,3 +68,15 @@
   loop_control:
     loop_var: peer
   ignore_errors: yes
+
+# Delete Peer Crypto material
+- name: Delete Peer Crypto material 
+  shell: |
+    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/substrate-node-{{ peer.name }}-keys
+  environment:
+    VAULT_ADDR: "{{ item.vault.url }}"
+    VAULT_TOKEN: "{{ item.vault.root_token }}"
+  loop: "{{ services.peers }}"
+  loop_control:
+    loop_var: peer
+  ignore_errors: yes
