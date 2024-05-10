@@ -28,14 +28,14 @@
     gitops: "{{ item.gitops }}"
     msg: "[ci skip] Pushing Peer files"
 
-# # Check if member-node is running
-# - name: Check if member-node is running
-#   include_role:
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
-#   vars:
-#     component_name: "{{ peer.name }}"
-#     component_type: Pod
-#     label_selectors:
-#       - name = {{ component_name }}
-#     namespace: "{{ component_ns }}"
-#   tags: notest
+# Check if ipfs-bootnode is running
+- name: Check if {{ peer.name }} is running
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_name: "{{ peer.name }}"
+    component_type: Pod
+    label_selectors:
+      - name = {{ component_name }}
+    namespace: "{{ component_ns }}"
+  tags: notest
