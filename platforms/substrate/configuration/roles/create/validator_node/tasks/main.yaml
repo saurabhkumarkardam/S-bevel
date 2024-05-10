@@ -20,14 +20,14 @@
     docker_url: "{{ network.docker.url }}"
     charts_dir: "{{ item.gitops.chart_source }}"
     values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"    
-    bootnode_data: "{{ lookup('file', '{{ network.config.bootnodes }}').splitlines() }}" # NR
+    # bootnode_data: "{{ lookup('file', '{{ network.config.bootnodes }}').splitlines() }}" # NR
     command: "{{ network.config.command }}"
     role: "validator"
-    isBootnode: true
+    isBootnode: "{{ false if peer.type == 'bootnode' else true }}" # true
   loop: "{{ peers }}"
   loop_control:
     loop_var: peer
-  when: peer.type == "validator"
+  when: peer.type in ['validator', 'bootnode'] # peer.type == "validator"
 
 # Git Push : Push the above generated files to git directory 
 - name: Git Push

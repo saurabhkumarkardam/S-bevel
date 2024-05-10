@@ -64,7 +64,7 @@
   loop: "{{ peers }}"
   loop_control:
     loop_var: peer
-  when: peer.type == "member" and peer.ipfs is defined
+  when: peer.type == "member" and peer.enabled
 
 # # Git Push : Push the above generated files to git directory 
 # - name: Git Push

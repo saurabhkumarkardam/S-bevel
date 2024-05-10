@@ -42,6 +42,18 @@
       gitops: "{{ item.gitops }}"
     loop: "{{ network['organizations'] }}"
 
+  # Create necessary secrets
+  - name: "Create k8s secrets"
+    include_role:
+      name: create/secrets
+    vars:
+      component_ns: "{{ org.name | lower }}-bes"
+      kubernetes: "{{ org.k8s }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
+
   #########################################################################################################################
   # # Create Storageclass
   # - name: Create Storage Class
@@ -68,22 +80,24 @@
   #     loop_var: org
   #########################################################################################################################
 
-  # Setup Vault-Kubernetes accesses and Regcred for docker registry
-  - name: "Setup vault"   
-    include_role: 
-      name: "{{ playbook_dir }}/../../shared/configuration/roles/setup/vault_kubernetes"
-    vars:
-      name: "{{ org.name | lower }}"
-      component_ns: "{{ org.name | lower }}-subs"
-      component_name: "{{ org.name | lower }}-vaultk8s-job"
-      component_auth: "{{ network.env.type }}{{ name }}"
-      component_type: "organization"
-      kubernetes: "{{ org.k8s }}"
-      vault: "{{ org.vault }}"
-      gitops: "{{ org.gitops }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
+  #########################################################################################################################
+  # # Setup Vault-Kubernetes accesses and Regcred for docker registry
+  # - name: "Setup vault"   
+  #   include_role: 
+  #     name: "{{ playbook_dir }}/../../shared/configuration/roles/setup/vault_kubernetes"
+  #   vars:
+  #     name: "{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-subs"
+  #     component_name: "{{ org.name | lower }}-vaultk8s-job"
+  #     component_auth: "{{ network.env.type }}{{ name }}"
+  #     component_type: "organization"
+  #     kubernetes: "{{ org.k8s }}"
+  #     vault: "{{ org.vault }}"
+  #     gitops: "{{ org.gitops }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
+  #########################################################################################################################
 
   # Generate Ambassador certificate for nodes
   - name: "Create ambassador certificates for Nodes" 
@@ -121,10 +135,10 @@
   #   loop: "{{ network['organizations'] }}"
   #########################################################################################################################
 
-  # Generate the key materials and stores them in vault
-  - name: "Generate key materials for Nodes"
+  # Generate Genesis that will contain the record of all nodes
+  - name: "Generate Genesis"
     include_role:
-      name: create/new_key_genesis
+      name: create/generate_genesis
   #########################################################################################################################
     # vars:
     #   name: "{{ item.name | lower }}"        
@@ -149,17 +163,17 @@
   #     org: "{{ network | json_query(sudo_org_query) | first }}"
   #########################################################################################################################
 
-  # Deploy Substrate bootnodes
-  - name: "Deploy Bootnodes"
-    include_role:
-      name: create/bootnode
-    vars:
-      build_path: "./build"
-      kubernetes: "{{ item.k8s }}"
-      component_ns: "{{ item.name | lower }}-subs"
-      name: "{{ item.name | lower }}"
-      peers: "{{ item.services.peers }}"
-    loop: "{{ network['organizations'] }}"
+  # # Deploy Substrate bootnodes
+  # - name: "Deploy Bootnodes"
+  #   include_role:
+  #     name: create/bootnode
+  #   vars:
+  #     build_path: "./build"
+  #     kubernetes: "{{ item.k8s }}"
+  #     component_ns: "{{ item.name | lower }}-subs"
+  #     name: "{{ item.name | lower }}"
+  #     peers: "{{ item.services.peers }}"
+  #   loop: "{{ network['organizations'] }}"
 
   #########################################################################################################################
   # # Generate the bootnode list file
@@ -168,8 +182,8 @@
   #     name: create/bootnodefile
   #########################################################################################################################
 
-  # Deploy Substrate validator nodes
-  - name: "Deploy Substrate validators"
+  # Deploy Substrate Bootnode or validator nodes
+  - name: "Deploy Substrate Bootnode or validator nodes"
     include_role:
       name: create/validator_node
     vars:
@@ -207,7 +221,7 @@
   #########################################################################################################################
 
   # Deploy Substrate member nodes
-  - name: "Deploy Substrate members"
+  - name: "Deploy Substrate members nodes"
     include_role:
       name: create/member_node
     vars:
