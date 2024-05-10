@@ -485,7 +485,7 @@ spec:
           kind: VolumeSnapshot
           apiGroup: snapshot.storage.k8s.io
         {{- end }}
-        storageClassName: storage-{{ .Release.Name }}
+        storageClassName: substrate-storage-{{ .Release.Name }}
         resources:
           requests:
             storage: {{ .Values.node.dataVolumeSize }}
