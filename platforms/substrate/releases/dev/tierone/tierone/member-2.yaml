@@ -1,0 +1,108 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: member-2
+  namespace: tierone-subs
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  interval: 1m
+  releaseName: member-2
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-subgen
+        namespace: flux-subgen
+      chart: platforms/substrate/charts/substrate-node
+  values:
+    image:
+      repository: ghcr.io/inteli-poc/dscp-node
+      tag: v4.3.1
+      pullPolicy: IfNotPresent
+    imagePullSecrets: 
+      - name: "regcred"
+    nameOverride: member-2
+    fullnameOverride: member-2
+    namespace: tierone-subs
+
+    serviceAccount:
+      create: false
+      name: vault-auth
+
+    podSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    ingress:
+      enabled: false
+
+    node:
+      name: member-2
+      chain: inteli
+      command: ./dscp-node
+      isBootnode:
+        enabled: True
+        bootnodeName: validator-1
+        bootnodeAddr: validator-1.sub.blockchaincloudpoc-develop.com
+        bootnodePort: 15051 # 8080
+      dataVolumeSize: 10Gi
+      replicas: 1
+      role: full
+      customChainspecUrl: true
+      customChainspecPath: "/data/chainspec.json"
+      collator:
+        isParachain: false
+
+      enableStartupProbe: false
+      enableReadinessProbe: false
+      flags:
+        - "--rpc-external"
+        - "--ws-external"
+        - "--rpc-methods=Unsafe"
+        - "--rpc-cors=all"
+        - "--unsafe-ws-external"
+        - "--unsafe-rpc-external"
+        - "--pruning=archive"
+      persistGeneratedNodeKey: false
+
+      resources: {}
+      serviceMonitor:
+        enabled: false
+
+      perNodeServices:
+        createApiService: true
+        createP2pService: true
+        p2pServiceType: ClusterIP
+        setPublicAddressToExternalIp:
+          enabled: false
+          ipRetrievalServiceUrl: https://ifconfig.io
+      podManagementPolicy: Parallel
+
+      ports:
+        p2p: 8080
+        ws: 9944
+        rpc: 9933
+
+      tracing:
+        enabled: false
+      substrateApiSidecar:
+        enabled: false
+
+    proxy:
+      provider: ambassador
+      external_url: sub.blockchaincloudpoc-develop.com # member-2.sub.blockchaincloudpoc-develop.com
+      p2p: 15058
+      certSecret: tierone-ambassador-certs
+
+    storageClass: tierone-bevel-storageclass
+
+    vault:
+      address: http://98.64.226.131:20001      
+      secretPrefix: secretsv2/data/tierone
+      authPath: subgentierone
+      appRole: vault-role
+      image: ghcr.io/hyperledger/alpine-utils:1.0
+
+
