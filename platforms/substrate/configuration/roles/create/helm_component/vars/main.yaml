@@ -10,4 +10,4 @@ helm_templates:
   vault_k8s_mgmt: vault_kubernetes_job.tpl
   node_substrate: node_substrate.tpl
   genesis_job: genesis_job.tpl
-  genesis_key: new_key_genesis.tpl
+  # genesis_key: new_key_genesis.tpl

@@ -1,13 +1,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: {{ component_name }}
+  name: {{ component_name | replace('_','-') }}
   namespace: {{ component_ns }}
   annotations:
     fluxcd.io/automated: "false"
 spec:
   interval: 1m
-  releaseName: {{ component_name }}
+  releaseName: {{ component_name | replace('_','-') }}
   chart:
     spec:
       interval: 1m
@@ -22,7 +22,7 @@ spec:
       cluster:
         provider: azure
         cloudNativeServices: false
-        kubernetesUrl:
+        kubernetesUrl: {{ kubernetes_url }}
       vault:
         type: hashicorp
         role: vault-role
@@ -30,7 +30,8 @@ spec:
         address: {{ vault.url }}
         authPath: {{ network.env.type }}
         secretEngine: {{ vault.secret_path | default("secretsv2") }}
-        secretPrefix: "data/{{ network.env.type }}"
+        certPrefix: {{ network.env.type }}/{{ org_name }}
+        secretPrefix: "data/{{ network.env.type }}/{{ org_name }}"
     removeGenesisOnDelete:
       enabled: true
       image:

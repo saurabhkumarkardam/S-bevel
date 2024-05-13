@@ -36,7 +36,7 @@
   vars:
     name: "{{ organization.name }}"
     org_name: "{{ organization.name }}"
-    type: "genesis_key"
+    type: "genesis_job"
     component_name: "genesis"
     component_ns: "{{ organization.name }}-subs"
     vault: "{{ organization.vault }}"
