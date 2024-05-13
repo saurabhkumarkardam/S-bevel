@@ -2,7 +2,7 @@
 #  This Chart is a fork from https://github.com/paritytech/helm-charts
 #  Please update if needed
 ##############################################################################################
-apiVersion: v1
+apiVersion: v2 # v1
 name: substrate-node
 description: A Helm chart to deploy Substrate/Polkadot nodes
 type: application
