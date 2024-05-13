@@ -8,7 +8,6 @@
 # This role deletes the Vault configurations
 #############################################################################################
 
-#############################################################################################
 # Delete the Docker credentials
 - name: Delete docker creds
   k8s:
@@ -34,66 +33,7 @@
     loop_var: peer
   ignore_errors: yes
 
-# # Delete Peer Crypto material
-# - name: Delete Peer Crypto material 
-#   shell: |
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ item.name }}/{{ peer.name }}/substrate  
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ item.name }}/{{ peer.name }}/ipfs
-#   environment:
-#     VAULT_ADDR: "{{ item.vault.url }}"
-#     VAULT_TOKEN: "{{ item.vault.root_token }}"
-#   loop: "{{ services.peers }}"
-#   loop_control:
-#     loop_var: peer
-#   ignore_errors: yes
-
-# # Delete Organization's Crypto material 
-# - name: Delete Org Crypto material 
-#   shell: |
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ item.name }}/genesis
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ item.name }}/tlscerts
-#   environment:
-#     VAULT_ADDR: "{{ item.vault.url }}"
-#     VAULT_TOKEN: "{{ item.vault.root_token }}"
-#   ignore_errors: yes
-
-#   # Delete application crypto material
-# - name: Delete Application Crypto material 
-#   shell: |
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ item.name }}/application
-#   loop: "{{ services.peers }}"
-#   environment:
-#     VAULT_ADDR: "{{ item.vault.url }}"
-#     VAULT_TOKEN: "{{ item.vault.root_token }}"
-#   loop_control:
-#     loop_var: peer
-#   ignore_errors: yes
-
-# # Delete Peer Crypto material
-# - name: Delete Peer Crypto material 
-#   shell: |
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-keys
-#   environment:
-#     VAULT_ADDR: "{{ item.vault.url }}"
-#     VAULT_TOKEN: "{{ item.vault.root_token }}"
-#   loop: "{{ services.peers }}"
-#   loop_control:
-#     loop_var: peer
-#   ignore_errors: yes
-
-# # Delete Peer Crypto material
-# - name: Delete Peer Crypto material 
-#   shell: |
-#     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-ipfs-keys
-#   environment:
-#     VAULT_ADDR: "{{ item.vault.url }}"
-#     VAULT_TOKEN: "{{ item.vault.root_token }}"
-#   loop: "{{ services.peers }}"
-#   loop_control:
-#     loop_var: peer
-#   when: peer.type == "member" and peer.ipfs is defined
-#   ignore_errors: yes
-
+# Delete Peer Crypto material (including IPFS keys if applicable)
 - name: Delete Peer Crypto material
   shell: |
     {% if peer.type == "member" %}
@@ -110,7 +50,7 @@
     loop_var: peer
   ignore_errors: yes
 
-# Delete genesis & ambassador crypto material
+# Delete Genesis and Ambassador crypto material
 - name: Delete genesis & ambassador crypto material
   shell: |
     vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/tlscerts
@@ -119,7 +59,3 @@
     VAULT_ADDR: "{{ item.vault.url }}"
     VAULT_TOKEN: "{{ item.vault.root_token }}"
   ignore_errors: yes
-
-- name: Print statement after deleting genesis crypto material
-  debug:
-    msg: "Genesis crypto material has been deleted successfully. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
