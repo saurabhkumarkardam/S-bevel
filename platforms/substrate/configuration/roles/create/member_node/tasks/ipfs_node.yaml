@@ -9,7 +9,7 @@
   set_fact:
     node_list: []
 
-# Fetch the bootnode's peer id from vault
+# Fetch the bootnode's node ID from Vault
 - name: Fetch node_id of {{ peer.name }} node
   shell: |
     vault kv get -field=node_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ name }}/substrate-node-{{ peer.name | lower }}-keys" # NEW-2
@@ -18,19 +18,20 @@
     VAULT_TOKEN: "{{ vault.root_token }}"
   register: node_id
 
+# Append bootnode information to node_list
 - name: Collect Bootnode data
   set_fact:
     node_list={{ node_list|default([]) + [ {'bootnode_id':node_id.stdout, 'external_url':internal_url, 'p2p_port':peer.ipfs.swarmPort} ] }}
   vars:
     internal_url: "{{ peer.name }}-ipfs-swarm.{{ component_ns }}.svc.cluster.local"
 
-# Create a file, if it doesn't exist, to store bootnode information
+# Create a file to store bootnode information only if not already available
 - name: Create bootnode file
   template:
     src: "ipfsbootnode.tpl"
     dest: "{{ network.config.ipfsbootnodes }}"
 
-# Generate ipfs node helmrelease file
+# Generate IPFS node HelmRelease file
 - name: "Create ipfs node release file"
   include_role:
     name: create/helm_component
@@ -57,7 +58,7 @@
     gitops: "{{ item.gitops }}"
     msg: "[ci skip] Pushing Peer files"
 
-# Check if ipfs-bootnode is running
+# Check if IPFS-bootnode is running
 - name: Check if {{ peer.name }} is running
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"

@@ -4,11 +4,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 
-# - name: Initialize counts
-#   set_fact:
-#     validator_count: 0
-#     member_count: 0
-
+# Increment the validator_count for each peer that is a 'bootnode' or 'validator'
 - name: Count validator nodes
   set_fact:
     validator_count: "{{ validator_count | int + 1 }}"
@@ -17,6 +13,7 @@
     loop_var: peer
   when: peer.type == 'bootnode' or peer.type == 'validator'
 
+# Increment the member_count for each peer that is a 'member'
 - name: Count member nodes
   set_fact:
     member_count: "{{ member_count | int  + 1 }}"
@@ -24,7 +21,3 @@
   loop_control:
     loop_var: peer
   when: peer.type == 'member'
-
-- name: Debug counts
-  debug:
-    msg: "Validator count: {{ validator_count }}, Member count: {{ member_count }}"

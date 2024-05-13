@@ -4,110 +4,65 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 
-###########################################################################################
-# - name: Initialize counts
-#   set_fact:
-#     validator_count: 0
-#     member_count: 0
-
-# - name: Count validator nodes
-#   set_fact:
-#     validator_count: "{{ validator_count | int + 1 }}"
-#   loop: "{{ peers }}"
-#   loop_control:
-#     loop_var: peer
-#   when: peer.type == 'bootnode' or peer.type == 'validator'
-
-# - name: Count member nodes
-#   set_fact:
-#     member_count: "{{ member_count | int  + 1 }}"
-#   loop: "{{ peers }}"
-#   loop_control:
-#     loop_var: peer
-#   when: peer.type == 'member'
-###########################################################################################
-
+# Set organization variable based on the first organization in the network
 - name: Set organization variable
   set_fact:
     organization: "{{ network.organizations[0] }}"
 
+# Initialize counts for validator and member nodes
 - name: Initialize counts
   set_fact:
     validator_count: 0
     member_count: 0
 
-# Create keys for each node
-- name: Create keys for each node
+# Loop through each organization to count nodes
+- name: Count nodes
   include_tasks: nodes.yaml
   vars:
     peers: "{{ item.services.peers }}"
-    # name: "generate-genesis" # "{{ item.name | lower }}"        
-    # component_name: "{{ item.name | lower }}"
-    # component_ns: "{{ item.name | lower }}-subs"
-    # vault: "{{ item.vault }}"
-    # charts_dir: "{{ item.gitops.chart_source }}"
-    # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
-    # org: "{{ item }}"
-    # gitops: "{{ item.gitops }}"
-    # kubernetes: "{{ item.k8s }}"
   loop: "{{ network['organizations'] }}"
-  # vars:
-  #   peer: "{{ peer }}"
-  # loop: "{{ peers }}"
-  # loop_control:
-  #   loop_var: peer
 
 
-- name: Debug counts again
-  debug:
-    msg: "Validator count: {{ validator_count }}, Member count: {{ member_count }}"
-
-# This tasks gets the kubernetes server url
+# Retrieve kubernetes server url
 - name: Get the kubernetes server url
   shell: |
     KUBECONFIG={{ organization.k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
   register: kubernetes_server_url
 
-# - name: Debug kubernetes_server_url
-#   debug:
-#     msg: "kubernetes_server_url: {{ kubernetes_server_url }}, Member count: {{ member_count }}"
-
-- name: Create key and genesis
+# Generate keys and genesis file
+- name: Generate keys and genesis file
   include_role:
     name: create/helm_component
   vars:
-    name: "{{ organization.name }}" # genesis" # name: "generate-genesis" # "{{ org.name | lower }}"
+    name: "{{ organization.name }}"
     org_name: "{{ organization.name }}"
     type: "genesis_key"
-    component_name: "genesis" # "{{ name }}" # "genesis" # "{{ peer.name }}-keys-job"
-    component_ns: "{{ organization.name }}-subs" # "oem-subs"
+    component_name: "genesis"
+    component_ns: "{{ organization.name }}-subs"
     vault: "{{ organization.vault }}"
     kubernetes_url: "{{ kubernetes_server_url.stdout }}"
-    charts_dir: "{{ organization.gitops.chart_source }}" # "platforms/substrate/charts" # "{{ item.gitops.chart_source }}"
-    values_dir: "{{playbook_dir}}/../../../{{ organization.gitops.release_dir }}" # "{{playbook_dir}}/../../../platforms/substrate/releases/dev/genesis"
-    # component_type: "key_mgmt" 
-    # values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/generate-genesis"
+    charts_dir: "{{ organization.gitops.chart_source }}"
+    values_dir: "{{playbook_dir}}/../../../{{ organization.gitops.release_dir }}"
 
-# Push the created deployment files to repository
-- name: "Push the created deployment files to repository"
+# Push the created deployment files to the Git repository
+- name: "Push the created deployment files to the Git repository"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
   vars:
     component_ns: "{{ organization.name }}"
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
-    gitops: "{{ organization.gitops }}" # "{{ item.gitops }}"
+    gitops: "{{ organization.gitops }}"
   tags: notest
-  # when: vault_keys_result.failed
 
-# Check if vault_kubernetes is completed
-- name: Check if vault_kubernetes job is completed
+# Check if the Genesis job is completed
+- name: Check if the Genesis job is completed
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    component_name: "genesis" # "{{ peer.name }}-keys-job"
+    component_name: "genesis"
     component_type: Job
-    namespace: "{{ organization.name }}-subs" # "{{ component_ns }}"
+    namespace: "{{ organization.name }}-subs"
     kubernetes: "{{ organization.k8s }}"
   tags:
   - notest
