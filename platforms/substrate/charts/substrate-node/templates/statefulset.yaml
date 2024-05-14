@@ -313,7 +313,7 @@ spec:
             - containerPort: 9615
               name: prometheus
               protocol: TCP
-            - containerPort: 30333
+            - containerPort: 8080 # 30333
               name: p2p
               protocol: TCP
           {{- if .Values.node.collator.isParachain }}
