@@ -19,7 +19,6 @@ global:
     provider: azure
     cloudNativeServices: false
     kubernetesUrl: https://kubernetes.url
-
 node:
   validator:
       count: 4
