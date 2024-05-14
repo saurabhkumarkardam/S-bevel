@@ -28,6 +28,11 @@
       path: "./build"
       state: absent
 
+  - name: Pull push from demo
+    shell: |
+      git pull origin demo
+      git pull origin demo
+
   # Create Kubernetes namespaces for each organization
   - name: "Create namespace"
     include_role: 
