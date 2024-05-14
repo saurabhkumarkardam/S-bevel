@@ -38,10 +38,10 @@
   shell: |
     {% if peer.type == "member" %}
       {% if peer.ipfs is defined %}
-        vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-ipfs-keys
+        vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}{{ org_name }}/substrate-node-{{ peer.name }}-ipfs-keys
       {% endif %}
     {% endif %}
-    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/substrate-node-{{ peer.name }}-keys
+    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}{{ org_name }}/substrate-node-{{ peer.name }}-keys
   environment:
     VAULT_ADDR: "{{ item.vault.url }}"
     VAULT_TOKEN: "{{ item.vault.root_token }}"
@@ -53,8 +53,8 @@
 # Delete Genesis and Ambassador crypto material
 - name: Delete genesis & ambassador crypto material
   shell: |
-    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/tlscerts
-    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ org_name }}/genesis
+    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}{{ org_name }}/tlscerts
+    vault kv delete {{ item.vault.secret_path | default('secretsv2') }}/{{ network.env.type }}{{ org_name }}/genesis
   environment:
     VAULT_ADDR: "{{ item.vault.url }}"
     VAULT_TOKEN: "{{ item.vault.root_token }}"
