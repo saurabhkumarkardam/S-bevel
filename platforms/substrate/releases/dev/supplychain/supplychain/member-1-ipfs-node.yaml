@@ -26,7 +26,7 @@ spec:
           address: http://98.64.226.131:20001
           authPath: substrate
           secretEngine: secretsv2
-          secretPrefix: "data/substrate/supplychain/substrate-node-member-1"
+          secretPrefix: "data/substratesupplychain/substrate-node-member-1"
     fullnameOverride: member-1-ipfs
     namespace: supplychain-subs
     config:
