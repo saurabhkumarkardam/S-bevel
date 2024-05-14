@@ -28,10 +28,10 @@
       path: "./build"
       state: absent
 
+  # Dummy
   - name: Pull push from demo-ansible
     shell: |
       git pull origin demo-ansible
-      git push origin demo-ansible
 
   # Create Kubernetes namespaces for each organization
   - name: "Create namespace"

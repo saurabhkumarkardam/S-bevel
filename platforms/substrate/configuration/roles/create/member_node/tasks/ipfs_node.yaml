@@ -12,7 +12,7 @@
 # Fetch the bootnode's node ID from Vault
 - name: Fetch node_id of {{ peer.name }} node
   shell: |
-    vault kv get -field=node_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}/{{ name }}/substrate-node-{{ peer.name | lower }}-keys" # NEW-2
+    vault kv get -field=node_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}{{ name }}/substrate-node-{{ peer.name | lower }}-keys"
   environment:
     VAULT_ADDR: "{{ vault.url }}"
     VAULT_TOKEN: "{{ vault.root_token }}"

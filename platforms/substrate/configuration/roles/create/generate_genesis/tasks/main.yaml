@@ -66,3 +66,5 @@
     kubernetes: "{{ organization.k8s }}"
   tags:
   - notest
+
+# Note: notest tags are not reqd
