@@ -22,72 +22,72 @@
   gather_facts: no
   no_log: "{{ no_ansible_log | default(false) }}"
   tasks:      
-  # # Delete build directory 
-  # - name: Remove build directory
-  #   file:
-  #     path: "./build"
-  #     state: absent
+  # Delete build directory 
+  - name: Remove build directory
+    file:
+      path: "./build"
+      state: absent
   
-  # - name: Pull push from saurabh-1
-  #   shell: |
-  #     git pull origin saurabh-1
-  #     git pull origin saurabh-1
+  - name: Pull push from saurabh-1
+    shell: |
+      git pull origin saurabh-1
+      git pull origin saurabh-1
 
-  # # Create Kubernetes namespaces for each organization
-  # - name: "Create namespace"
-  #   include_role: 
-  #     name: create/namespace
-  #   vars:
-  #     component_ns: "{{ item.name | lower }}-subs"
-  #     organisation: "{{ item.name | lower }}"
-  #     kubernetes: "{{ item.k8s }}"
-  #     gitops: "{{ item.gitops }}"
-  #   loop: "{{ network['organizations'] }}"
+  # Create Kubernetes namespaces for each organization
+  - name: "Create namespace"
+    include_role: 
+      name: create/namespace
+    vars:
+      component_ns: "{{ item.name | lower }}-subs"
+      organisation: "{{ item.name | lower }}"
+      kubernetes: "{{ item.k8s }}"
+      gitops: "{{ item.gitops }}"
+    loop: "{{ network['organizations'] }}"
 
-  # # Create necessary Kubernetes secrets for each organization
-  # - name: "Create k8s secrets"
-  #   include_role:
-  #     name: create/secrets
-  #   vars:
-  #     component_ns: "{{ org.name | lower }}-subs"
-  #     kubernetes: "{{ org.k8s }}"
-  #     vault: "{{ org.vault }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
+  # Create necessary Kubernetes secrets for each organization
+  - name: "Create k8s secrets"
+    include_role:
+      name: create/secrets
+    vars:
+      component_ns: "{{ org.name | lower }}-subs"
+      kubernetes: "{{ org.k8s }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
 
-  # # Generate Ambassador certificates for nodes (if using Ambassador as proxy)
-  # - name: "Create ambassador certificates for Nodes" 
-  #   include_role: 
-  #     name: create/certificates/ambassador
-  #   vars:
-  #     root_subject: "{{ network.config.subject }}"
-  #     cert_subject: "{{ network.config.subject | regex_replace(',', '/') }}"
-  #     services: "{{ item.services }}"
-  #     organisation: "{{ item.name | lower }}"
-  #     component_ns: "{{ item.name | lower }}-subs"
-  #     component_name: "{{ item.name | lower }}"
-  #     kubernetes: "{{ item.k8s }}"
-  #     vault: "{{ item.vault }}"
-  #   loop: "{{ network['organizations']}}"
-  #   when: network.env.proxy == "ambassador"
+  # Generate Ambassador certificates for nodes (if using Ambassador as proxy)
+  - name: "Create ambassador certificates for Nodes" 
+    include_role: 
+      name: create/certificates/ambassador
+    vars:
+      root_subject: "{{ network.config.subject }}"
+      cert_subject: "{{ network.config.subject | regex_replace(',', '/') }}"
+      services: "{{ item.services }}"
+      organisation: "{{ item.name | lower }}"
+      component_ns: "{{ item.name | lower }}-subs"
+      component_name: "{{ item.name | lower }}"
+      kubernetes: "{{ item.k8s }}"
+      vault: "{{ item.vault }}"
+    loop: "{{ network['organizations']}}"
+    when: network.env.proxy == "ambassador"
 
-  # # Generate Genesis file that will contain the record of all nodes
-  # - name: "Generate Genesis"
-  #   include_role:
-  #     name: create/generate_genesis
+  # Generate Genesis file that will contain the record of all nodes
+  - name: "Generate Genesis"
+    include_role:
+      name: create/generate_genesis
 
-  # # Deploy Bootnodes or Validator nodes
-  # - name: "Deploy Bootnode or Validator nodes"
-  #   include_role:
-  #     name: create/validator_node
-  #   vars:
-  #     build_path: "./build"
-  #     kubernetes: "{{ item.k8s }}"
-  #     component_ns: "{{ item.name | lower }}-subs"
-  #     name: "{{ item.name | lower }}"
-  #     peers: "{{ item.services.peers }}"
-  #   loop: "{{ network['organizations'] }}"
+  # Deploy Bootnodes or Validator nodes
+  - name: "Deploy Bootnode or Validator nodes"
+    include_role:
+      name: create/validator_node
+    vars:
+      build_path: "./build"
+      kubernetes: "{{ item.k8s }}"
+      component_ns: "{{ item.name | lower }}-subs"
+      name: "{{ item.name | lower }}"
+      peers: "{{ item.services.peers }}"
+    loop: "{{ network['organizations'] }}"
 
   # Deploy Member nodes, including IPFS node if enabled
   - name: "Deploy Member nodes, including IPFS node if enabled"
