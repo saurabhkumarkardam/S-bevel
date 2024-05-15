@@ -18,6 +18,15 @@
     VAULT_TOKEN: "{{ vault.root_token }}"
   register: node_id
 
+- name: Fetch node_id of {{ peer.name }} node
+  shell: |
+    KUBECONFIG={{ kubernetes.config_file }} kubectl get secret "substrate-node-{{ peer.name | lower }}-keys" --namespace {{ component_ns }} -o jsonpath="{.data['substrate-node-keys']}" | base64 -d | jq -r '.data.node_id'
+  register: node_id
+
+- name: Debug node_id
+  debug:
+    msg: "Node ID of {{ peer.name }} node is: {{ node_id.stdout }}"
+
 # Append bootnode information to node_list
 - name: Collect Bootnode data
   set_fact:
