@@ -1,0 +1,10 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+dlt_templates:
+  generate_keys: generate_keys.tpl
+values_dir: "/home/saurabh/S-bevel/platforms/hyperledger-indy/releases/dev"
+org_name: "authority"
