@@ -31,6 +31,8 @@
 - name: Create key and genesis
   include_role:
     name: create/helm_component/new-generate-keys
+  vars: 
+    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
 
 # Push the created deployment files to repository
 - name: "Push the created deployment files to repository"

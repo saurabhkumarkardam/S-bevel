@@ -11,8 +11,8 @@
   template:
     src: "{{ dlt_templates[component_type] }}"
     dest: "{{ values_dir }}/{{ org_name }}/{{ component_type }}.yaml"
-  vars:
-    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+  # vars:
+  #   kubernetes_server: "{{ kubernetes_server_url.stdout }}"
 
 ############################################################################################
 # Test the value file for syntax errors/ missing values
