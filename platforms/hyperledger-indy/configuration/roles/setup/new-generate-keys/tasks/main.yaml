@@ -1,0 +1,51 @@
+# Initialize variable and list
+- name: Initialize variable and list
+  set_fact:
+    trustee_name: "{{ org.services.trustee | default('') }}"
+    endorser_name: "{{ org.services.endorser | default('') }}"
+    steward_list: []
+
+# Generate IPFS node HelmRelease files
+- name: "Maintain stewards"
+  set_fact:
+    steward_list: "{{ steward_list + [stewards_item.name] }}"
+  loop: "{{ stewards }}"
+  loop_control:
+    loop_var: stewards_item
+  ignore_errors: true
+
+# Display initialized variables and list
+- name: Display initialized variables and list
+  debug:
+    msg: |
+      trustee_name: "{{ trustee_name }}"
+      endorser_name: "{{ endorser_name }}"
+      steward_list: "{{ steward_list }}"
+
+# Get the kubernetes server url
+- name: Get the kubernetes server url
+  shell: |
+    KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+  register: kubernetes_server_url
+
+- name: Create key and genesis
+  include_role:
+    name: create/helm_component/new-generate-keys
+
+# Push the created deployment files to repository
+- name: "Push the created deployment files to repository"
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
+  vars:
+    GIT_DIR: "{{ playbook_dir }}/../../../"
+    msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
+    gitops: "{{ org.gitops }}"
+
+# Check if vault_kubernetes is completed
+- name: Check if vault_kubernetes job is completed
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    # component_name: component_type
+    component_type: Job
+    namespace: "{{ component_ns }}"

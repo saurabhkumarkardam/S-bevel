@@ -23,18 +23,18 @@
   #   include_role:
   #     name: check/validation
 
-  # # Create namespaces for organizations
-  # - name: 'Create namespace'
-  #   include_role:
-  #     name: create/namespace
-  #   vars:
-  #     component_name: "{{ organizationItem.name | lower }}-ns"
-  #     component_type_name: "{{ organizationItem.type | lower }}"
-  #     kubernetes: "{{ organizationItem.k8s }}"
-  #     release_dir: "{{playbook_dir}}/../../../{{organizationItem.gitops.release_dir}}/{{ organizationItem.name | lower }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: organizationItem
+  # Create namespaces for organizations
+  - name: 'Create namespace'
+    include_role:
+      name: create/namespace
+    vars:
+      component_name: "{{ organizationItem.name | lower }}-ns"
+      component_type_name: "{{ organizationItem.type | lower }}"
+      kubernetes: "{{ organizationItem.k8s }}"
+      release_dir: "{{playbook_dir}}/../../../{{organizationItem.gitops.release_dir}}/{{ organizationItem.name | lower }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: organizationItem
 
   - name: generate-keys
     include_role:
@@ -45,7 +45,7 @@
       cloud_provider: "{{ org.cloud_provider | lower }}"
       vault: "{{ org.vault }}"
       kubernetes: "{{ org.k8s }}"
-      component_type: "generate_keys"
+      component_type: "generate-keys"
       component_ns: "{{ org_name }}-indy"
       component_name: "{{ org_name }}-generate-keys"
       values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"

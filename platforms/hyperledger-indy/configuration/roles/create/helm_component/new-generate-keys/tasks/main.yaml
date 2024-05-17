@@ -1,31 +1,4 @@
-- name: Initialize variable and list
-  set_fact:
-    trustee_name: "{{ org.services.trustee | default('') }}"
-    endorser_name: "{{ org.services.endorser | default('') }}"
-    steward_list: []
-
-# Generate IPFS node HelmRelease files
-- name: "Maintain stewards"
-  set_fact:
-    steward_list: "{{ steward_list + [stewards_item.name] }}"
-  loop: "{{ stewards }}"
-  loop_control:
-    loop_var: stewards_item
-  ignore_errors: true
-
-- name: Display initialized variables and list
-  debug:
-    msg: |
-      trustee_name: "{{ trustee_name }}"
-      endorser_name: "{{ endorser_name }}"
-      steward_list: "{{ steward_list }}"
-
-# Get the kubernetes server url
-- name: Get the kubernetes server url
-  shell: |
-    KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
-  register: kubernetes_server_url
-
+# Ensure teh required dir exists
 - name: "Ensure {{ values_dir }}/{{ org_name }} dir exists"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/directory"
@@ -40,3 +13,15 @@
     dest: "{{ values_dir }}/{{ org_name }}/{{ component_type }}.yaml"
   vars:
     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+
+############################################################################################
+# Test the value file for syntax errors/ missing values
+# This is done by calling the helm_lint role and passing the value file parameter
+# When a new helm_component is added, changes should be made in helm_lint role as well
+- name: Helm lint
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/helm_lint"
+  vars:
+    helmtemplate_type: "{{ type }}"
+    chart_path: "{{ charts_dir }}"
+    value_file: "{{ values_dir }}/{{ org_name }}/{{ component_name }}.yaml"
