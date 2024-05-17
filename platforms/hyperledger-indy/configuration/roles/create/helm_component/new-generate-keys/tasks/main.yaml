@@ -6,11 +6,19 @@
     path: "{{ values_dir }}/{{ org_name }}"
     # path: "/home/saurabh/S-bevel/platforms/hyperledger-indy/releases/dev/saurabh"
 
+# # Get the kubernetes server url
+# - name: Get the kubernetes server url
+#   shell: |
+#     KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+#   register: kubernetes_server_url
+
 # Generate Indy vault policy and role for stewards
 - name: Stewards vault policy and role generating
   template:
     src: "{{ dlt_templates[component_type] }}"
     dest: "{{ values_dir }}/{{ org_name }}/{{ component_type }}.yaml"
+  # vars:
+  #   kubernetes_server: "{{ kubernetes_server_url.stdout }}"
 
 ############################################################################################
 # Test the value file for syntax errors/ missing values

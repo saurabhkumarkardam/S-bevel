@@ -23,26 +23,26 @@
   #   include_role:
   #     name: check/validation
 
-  - name: Pull push from saurabh-1
-    shell: |
-      git pull origin saurabh-1
+  # - name: Pull push from saurabh-1
+  #   shell: |
+  #     git pull origin saurabh-1
 
-  # Create namespaces for organizations
-  - name: 'Create namespace'
-    include_role:
-      name: create/namespace
-    vars:
-      component_name: "{{ organizationItem.name | lower }}-ns"
-      component_type_name: "{{ organizationItem.type | lower }}"
-      kubernetes: "{{ organizationItem.k8s }}"
-      release_dir: "{{playbook_dir}}/../../../{{organizationItem.gitops.release_dir}}/{{ organizationItem.name | lower }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: organizationItem
+  # # Create namespaces for organizations
+  # - name: 'Create namespace'
+  #   include_role:
+  #     name: create/namespace
+  #   vars:
+  #     component_name: "{{ organizationItem.name | lower }}-ns"
+  #     component_type_name: "{{ organizationItem.type | lower }}"
+  #     kubernetes: "{{ organizationItem.k8s }}"
+  #     release_dir: "{{playbook_dir}}/../../../{{organizationItem.gitops.release_dir}}/{{ organizationItem.name | lower }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: organizationItem
 
   - name: generate-keys
     include_role:
-      name: create/helm_component/new-generate-keys
+      name: setup/new-generate-keys
     vars:
       org_name: "{{ org.name | lower }}"
       stewards: "{{ org.services.stewards }}"
