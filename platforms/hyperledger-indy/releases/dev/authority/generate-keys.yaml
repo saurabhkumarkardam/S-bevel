@@ -3,13 +3,14 @@ kind: HelmRelease
 metadata:
   name: generate-keys
   annotations:
-  fluxcd.io/automated: "false"
+    fluxcd.io/automated: "false"
   namespace: authority-indy
 spec:
   releaseName: generate-keys-first
   interval: 1m
   chart:
     spec:
+      interval: 1m
       chart: platforms/hyperledger-indy/charts/indy-key-mgmt
       sourceRef:
         kind: GitRepository
