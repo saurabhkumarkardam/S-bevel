@@ -5,4 +5,4 @@
 ##############################################################################################
 
 dlt_templates:
-  generate_keys: generate_keys.tpl
+  generate-keys: generate_keys.tpl
