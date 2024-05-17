@@ -40,6 +40,18 @@
   #   loop_control:
   #     loop_var: org
 
+  # Create necessary Kubernetes secrets for each organization
+  - name: "Create k8s secrets"
+    include_role:
+      name: create/secrets
+    vars:
+      component_ns: "{{ org.name | lower }}-indy"
+      kubernetes: "{{ org.k8s }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
+
   - name: generate-keys
     include_role:
       name: setup/new-generate-keys
