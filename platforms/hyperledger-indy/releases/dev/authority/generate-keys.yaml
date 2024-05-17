@@ -33,7 +33,7 @@ spec:
           secretPrefix: "data/authority"
       proxy:
         provider: ambassador
-    settings:
-      removeKeysOnDelete: true
-      identities:
-        trustee: authority-trustee
+      settings:
+        removeKeysOnDelete: true
+        identities:
+          trustee: authority-trustee
