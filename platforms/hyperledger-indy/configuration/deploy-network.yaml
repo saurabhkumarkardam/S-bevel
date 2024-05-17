@@ -63,7 +63,7 @@
       kubernetes: "{{ org.k8s }}"
       component_type: "generate-keys"
       component_ns: "{{ org_name }}-indy"
-      component_name: "{{ org_name }}-generate-keys"
+      component_name: "generate-keys"
       values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
       charts_dir: "{{ org.gitops.chart_source }}"
     loop: "{{ network['organizations'] }}"
