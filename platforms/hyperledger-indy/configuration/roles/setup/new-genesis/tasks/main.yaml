@@ -71,4 +71,6 @@
   vars:
     # component_name: component_type
     component_type: Job
+    org: "{{ network['organizations'] | first }}"
+    component_ns: "{{ org.name | lower }}-indy"
     namespace: "{{ component_ns }}"
