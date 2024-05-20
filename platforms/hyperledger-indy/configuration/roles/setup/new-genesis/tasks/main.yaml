@@ -74,3 +74,4 @@
     org: "{{ network['organizations'] | first }}"
     component_ns: "{{ org.name | lower }}-indy"
     namespace: "{{ component_ns }}"
+    kubernetes: "{{ org.k8s }}"
