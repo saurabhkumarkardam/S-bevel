@@ -69,7 +69,7 @@
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    # component_name: component_type
+    component_name: "generate-genesis"
     component_type: Job
     org: "{{ network['organizations'] | first }}"
     component_ns: "{{ org.name | lower }}-indy"
