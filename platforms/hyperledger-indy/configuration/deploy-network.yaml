@@ -23,22 +23,22 @@
   #   include_role:
   #     name: check/validation
 
-  # - name: Pull push from saurabh-1
-  #   shell: |
-  #     git pull origin saurabh-1
+  - name: Pull push from saurabh-1
+    shell: |
+      git pull origin saurabh-1
 
-  # # Create namespaces for organizations
-  # - name: 'Create namespace'
-  #   include_role:
-  #     name: create/namespace
-  #   vars:
-  #     component_name: "{{ org.name | lower }}-indy"
-  #     component_type_name: "{{ org.type | lower }}"
-  #     kubernetes: "{{ org.k8s }}"
-  #     release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
+  # Create namespaces for organizations
+  - name: 'Create namespace'
+    include_role:
+      name: create/namespace
+    vars:
+      component_name: "{{ org.name | lower }}-indy"
+      component_type_name: "{{ org.type | lower }}"
+      kubernetes: "{{ org.k8s }}"
+      release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
 
   # Create necessary Kubernetes secrets for each organization
   - name: "Create k8s secrets"
@@ -69,6 +69,10 @@
     loop: "{{ network['organizations'] }}"
     loop_control:
       loop_var: org
+
+  - name: Get Public Keys from Kubernetes for Genesis
+    include_role: 
+      name: setup/new-genesis-public-keys
 
   # These variables can be overriden from the command line
   vars: 

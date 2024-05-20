@@ -1,0 +1,6 @@
+- name: Change directory, make get_keys.sh executable, and run it
+  shell: |
+    chmod +x get_keys.sh
+    ./get_keys.sh
+  args:
+    chdir: "{{ playbook_dir }}/../../hyperledger-indy/scripts/genesis"
