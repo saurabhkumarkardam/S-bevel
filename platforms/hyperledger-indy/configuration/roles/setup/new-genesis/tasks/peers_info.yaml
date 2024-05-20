@@ -1,0 +1,18 @@
+- name: Assign new value to trustee_name if it is empty
+  set_fact:
+    trustee_name: "{{ org.services.trustee | default('') }}"
+  when: trustee_name == ''
+
+- name: Assign new value to endorser_name if it is empty
+  set_fact:
+    endorser_name: "{{ org.services.endorser | default('') }}"
+  when: endorser_name == ''
+
+# Maintain stewards
+- name: "Maintain stewards"
+  set_fact:
+    steward_list: "{{ steward_list + [{'name': stewards_item.name, 'publicIp': stewards_item.publicIp, 'nodePort': stewards_item.node.port, 'clientPort': stewards_item.client.port}] }}"
+  loop: "{{ stewards }}"
+  loop_control:
+    loop_var: stewards_item
+  ignore_errors: true

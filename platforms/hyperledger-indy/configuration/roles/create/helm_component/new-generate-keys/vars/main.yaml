@@ -6,3 +6,4 @@
 
 dlt_templates:
   generate-keys: generate_keys.tpl
+  generate-genesis: generate_genesis.tpl

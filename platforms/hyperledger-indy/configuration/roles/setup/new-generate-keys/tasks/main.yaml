@@ -28,10 +28,6 @@
     KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
   register: kubernetes_server_url
 
-# - name: Set the Kubernetes server URL fact
-#   set_fact:
-#     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
-
 - name: Create key and genesis
   include_role:
     name: create/helm_component/new-generate-keys
