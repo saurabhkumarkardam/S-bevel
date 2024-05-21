@@ -36,25 +36,6 @@ spec:
     settings:
       removeKeysOnDelete: true
       secondaryGenesis: False
-      trustees:
-        - name: "authority-trustee"
-          stewards:
-            - name: university-steward-1
-              publicIp: 3.221.78.194
-              nodePort: 9711
-              clientPort: 9712
-            - name: university-steward-2
-              publicIp: 3.221.78.194
-              nodePort: 9721
-              clientPort: 9722
-            - name: university-steward-3
-              publicIp: 3.221.78.194
-              nodePort: 9721
-              clientPort: 9722
-            - name: university-steward-4
-              publicIp: 3.221.78.194
-              nodePort: 9721
-              clientPort: 9722
 
 # #         endorser: "university-endorser"
 # # #         stewards:

@@ -36,7 +36,7 @@ spec:
     settings:
       removeKeysOnDelete: true
       secondaryGenesis: {{ secondaryGenesis }}
-{% if trustee_name %}
+{% if trustee_name and secondaryGenesis %}
       trustees:
         - name: "{{ trustee_name }}"
 {% if steward_list %}
