@@ -1,0 +1,79 @@
+
+# Initialize variable and list
+- name: Initialize variable and list
+  set_fact:
+    trustee_name: ''
+    endorser_name: ''
+    steward_list: []
+
+- name: generate-keys
+  include_tasks: primary_genesis_peers.yaml
+  vars:
+    org_name: "{{ org.name | lower }}"
+    stewards: "{{ org.services.stewards }}"
+  loop: "{{ network['organizations'] }}"
+  loop_control:
+    loop_var: org
+
+# - name: Print trustee_name
+#   debug:
+#     msg: "Trustee Name: {{ trustee_name }}"
+
+# - name: Print endorser_name
+#   debug:
+#     msg: "Endorser Name: {{ endorser_name }}"
+
+# # Print each item in steward_list
+# - name: "Print stewards"
+#   debug:
+#     msg: "Steward: Name={{ item.name }}, Public IP={{ item.publicIp }}, Node Port={{ item.nodePort }}, Client Port={{ item.clientPort }}"
+#   loop: "{{ steward_list }}"
+#   loop_control:
+#     loop_var: item
+
+# Get the kubernetes server url
+- name: Get the kubernetes server url
+  shell: |
+    KUBECONFIG={{ network['organizations'][0].k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+  register: kubernetes_server_url
+
+- name: Create key and genesis
+  include_role:
+    name: create/helm_component/new-generate-keys
+  vars: 
+    org: "{{ network['organizations'] | first }}"
+    org_name: "{{ org.name | lower }}"
+    stewards: "{{ org.services.stewards }}"
+    cloud_provider: "{{ org.cloud_provider | lower }}"
+    vault: "{{ org.vault }}"
+    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+    # kubernetes: "{{ org.k8s }}"
+    component_type: "generate-genesis"
+    component_ns: "{{ org_name }}-indy"
+    component_name: "generate-genesis"
+    secondaryGenesis: true
+    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
+    charts_dir: "{{ org.gitops.chart_source }}"
+
+# Push the created deployment files to repository
+- name: "Push the created deployment files to repository"
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
+  vars:
+    org: "{{ network['organizations'] | first }}"
+    gitops: "{{ org.gitops }}"
+    component_ns: "{{ org.name | lower }}-indy"
+    GIT_DIR: "{{ playbook_dir }}/../../../"
+    msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
+
+# Check if vault_kubernetes is completed
+- name: Check if vault_kubernetes job is completed
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_name: "generate-genesis"
+    component_type: Job
+    org: "{{ network['organizations'] | first }}"
+    component_ns: "{{ org.name | lower }}-indy"
+    namespace: "{{ component_ns }}"
+    kubernetes: "{{ org.k8s }}"

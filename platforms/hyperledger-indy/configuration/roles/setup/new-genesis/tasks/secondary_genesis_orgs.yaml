@@ -1,0 +1,14 @@
+- name: generate-keys
+  include_role:
+    name: create/helm_component/new-generate-keys
+  vars:
+    org_name: "{{ org.name | lower }}"
+    cloud_provider: "{{ org.cloud_provider | lower }}"
+    vault: "{{ org.vault }}"
+    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+    secondaryGenesis: false
+    component_name: "generate-genesis"
+    component_type: "generate-genesis"
+    component_ns: "{{ org_name }}-indy"
+    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
+    charts_dir: "{{ org.gitops.chart_source }}"
