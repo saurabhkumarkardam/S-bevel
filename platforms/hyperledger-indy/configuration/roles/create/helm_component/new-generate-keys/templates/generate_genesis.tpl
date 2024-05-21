@@ -35,19 +35,30 @@ spec:
       provider: ambassador
     settings:
       removeKeysOnDelete: true
-      identities:
+      secondaryGenesis: {{ secondaryGenesis }}
 {% if trustee_name %}
-        trustee: "{{ trustee_name }}"
-{% endif %}
-{% if endorser_name %}
-        endorser: "{{ endorser_name }}"
-{% endif %}
+      trustees:
+        - name: "{{ trustee_name }}"
 {% if steward_list %}
-        stewards:
+          stewards:
 {% for steward in steward_list %}
-          - name: {{ steward.name }}
-            publicIp: {{ steward.publicIp }}
-            nodePort: {{ steward.nodePort }}
-            clientPort: {{ steward.clientPort }}
+            - name: {{ steward.name }}
+              publicIp: {{ steward.publicIp }}
+              nodePort: {{ steward.nodePort }}
+              clientPort: {{ steward.clientPort }}
 {% endfor %}
 {% endif %}
+{% endif %}
+
+# {% if endorser_name %}
+#         endorser: "{{ endorser_name }}"
+# {% endif %}
+# {% if steward_list %}
+#         stewards:
+# {% for steward in steward_list %}
+#           - name: {{ steward.name }}
+#             publicIp: {{ steward.publicIp }}
+#             nodePort: {{ steward.nodePort }}
+#             clientPort: {{ steward.clientPort }}
+# {% endfor %}
+# {% endif %}

@@ -50,6 +50,7 @@
     component_type: "generate-genesis"
     component_ns: "{{ org_name }}-indy"
     component_name: "generate-genesis"
+    secondaryGenesis: false
     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
     charts_dir: "{{ org.gitops.chart_source }}"
 

@@ -1,17 +1,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: "generate-keys"
+  name: "generate-genesis"
   annotations:
     fluxcd.io/automated: "false"
   namespace: "university-indy"
 spec:
-  releaseName: "generate-keys"
+  releaseName: "generate-genesis"
   interval: 1m
   chart:
     spec:
       interval: 1m
-      chart: "platforms/hyperledger-indy/charts/indy-key-mgmt"
+      chart: "platforms/hyperledger-indy/charts/indy-genesis"
       sourceRef:
         kind: GitRepository
         name: flux-indy
@@ -35,10 +35,24 @@ spec:
       provider: ambassador
     settings:
       removeKeysOnDelete: true
+      secondaryGenesis: True
       identities:
+        trustee: "authority-trustee"
         endorser: "university-endorser"
         stewards:
-          - "university-steward-1"
-          - "university-steward-2"
-          - "university-steward-3"
-          - "university-steward-4"
+          - name: university-steward-1
+            publicIp: 3.221.78.194
+            nodePort: 9711
+            clientPort: 9712
+          - name: university-steward-2
+            publicIp: 3.221.78.194
+            nodePort: 9721
+            clientPort: 9722
+          - name: university-steward-3
+            publicIp: 3.221.78.194
+            nodePort: 9721
+            clientPort: 9722
+          - name: university-steward-4
+            publicIp: 3.221.78.194
+            nodePort: 9721
+            clientPort: 9722
