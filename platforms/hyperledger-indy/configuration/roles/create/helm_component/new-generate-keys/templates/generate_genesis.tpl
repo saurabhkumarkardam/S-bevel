@@ -36,10 +36,10 @@ spec:
     settings:
       removeKeysOnDelete: true
       secondaryGenesis: {{ secondaryGenesis }}
-{% if trustee_name and secondaryGenesis %}
+{% if secondaryGenesis and trustee_name is defined %}
       trustees:
         - name: "{{ trustee_name }}"
-{% if steward_list %}
+{% if steward_list is defined %}
           stewards:
 {% for steward in steward_list %}
             - name: {{ steward.name }}
@@ -50,15 +50,4 @@ spec:
 {% endif %}
 {% endif %}
 
-# {% if endorser_name %}
-#         endorser: "{{ endorser_name }}"
-# {% endif %}
-# {% if steward_list %}
-#         stewards:
-# {% for steward in steward_list %}
-#           - name: {{ steward.name }}
-#             publicIp: {{ steward.publicIp }}
-#             nodePort: {{ steward.nodePort }}
-#             clientPort: {{ steward.clientPort }}
-# {% endfor %}
-# {% endif %}
+
