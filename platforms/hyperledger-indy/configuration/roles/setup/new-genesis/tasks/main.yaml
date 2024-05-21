@@ -14,21 +14,21 @@
   loop_control:
     loop_var: org
 
-- name: Print trustee_name
-  debug:
-    msg: "Trustee Name: {{ trustee_name }}"
+# - name: Print trustee_name
+#   debug:
+#     msg: "Trustee Name: {{ trustee_name }}"
 
-- name: Print endorser_name
-  debug:
-    msg: "Endorser Name: {{ endorser_name }}"
+# - name: Print endorser_name
+#   debug:
+#     msg: "Endorser Name: {{ endorser_name }}"
 
-# Print each item in steward_list
-- name: "Print stewards"
-  debug:
-    msg: "Steward: Name={{ item.name }}, Public IP={{ item.publicIp }}, Node Port={{ item.nodePort }}, Client Port={{ item.clientPort }}"
-  loop: "{{ steward_list }}"
-  loop_control:
-    loop_var: item
+# # Print each item in steward_list
+# - name: "Print stewards"
+#   debug:
+#     msg: "Steward: Name={{ item.name }}, Public IP={{ item.publicIp }}, Node Port={{ item.nodePort }}, Client Port={{ item.clientPort }}"
+#   loop: "{{ steward_list }}"
+#   loop_control:
+#     loop_var: item
 
 # Get the kubernetes server url
 - name: Get the kubernetes server url
@@ -75,3 +75,13 @@
     component_ns: "{{ org.name | lower }}-indy"
     namespace: "{{ component_ns }}"
     kubernetes: "{{ org.k8s }}"
+
+- name: generate-keys for other namespaces
+  include_tasks: second_genesis.yaml
+  # vars:
+  #   org_name: "{{ org.name | lower }}"
+  #   stewards: "{{ org.services.stewards }}"
+  # loop: "{{ network['organizations'] }}"
+  # loop_control:
+  #   loop_var: org
+    

@@ -1,0 +1,14 @@
+# Set organization variable based on the first organization in the network
+- name: "Set organization variable"
+  set_fact:
+    organization: "{{ network.organizations[0] }}"
+
+- name: "secondary genesis pre-req"
+  shell: |
+    KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace "{{ org_name }}-indy" get configmap dtg -o jsonpath='{.data.domain_transactions_genesis}' > domain_transactions_genesis.json
+    KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace "{{ org_name }}-indy" get configmap ptg  -o jsonpath='{.data.pool_transactions_genesis}' > pool_transactions_genesis.json
+  args:
+    chdir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/"
+  vars:
+    org_name: "{{ organization.name | lower }}"
+    Kubernetes: "{{ organization.k8s }}"
