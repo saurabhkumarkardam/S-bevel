@@ -6,7 +6,7 @@
     cloud_provider: "{{ org.cloud_provider | lower }}"
     vault: "{{ org.vault }}"
     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
-    secondaryGenesis: false
+    secondaryGenesis: true
     component_name: "generate-genesis"
     component_type: "generate-genesis"
     component_ns: "{{ org_name }}-indy"
