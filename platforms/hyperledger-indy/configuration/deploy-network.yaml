@@ -83,7 +83,7 @@
       name: setup/new-stewards
     vars:
       org_name: "{{ org.name | lower }}"
-      stewards: "{{ org.services.stewards }}"
+      # stewards: "{{ org.services.stewards }}"
       cloud_provider: "{{ org.cloud_provider | lower }}"
       # vault: "{{ org.vault }}"
       # kubernetes: "{{ org.k8s }}"
@@ -95,6 +95,10 @@
     loop: "{{ network['organizations'] }}"
     loop_control:
       loop_var: org
+  
+  - name: Pause for 2 minutes
+    pause:
+      minutes: 2
 
   # These variables can be overriden from the command line
   vars: 

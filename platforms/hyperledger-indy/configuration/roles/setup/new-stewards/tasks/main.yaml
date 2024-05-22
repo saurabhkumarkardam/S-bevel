@@ -8,10 +8,11 @@
     # client_public_ip: "{{  }}" # hard-code it
     client_port: "{{ steward.client.port }}"
     client_external_port: "{{ steward.client.ambassador }}"
-  loop: "{{ stewards }}"
+    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org_name }}/{{ steward.name | lower }}"
+  loop: "{{ org.services.stewards }}"
   loop_control:
     loop_var: steward
-  when: org.stewards is defined and org.stewards | length > 0
+  when: steward is defined and steward | length > 0
 
 # Push the created deployment files to repository
 - name: "Push the created deployment files to repository"
@@ -21,6 +22,7 @@
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
     gitops: "{{ org.gitops }}"
+  when: org.services.stewards is defined and org.services.stewards | length > 0
 
 # # Check if vault_kubernetes is completed
 # - name: Check if vault_kubernetes job is completed
@@ -40,3 +42,4 @@
       - app = {{ component_name }}
     namespace: "{{ component_ns }}"
   tags: notest
+  when: org.services.stewards is defined and org.services.stewards | length > 0
