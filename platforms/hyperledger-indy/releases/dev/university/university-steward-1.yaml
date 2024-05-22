@@ -11,7 +11,7 @@ spec:
   chart:
     spec:
       interval: 1m
-      chart: "platforms/hyperledger-indy/charts/indy-genesis"
+      chart: "platforms/hyperledger-indy/charts/indy-node"
       sourceRef:
         kind: GitRepository
         name: flux-indy

@@ -11,7 +11,7 @@ spec:
   chart:
     spec:
       interval: 1m
-      chart: "{{ charts_dir }}/indy-genesis"
+      chart: "{{ charts_dir }}/indy-node"
       sourceRef:
         kind: GitRepository
         name: flux-{{ network.env.type }}
