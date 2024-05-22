@@ -86,7 +86,7 @@
       # stewards: "{{ org.services.stewards }}"
       cloud_provider: "{{ org.cloud_provider | lower }}"
       # vault: "{{ org.vault }}"
-      # kubernetes: "{{ org.k8s }}"
+      kubernetes: "{{ org.k8s }}"
       component_name: "stewards"
       component_ns: "{{ org_name }}-indy"
       component_type: "stewards"
