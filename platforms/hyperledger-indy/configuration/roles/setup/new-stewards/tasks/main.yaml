@@ -1,0 +1,41 @@
+- name: Deploy Stewards
+  include_role:
+    name: create/helm_component/new-generate-keys
+  vars:
+    # node_public_ip: "{{  }}" # hard-code it
+    node_port: "{{ steward.node.port }}"
+    node_external_port: "{{ steward.node.ambassador }}"
+    # client_public_ip: "{{  }}" # hard-code it
+    client_port: "{{ steward.client.port }}"
+    client_external_port: "{{ steward.client.ambassador }}"
+  loop: "{{ stewards }}"
+  loop_control:
+    loop_var: steward
+
+# Push the created deployment files to repository
+- name: "Push the created deployment files to repository"
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
+  vars:
+    GIT_DIR: "{{ playbook_dir }}/../../../"
+    msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
+    gitops: "{{ org.gitops }}"
+
+# # Check if vault_kubernetes is completed
+# - name: Check if vault_kubernetes job is completed
+#   include_role:
+#     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+#   vars:
+#     component_type: Job
+#     namespace: "{{ component_ns }}"
+
+# Check if all stewards are running
+- name: Check if all stewards are running
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_type: Pod
+    label_selectors:
+      - app = {{ component_name }}
+    namespace: "{{ component_ns }}"
+  tags: notest

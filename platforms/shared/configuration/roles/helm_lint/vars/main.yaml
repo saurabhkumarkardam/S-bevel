@@ -69,3 +69,4 @@ charts:
   install_external_chaincode_job: fabric-external-chaincode-install
   generate-keys: indy-key-mgmt
   generate-genesis: indy-genesis
+  stewards: indy-node
