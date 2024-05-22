@@ -11,6 +11,7 @@
   loop: "{{ stewards }}"
   loop_control:
     loop_var: steward
+  when: org.stewards is defined and org.stewards | length > 0
 
 # Push the created deployment files to repository
 - name: "Push the created deployment files to repository"
