@@ -8,7 +8,8 @@
     # client_public_ip: "{{  }}" # hard-code it
     client_port: "{{ steward.client.port }}"
     client_external_port: "{{ steward.client.ambassador }}"
-    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org_name }}/{{ steward.name | lower }}"
+    component_name: "{{ steward.name | lower }}"
+    # values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
   loop: "{{ org.services.stewards }}"
   loop_control:
     loop_var: steward

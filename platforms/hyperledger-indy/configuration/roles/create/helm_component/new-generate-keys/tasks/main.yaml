@@ -9,7 +9,7 @@
 - name: Stewards vault policy and role generating
   template:
     src: "{{ dlt_templates[component_type] }}"
-    dest: "{{ values_dir }}/{{ org_name }}/{{ component_type }}.yaml"
+    dest: "{{ values_dir }}/{{ org_name }}/{{ component_name }}.yaml"
 
 ############################################################################################
 # Test the value file for syntax errors/ missing values

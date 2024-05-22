@@ -1,12 +1,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: "stewards"
+  name: "university-steward-4"
   annotations:
     fluxcd.io/automated: "false"
   namespace: "university-indy"
 spec:
-  releaseName: "stewards"
+  releaseName: "university-steward-4"
   interval: 1m
   chart:
     spec:
