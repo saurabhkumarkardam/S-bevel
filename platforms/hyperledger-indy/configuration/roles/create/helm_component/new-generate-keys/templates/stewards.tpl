@@ -37,10 +37,10 @@ spec:
     settings:
       serviceType: ClusterIP
       node:
-        publicIp: "ambassador-public-ip"
-        port: "{{ node_port }}"
-        externalPort: "{{ node_external_port }}"
+        publicIp: {{ node_public_ip }}
+        port: {{ node_port }}
+        externalPort: {{ node_external_port }}
       client:
-        publicIp: "ambassador-public-ip"
-        port: "{{ client_port }}"
-        externalPort: "{{ client_external_port }}"
+        publicIp: {{ client_public_ip }}
+        port: {{ client_port }}
+        externalPort: {{ client_external_port }}

@@ -2,10 +2,10 @@
   include_role:
     name: create/helm_component/new-generate-keys
   vars:
-    # node_public_ip: "{{  }}" # hard-code it
+    node_public_ip: "{{ steward.publicIp }}"
     node_port: "{{ steward.node.port | int }}"
     node_external_port: "{{ steward.node.ambassador | int }}"
-    # client_public_ip: "{{  }}" # hard-code it
+    client_public_ip: "{{ steward.publicIp }}"
     client_port: "{{ steward.client.port | int }}"
     client_external_port: "{{ steward.client.ambassador | int }}"
     component_name: "{{ steward.name | lower }}"
