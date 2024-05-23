@@ -39,8 +39,8 @@ spec:
       node:
         publicIp: "ambassador-public-ip"
         port: "9721"
-        externalPort: "9721"
+        externalPort: "15021"
       client:
         publicIp: "ambassador-public-ip"
         port: "9722"
-        externalPort: "9722"
+        externalPort: "15022"

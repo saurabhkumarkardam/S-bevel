@@ -3,13 +3,12 @@
     name: create/helm_component/new-generate-keys
   vars:
     # node_public_ip: "{{  }}" # hard-code it
-    node_port: "{{ steward.node.port }}"
-    node_external_port: "{{ steward.node.ambassador }}"
+    node_port: "{{ steward.node.port | int }}"
+    node_external_port: "{{ steward.node.ambassador | int }}"
     # client_public_ip: "{{  }}" # hard-code it
-    client_port: "{{ steward.client.port }}"
-    client_external_port: "{{ steward.client.ambassador }}"
+    client_port: "{{ steward.client.port | int }}"
+    client_external_port: "{{ steward.client.ambassador | int }}"
     component_name: "{{ steward.name | lower }}"
-    # values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
   loop: "{{ org.services.stewards }}"
   loop_control:
     loop_var: steward

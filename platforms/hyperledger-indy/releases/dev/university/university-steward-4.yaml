@@ -38,9 +38,9 @@ spec:
       serviceType: ClusterIP
       node:
         publicIp: "ambassador-public-ip"
-        port: "9721"
-        externalPort: "9721"
+        port: "9741"
+        externalPort: "15041"
       client:
         publicIp: "ambassador-public-ip"
-        port: "9722"
-        externalPort: "9722"
+        port: "9742"
+        externalPort: "15042"
