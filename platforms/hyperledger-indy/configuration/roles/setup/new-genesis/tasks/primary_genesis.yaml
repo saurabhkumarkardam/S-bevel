@@ -39,7 +39,7 @@
 
 - name: Create key and genesis
   include_role:
-    name: create/helm_component/new-generate-keys
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
   vars: 
     org: "{{ network['organizations'] | first }}"
     org_name: "{{ org.name | lower }}"
@@ -47,12 +47,13 @@
     cloud_provider: "{{ org.cloud_provider | lower }}"
     vault: "{{ org.vault }}"
     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
-    # kubernetes: "{{ org.k8s }}"
+    kubernetes: "{{ org.k8s }}"
     component_type: "generate-genesis"
     component_ns: "{{ org_name }}-indy"
     component_name: "generate-genesis"
     secondaryGenesis: false
-    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
+    type: "indy_genesis"
+    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
     charts_dir: "{{ org.gitops.chart_source }}"
 
 # Push the created deployment files to repository

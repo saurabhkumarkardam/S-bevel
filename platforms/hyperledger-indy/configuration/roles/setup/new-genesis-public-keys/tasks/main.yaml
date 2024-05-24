@@ -4,12 +4,3 @@
     ./get_keys.sh
   args:
     chdir: "{{ playbook_dir }}/../../hyperledger-indy/scripts/genesis"
-
-# Push the created deployment files to repository
-- name: "Push the created deployment files to repository"
-  include_role:
-    name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
-  vars:
-    GIT_DIR: "{{ playbook_dir }}/../../../"
-    msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
-    gitops: "{{ network.organizations[0].gitops }}"
