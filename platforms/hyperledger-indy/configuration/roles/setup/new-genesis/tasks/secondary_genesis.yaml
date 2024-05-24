@@ -19,8 +19,28 @@
     KUBECONFIG={{ network['organizations'][0].k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
   register: kubernetes_server_url
 
-- name: Generate HR file for the remaining organization
-  include_tasks: secondary_genesis_orgs.yaml
+# - name: Generate HR file for the remaining organization
+#   include_tasks: secondary_genesis_orgs.yaml
+#   loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
+#   loop_control:
+#     loop_var: org
+
+- name: generate-keys
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
+  vars:
+    type: "indy_genesis"
+    org_name: "{{ org.name | lower }}"
+    cloud_provider: "{{ org.cloud_provider | lower }}"
+    vault: "{{ org.vault }}"
+    kubernetes: "{{ org.k8s }}"
+    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+    component_name: "generate-genesis"
+    component_type: "generate-genesis"
+    component_ns: "{{ org_name }}-indy"
+    secondaryGenesis: true
+    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}{{ org_name }}"
+    charts_dir: "{{ org.gitops.chart_source }}"
   loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
   loop_control:
     loop_var: org
