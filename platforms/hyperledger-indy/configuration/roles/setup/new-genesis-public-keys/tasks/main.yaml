@@ -12,4 +12,4 @@
   vars:
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
-    gitops: "{{ org.gitops }}"
+    gitops: "{{ network.organizations[0].gitops }}"

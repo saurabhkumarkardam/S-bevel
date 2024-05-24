@@ -12,45 +12,45 @@
   gather_facts: no
   no_log: "{{ no_ansible_log | default(false) }}"
   tasks:
-  # clean build directory
-  - name: Remove build directory
-    file:
-      path: "./build"
-      state: absent
+  # # clean build directory
+  # - name: Remove build directory
+  #   file:
+  #     path: "./build"
+  #     state: absent
 
-  # # Validate input network.yaml
-  # - name: "Validating network.yaml"
+  # # # Validate input network.yaml
+  # # - name: "Validating network.yaml"
+  # #   include_role:
+  # #     name: check/validation
+
+  # - name: Pull push from saurabh-1
+  #   shell: |
+  #     git pull origin saurabh-1
+
+  # # Create namespaces for organizations
+  # - name: 'Create namespace'
   #   include_role:
-  #     name: check/validation
+  #     name: create/namespace
+  #   vars:
+  #     component_name: "{{ org.name | lower }}-indy"
+  #     component_type_name: "{{ org.type | lower }}"
+  #     kubernetes: "{{ org.k8s }}"
+  #     release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
 
-  - name: Pull push from saurabh-1
-    shell: |
-      git pull origin saurabh-1
-
-  # Create namespaces for organizations
-  - name: 'Create namespace'
-    include_role:
-      name: create/namespace
-    vars:
-      component_name: "{{ org.name | lower }}-indy"
-      component_type_name: "{{ org.type | lower }}"
-      kubernetes: "{{ org.k8s }}"
-      release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
-
-  # Create necessary Kubernetes secrets for each organization
-  - name: "Create k8s secrets"
-    include_role:
-      name: create/secrets
-    vars:
-      component_ns: "{{ org.name | lower }}-indy"
-      kubernetes: "{{ org.k8s }}"
-      vault: "{{ org.vault }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
+  # # Create necessary Kubernetes secrets for each organization
+  # - name: "Create k8s secrets"
+  #   include_role:
+  #     name: create/secrets
+  #   vars:
+  #     component_ns: "{{ org.name | lower }}-indy"
+  #     kubernetes: "{{ org.k8s }}"
+  #     vault: "{{ org.vault }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
 
   - name: generate-keys
     include_role:
