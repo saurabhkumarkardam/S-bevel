@@ -67,14 +67,14 @@
 #     GIT_DIR: "{{ playbook_dir }}/../../../"
 #     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
 
-# # Check if vault_kubernetes is completed
-# - name: Check if vault_kubernetes job is completed
-#   include_role:
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
-#   vars:
-#     component_name: "generate-genesis"
-#     component_type: Job
-#     org: "{{ network['organizations'] | first }}"
-#     component_ns: "{{ org.name | lower }}-indy"
-#     namespace: "{{ component_ns }}"
-#     kubernetes: "{{ org.k8s }}"
+# Check if vault_kubernetes is completed
+- name: Check if vault_kubernetes job is completed
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_name: "generate-genesis"
+    component_type: Job
+    org: "{{ network['organizations'] | first }}"
+    component_ns: "{{ org.name | lower }}-indy"
+    namespace: "{{ component_ns }}"
+    kubernetes: "{{ org.k8s }}"
