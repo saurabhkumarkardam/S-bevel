@@ -7,7 +7,7 @@ global:
     cloudNativeServices: false
     #Provide the kubernetes host url
     #Eg. kubernetesUrl: https://10.3.8.5:8443
-    kubernetesUrl: "https://kubernetes.url"
+    kubernetesUrl: "https://devcluster-devresourcegroup-d1d33f-kncld871.hcp.westeurope.azmk8s.io:443" # "https://kubernetes.url"
   vault:
     type: hashicorp
     #Provide the vault role used.
@@ -15,7 +15,7 @@ global:
     #Provide the network type
     network: indy
     #Provide the vault server address
-    address: "http://vault.url:8200"
+    address: "http://98.64.226.131:20001" # "http://vault.url:8200"
     #Provide the vault authPath configured to be used.
     authPath: university
     #Provide the secret engine.

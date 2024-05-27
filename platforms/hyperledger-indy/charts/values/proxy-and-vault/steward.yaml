@@ -21,11 +21,11 @@ image:
 settings:
   serviceType: ClusterIP
   node:
-    publicIp: "ambassador-public-ip"
+    publicIp: 108.142.59.4 # "ambassador-public-ip"
     port: 9711
     externalPort: 15011
 
   client:
-    publicIp: "ambassador-public-ip"
+    publicIp: 108.142.59.4 # "ambassador-public-ip"
     port: 9712
     externalPort: 15012
