@@ -11,7 +11,7 @@
 # Maintain stewards
 - name: "Maintain stewards"
   set_fact:
-    steward_list: "{{ steward_list + [{'name': stewards_item.name, 'publicIp': stewards_item.publicIp, 'nodePort': stewards_item.node.port, 'clientPort': stewards_item.client.port}] }}"
+    steward_list: "{{ steward_list + [{'name': stewards_item.name, 'publicIp': stewards_item.publicIp, 'nodePort': stewards_item.node.ambassador, 'clientPort': stewards_item.client.ambassador}] }}"
   loop: "{{ stewards }}"
   loop_control:
     loop_var: stewards_item

@@ -23,7 +23,7 @@ settings:
 {% if steward_list is defined %}
       stewards:
 {% for steward in steward_list %}
-        - name: {{ steward.name }}
+        - name: "{{ steward.name }}"
           publicIp: {{ steward.publicIp }}
           nodePort: {{ steward.nodePort }}
           clientPort: {{ steward.clientPort }}
