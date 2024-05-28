@@ -70,25 +70,25 @@
     loop_control:
       loop_var: org
 
-  - name: Pause for 2 minutes - 1
-    pause:
-      minutes: 2
+  # - name: Pause for 2 minutes - 1
+  #   pause:
+  #     minutes: 2
 
   - name: Get Public Keys from Kubernetes for Genesis
     include_role:
       name: setup/new-genesis-public-keys
 
-  - name: Pause for 2 minutes - 2
-    pause:
-      minutes: 2
+  # - name: Pause for 2 minutes - 2
+  #   pause:
+  #     minutes: 2
   
   - name: Generate Genesis
     include_role:
       name: setup/new-genesis
 
-  - name: Pause for 2 minutes - 3
-    pause:
-      minutes: 2
+  # - name: Pause for 2 minutes - 3
+  #   pause:
+  #     minutes: 2
 
   - name: Start Deploying Stewards
     include_role:
