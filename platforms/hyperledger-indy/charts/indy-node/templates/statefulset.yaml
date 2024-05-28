@@ -27,6 +27,7 @@ spec:
   selector:
     matchLabels:
       app: {{ .Release.Name }}
+      app: stewards
       app.kubernetes.io/name: indy-node-statefulset
       app.kubernetes.io/component: indy
       app.kubernetes.io/part-of: {{ include "indy-node.fullname" . }}
