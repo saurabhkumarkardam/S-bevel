@@ -14,8 +14,8 @@ spec:
       chart: "platforms/hyperledger-indy/charts/indy-key-mgmt"
       sourceRef:
         kind: GitRepository
-        name: flux-indy
-        namespace: flux-indy
+        name: flux-iny
+        namespace: flux-iny
   values:
     global:
       serviceAccountName: vault-auth
