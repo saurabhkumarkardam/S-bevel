@@ -1,0 +1,85 @@
+# - name: Start Deploying Endorser
+#   set_fact:
+#     trustee: "{{ org.services.trustee | lower }}"
+#     trustee_org: "{{ org.name | lower }}"
+#   loop: "{{ network['organizations'] }}"
+#   loop_control:
+#     loop_var: org
+#   when: org.services.trustee is defined
+
+# - name: Start Deploying Endorser
+#   set_fact:
+#     endorser: "{{ org.services.endorser | lower }}"
+#     endorser_org: "{{ org .name | lower }}"
+#   loop: "{{ network['organizations'] }}"
+#   loop_control:
+#     loop_var: org
+#   when: org.services.endorser is defined
+
+- name: Initialize variables
+  set_fact:
+    trustee: ""
+    trustee_org: ""
+    endorser: ""
+    endorser_org: ""
+
+- name: Start Deploying Services
+  set_fact:
+    trustee: "{{ trustee | default('') if trustee != '' else (org.services.trustee | lower if org.services.trustee is defined else trustee) }}"
+    trustee_org: "{{ trustee_org | default('') if trustee_org != '' else (org.name | lower if org.services.trustee is defined else trustee_org) }}"
+    endorser: "{{ endorser | default('') if endorser != '' else (org.services.endorser | lower if org.services.endorser is defined else endorser) }}"
+    endorser_org: "{{ endorser_org | default('') if endorser_org != '' else (org.name | lower if org.services.endorser is defined else endorser_org) }}"
+  loop: "{{ network['organizations'] }}"
+  loop_control:
+    loop_var: org
+
+- name: Debug Trustee Fact
+  debug:
+    msg: "Trustee : {{ trustee }} | trustee_org: {{ trustee_org }}"
+
+- name: Debug endorser Fact
+  debug:
+    msg: "endorser : {{ endorser }} | endorser_org: {{ endorser_org }}"
+
+- name: Start Deploying Endorser
+  shell: |
+    KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace {{ org }}-indy get secret {{ org }}-endorser-identity-public -o jsonpath='{.data.value}' | base64 -d | jq '.["did"]'> university-endorser-did.json
+    KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace {{ org }}-indy get secret {{ org }}-endorser-node-public-verif-keys -o jsonpath='{.data.value}' | base64 -d | jq '.["verification-key"]' > university-endorser-verkey.json
+  args:
+    chdir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-register-identity/files/"
+  vars:
+    org: "{{ endorser_org }}"
+    Kubernetes: "{{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
+
+- name: deploy endorser
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component"
+  vars:
+    type: "indy_endorser"
+    org_name: "{{ org }}" # this org should be the set_fact one from the above task/play
+    cloud_provider: "{{ org.cloud_provider | lower }}"
+    vault: "{{ org.vault }}"
+    kubernetes: "{{ org.k8s }}"
+    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+    component_name: "{{ endorser }}"
+    # component_type: "generate-genesis"
+    component_ns: "{{ trustee_org }}-indy"
+    secondaryGenesis: true
+    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ endorser_org }}"
+    charts_dir: "{{ org.gitops.chart_source }}"
+
+# - name: Debug Kubernetes Configuration
+#   debug:
+#     msg: 
+#       - "Organizations: {{ network['organizations'] }}"
+#       - "Filtered Organizations: {{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | list }}"
+#       - "First Organization: {{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
+#       - "Kubernetes Configuration: {{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
+#   vars:
+#     endorser_org: "{{ endorser_org }}"
+
+# Code to deploy endroser in the authority's namespace, PENDING.
+    
+- name: Pause for 2 minutes - 4
+  pause:
+    minutes: 2
