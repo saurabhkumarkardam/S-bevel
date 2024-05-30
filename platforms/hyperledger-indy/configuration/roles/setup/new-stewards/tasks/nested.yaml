@@ -26,6 +26,7 @@
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
     component_type: Pod
+    component_name: "{{ steward.name | lower }}"
     label_selectors:
       - app = "{{ steward.name | lower }}"
     namespace: "{{ component_ns }}"
