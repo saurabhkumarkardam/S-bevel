@@ -28,5 +28,5 @@
     component_type: Pod
     component_name: "{{ steward.name | lower }}"
     label_selectors:
-      - app = "{{ steward.name | lower }}"
+      - app = "{{ component_name }}"
     namespace: "{{ component_ns }}"
