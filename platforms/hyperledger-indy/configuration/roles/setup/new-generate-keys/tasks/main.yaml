@@ -22,17 +22,34 @@
       endorser_name: "{{ endorser_name }}"
       steward_list: "{{ steward_list }}"
 
-# Get the kubernetes server url
-- name: Get the kubernetes server url
-  shell: |
-    KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
-  register: kubernetes_server_url
+# # Get the kubernetes server url
+# - name: Get the kubernetes server url
+#   shell: |
+#     KUBECONFIG={{ kubernetes.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+#   register: kubernetes_server_url
+
+- name: Gather cluster info
+  community.kubernetes.k8s_cluster_info:
+    kubeconfig: "{{ kubernetes.config_file }}"
+  register: cluster_info
+
+- name: Debug kubernetes cluster_info
+  debug:
+    var: cluster_info
+
+- name: Set kubernetes_server_url fact
+  set_fact:
+    kubernetes_server_url: "{{ cluster_info.connection.host }}"
+
+- name: Debug kubernetes_server_url
+  debug:
+    var: kubernetes_server_url
 
 - name: Create key and genesis
   include_role:
     name: create/helm_component/new-generate-keys
   vars: 
-    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+    kubernetes_server: "{{ kubernetes_server_url }}"
 
 # Push the created deployment files to repository
 - name: "Push the created deployment files to repository"
