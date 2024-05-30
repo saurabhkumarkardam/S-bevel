@@ -1,5 +1,5 @@
 - name: Deploy Stewards
-  include_task: nested.yaml
+  include_tasks: nested.yaml
   loop: "{{ org.services.stewards }}"
   loop_control:
     loop_var: steward

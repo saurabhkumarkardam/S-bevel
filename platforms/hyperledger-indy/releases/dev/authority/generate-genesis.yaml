@@ -1,0 +1,38 @@
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: "azure"
+    cloudNativeServices: false
+    kubernetesUrl: "https://devcluster-devresourcegroup-d1d33f-kncld871.hcp.westeurope.azmk8s.io:443"
+  vault:
+    type: hashicorp
+    role: vault-role
+    network: indy
+    address: "http://98.64.226.131:20001"
+    authPath: "authority"
+    secretEngine: secretsv2
+    secretPrefix: "data/authority"
+proxy:
+  provider: ambassador
+settings:
+  removeKeysOnDelete: true
+  secondaryGenesis: False
+  trustees:
+    - name: "authority-trustee"
+      stewards:
+        - name: "university-steward-1"
+          publicIp: 108.142.59.4
+          nodePort: 15011
+          clientPort: 15012
+        - name: "university-steward-2"
+          publicIp: 108.142.59.4
+          nodePort: 15021
+          clientPort: 15022
+        - name: "university-steward-3"
+          publicIp: 108.142.59.4
+          nodePort: 15031
+          clientPort: 15032
+        - name: "university-steward-4"
+          publicIp: 108.142.59.4
+          nodePort: 15041
+          clientPort: 15042
