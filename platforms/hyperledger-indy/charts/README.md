@@ -81,7 +81,7 @@ kubectl --namespace university-ns get secret university-endorser-identity-public
 kubectl --namespace university-ns get secret university-endorser-node-public-verif-keys -o jsonpath='{.data.value}' | base64 -d | jq '.["verification-key"]' > university-endorser-verkey.json
 # Register endorser identity from admin
 cd ../..
-helm install university-endorser-id ./indy-register-identity --namespace authority-ns
+helm install university-endorser-id ./indy-register-identity --namespace university-ns
 ```
 
 ### _With Ambassador proxy and Vault_

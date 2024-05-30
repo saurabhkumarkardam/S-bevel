@@ -1,46 +1,120 @@
-# Set organization variable based on the first organization in the network
-- name: "Set organization variable"
+## Set organization variable based on the first organization in the network
+# - name: "Set organization variable"
+#   set_fact:
+#     organization: "{{ network.organizations[0] }}"
+
+- name: Initialize variables
   set_fact:
-    organization: "{{ network.organizations[0] }}"
+    first_org_name: "{{ network.organizations[0].name | lower }}"
+    first_org_kubernetes: "{{ network.organizations[0].k8s }}"
 
-- name: "secondary genesis pre-req"
-  shell: |
-    KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace "{{ org_name }}-indy" get configmap dtg -o jsonpath='{.data.domain_transactions_genesis}' > domain_transactions_genesis.json
-    KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace "{{ org_name }}-indy" get configmap ptg -o jsonpath='{.data.pool_transactions_genesis}' > pool_transactions_genesis.json
-  args:
-    chdir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/"
+# - name: "secondary genesis pre-req"
+#   shell: |
+#     KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace "{{ org_name }}-indy" get configmap dtg -o jsonpath='{.data.domain_transactions_genesis}' > domain_transactions_genesis.json
+#     KUBECONFIG={{ Kubernetes.config_file }} kubectl --namespace "{{ org_name }}-indy" get configmap ptg -o jsonpath='{.data.pool_transactions_genesis}' > pool_transactions_genesis.json
+#   args:
+#     chdir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/"
+#   vars:
+#     org_name: "{{ organization.name | lower }}"
+#     Kubernetes: "{{ organization.k8s }}"
+
+- name: Get domain transactions genesis ConfigMap
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: dtg
+    namespace: "{{ first_org_name }}-indy"
+    kubeconfig: "{{ first_org_kubernetes.config_file }}"
+  register: dtg_configmap
+
+- debug:
+    var: dtg_configmap
+
+- name: Get pool transactions genesis ConfigMap
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: ptg
+    namespace: "{{ first_org_name }}-indy"
+    kubeconfig: "{{ first_org_kubernetes.config_file }}"
+  register: ptg_configmap
+
+- debug:
+    var: ptg_configmap
+
+- name: Save domain transactions genesis to file
+  copy:
+    content: "{{ dtg_configmap.resources[0].data.domain_transactions_genesis }}"
+    dest: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/domain_transactions_genesis.json"
+  when: dtg_configmap.resources[0].data.domain_transactions_genesis is defined
+
+- name: Save pool transactions genesis to file
+  copy:
+    content: "{{ ptg_configmap.resources[0].data.pool_transactions_genesis }}"
+    dest: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/pool_transactions_genesis.json"
+  when: ptg_configmap.resources[0].data.pool_transactions_genesis is defined
+
+
+# - name: Pause for 2 minutes - 1
+#   pause:
+#     minutes: 2
+
+
+
+
+
+
+# # Get the kubernetes server url
+# - name: Get the kubernetes server url
+#   shell: |
+#     KUBECONFIG={{ network['organizations'][0].k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+#   register: kubernetes_server_url
+
+# - name: Gather cluster info
+#   community.kubernetes.k8s_cluster_info:
+#     kubeconfig: "{{ kubernetes.config_file }}"
+#   register: cluster_info
+
+# - name: Debug kubernetes cluster_info
+#   debug:
+#     var: cluster_info
+
+# - name: Set kubernetes_server_url fact
+#   set_fact:
+#     kubernetes_server_url: "{{ cluster_info.connection.host }}"
+
+###########################################################################################
+- name: Generate HR file for the remaining organization
+  include_tasks: secondary_genesis_orgs.yaml
   vars:
-    org_name: "{{ organization.name | lower }}"
-    Kubernetes: "{{ organization.k8s }}"
-
-# Get the kubernetes server url
-- name: Get the kubernetes server url
-  shell: |
-    KUBECONFIG={{ network['organizations'][0].k8s.config_file }} kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
-  register: kubernetes_server_url
-
-# - name: Generate HR file for the remaining organization
-#   include_tasks: secondary_genesis_orgs.yaml
-#   loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
-#   loop_control:
-#     loop_var: org
-
-- name: generate-keys
-  include_role:
-    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
-  vars:
-    type: "indy_genesis"
     org_name: "{{ org.name | lower }}"
-    cloud_provider: "{{ org.cloud_provider | lower }}"
-    vault: "{{ org.vault }}"
-    kubernetes: "{{ org.k8s }}"
-    kubernetes_server: "{{ kubernetes_server_url.stdout }}"
-    component_name: "generate-genesis"
-    component_type: "generate-genesis"
+    component_name: "{{ org_name }}-genesis"
     component_ns: "{{ org_name }}-indy"
-    secondaryGenesis: true
-    values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org_name }}"
-    charts_dir: "{{ org.gitops.chart_source }}"
+    component_type: "generate-genesis"
+    cloud_provider: "{{ org.cloud_provider | lower }}"
+    kubernetes: "{{ org.k8s }}"
+    vault: "{{ org.vault }}"
   loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
   loop_control:
     loop_var: org
+###########################################################################################
+
+# - name: generate-keys
+#   include_role:
+#     name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
+#   vars:
+#     type: "indy_genesis"
+#     org_name: "{{ org.name | lower }}"
+#     cloud_provider: "{{ org.cloud_provider | lower }}"
+#     vault: "{{ org.vault }}"
+#     kubernetes: "{{ org.k8s }}"
+#     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
+#     component_name: "generate-genesis"
+#     component_type: "generate-genesis"
+#     component_ns: "{{ org_name }}-indy"
+#     secondaryGenesis: true
+#     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org_name }}"
+#     charts_dir: "{{ org.gitops.chart_source }}"
+#   loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
+#   loop_control:
+#     loop_var: org

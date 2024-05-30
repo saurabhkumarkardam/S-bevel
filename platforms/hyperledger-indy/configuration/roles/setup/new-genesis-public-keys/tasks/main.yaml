@@ -1,6 +1,67 @@
-- name: Change directory, make get_keys.sh executable, and run it
-  shell: |
-    chmod +x get_keys.sh
-    ./get_keys.sh
-  args:
-    chdir: "{{ playbook_dir }}/../../hyperledger-indy/scripts/genesis"
+# - name: Get trustee identity public secret
+#   k8s_info:
+#     kind: Secret
+#     name: "{{ org.services.trustee }}-identity-public"
+#     namespace: "{{ component_ns }}"
+#     kubeconfig: "{{ kubernetes.config_file }}"
+#   register: trustee_identity_public_secret
+#   when: org.services.trustee is defined and org.services.trustee | length > 0
+
+# - debug:
+#     var: trustee_identity_public_secret
+
+# - name: Extract and save trustee DID to file
+#   copy:
+#     content: "{{ trustee_identity_public_secret.resources[0].data.value | b64decode | from_json | json_query('did') }}"
+#     dest: "{{ files_dir }}/{{ org.services.trustee }}-did.json"
+#   vars:
+#     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
+#   when: trustee_identity_public_secret is defined and trustee_identity_public_secret.resources[0].data.value is defined
+
+# ###
+
+# - name: Get trustee node public verif keys
+#   k8s_info:
+#     kind: Secret
+#     name: "{{ org.services.trustee }}-node-public-verif-keys"
+#     namespace: "{{ component_ns }}"
+#     kubeconfig: "{{ kubernetes.config_file }}"
+#   register: trustee_node_public_verif_keys
+#   when: org.services.trustee is defined and org.services.trustee | length > 0
+
+# - debug:
+#     var: trustee_node_public_verif_keys
+
+# - name: Extract and save trustee DID to file
+#   copy:
+#     # content: "{{ trustee_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('`verification-key`') }}"
+#     content: "{{ trustee_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('\"verification-key\"') }}"
+#     dest: "{{ files_dir }}/{{ org.services.trustee }}-verkey.json"
+#   vars:
+#     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
+#   when: trustee_node_public_verif_keys is defined and trustee_node_public_verif_keys.resources[0].data.value is defined
+
+# - name: Pause for 2 minutes - 1
+#   pause:
+#     minutes: 2
+
+################################################################################################
+
+- name: Trustee's keys
+  include_tasks: trustee_keys.yaml
+  when: 
+    - org.services.trustee is defined
+    - org.services.trustee | length > 0
+
+- name: Pause for 2 minutes - 1
+  pause:
+    minutes: 2
+
+- name: Steward's keys
+  include_tasks: steward_keys.yaml
+  loop: "{{ org.services.stewards }}"
+  loop_control:
+    loop_var: steward
+  when: 
+    - steward is defined
+    - steward | length > 0

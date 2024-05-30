@@ -70,51 +70,71 @@
   #   loop_control:
   #     loop_var: org
 
+#####################################################################################
   # # # - name: Pause for 2 minutes - 1
   # # #   pause:
   # # #     minutes: 2
+#####################################################################################
 
+#####################################################################################
   # - name: Get Public Keys from Kubernetes for Genesis
   #   include_role:
   #     name: setup/new-genesis-public-keys
+#####################################################################################
 
+  # - name: Get Public Keys from Kubernetes for Genesis # REQUIRED ( UPDATED )
+  #   include_role:
+  #     name: setup/new-genesis-public-keys
+  #   vars:
+  #     component_ns: "{{ org.name | lower }}-indy"
+  #     kubernetes: "{{ org.k8s }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
+
+#####################################################################################
   # # # - name: Pause for 2 minutes - 2
   # # #   pause:
   # # #     minutes: 2
-  
-  # - name: Generate Genesis
-  #   include_role:
-  #     name: setup/new-genesis
+#####################################################################################
 
+  - name: Generate Genesis
+    include_role:
+      name: setup/new-genesis
+
+#####################################################################################
   # # # - name: Pause for 2 minutes - 3
   # # #   pause:
   # # #     minutes: 2
+#####################################################################################
 
-  - name: Start Deploying Stewards
-    include_role:
-      name: setup/new-stewards
-    vars:
-      org_name: "{{ org.name | lower }}"
-      # stewards: "{{ org.services.stewards }}"  # REMOVE
-      cloud_provider: "{{ org.cloud_provider | lower }}"
-      # vault: "{{ org.vault }}"  # REMOVE
-      kubernetes: "{{ org.k8s }}"
-      # component_name: "stewards" # REMOVE
-      component_ns: "{{ org_name }}-indy"
-      component_type: "stewards"
-      values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
-      charts_dir: "{{ org.gitops.chart_source }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: org
+  # - name: Start Deploying Stewards
+  #   include_role:
+  #     name: setup/new-stewards
+  #   vars:
+  #     org_name: "{{ org.name | lower }}"
+  #     # stewards: "{{ org.services.stewards }}"  # REMOVE
+  #     cloud_provider: "{{ org.cloud_provider | lower }}"
+  #     # vault: "{{ org.vault }}"  # REMOVE
+  #     kubernetes: "{{ org.k8s }}"
+  #     # component_name: "stewards" # REMOVE
+  #     component_ns: "{{ org_name }}-indy"
+  #     component_type: "stewards"
+  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
 
+#####################################################################################
   # - name: Pause for 2 minutes - 4
   #   pause:
   #     minutes: 2
-
-  - name: Start Deploying Endorser
-    include_role:
-      name: setup/new-endorser
+#####################################################################################
+  # - name: Start Deploying Endorser
+  #   include_role:
+  #     name: setup/new-endorser
+#####################################################################################
     # vars:
     #   org_name: "{{ org.name | lower }}"
     #   # stewards: "{{ org.services.stewards }}"
@@ -129,6 +149,7 @@
     # loop: "{{ network['organizations'] }}"
     # loop_control:
     #   loop_var: org
+#####################################################################################
   
 
   # These variables can be overriden from the command line

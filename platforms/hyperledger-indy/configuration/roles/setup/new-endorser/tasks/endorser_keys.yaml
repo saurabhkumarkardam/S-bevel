@@ -1,0 +1,43 @@
+- name: Get trustee identity public secret
+  k8s_info:
+    kind: Secret
+    name: "{{ endorser_name }}-identity-public"
+    namespace: "{{ endorser_org }}-indy"
+    kubeconfig: "{{ kubernetes.config_file }}"
+  register: endorser_identity_public
+
+- debug:
+    var: endorser_identity_public
+
+- name: Extract and save trustee DID to file
+  copy:
+    content: "{{ endorser_identity_public.resources[0].data.value | b64decode | from_json | json_query('did') }}"
+    dest: "{{ files_dir }}/{{ endorser_name }}-did.json"
+  vars:
+    files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
+  when: endorser_identity_public is defined and endorser_identity_public.resources[0].data.value is defined
+
+###
+
+- name: Get trustee node public verif keys
+  k8s_info:
+    kind: Secret
+    name: "{{ endorser_name }}-node-public-verif-keys"
+    namespace: "{{ endorser_org }}-indy"
+    kubeconfig: "{{ kubernetes.config_file }}"
+  register: endorser_node_public_verif_keys
+
+- debug:
+    var: endorser_node_public_verif_keys
+
+- name: Extract and save trustee DID to file
+  copy:
+    content: "{{ endorser_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('\"verification-key\"') }}"
+    dest: "{{ files_dir }}/{{ endorser_name }}-verkey.json"
+  vars:
+    files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
+  when: endorser_node_public_verif_keys is defined and endorser_node_public_verif_keys.resources[0].data.value is defined
+
+- name: Pause for 2 minutes - 1
+  pause:
+    minutes: 2

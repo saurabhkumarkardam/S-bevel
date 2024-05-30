@@ -1,17 +1,36 @@
-# - name: generate-keys
-#   include_role:
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
-#   vars:
-#     org_name: "{{ org.name | lower }}"
-#     cloud_provider: "{{ org.cloud_provider | lower }}"
-#     vault: "{{ org.vault }}"
-#     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
-#     secondaryGenesis: true
-#     component_name: "generate-genesis"
-#     component_type: "generate-genesis"
-#     component_ns: "{{ org_name }}-indy"
-#     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
-#     charts_dir: "{{ org.gitops.chart_source }}"
+- name: Gather cluster info
+  community.kubernetes.k8s_cluster_info:
+    kubeconfig: "{{ kubernetes.config_file }}"
+  register: cluster_info
+
+- name: Debug kubernetes cluster_info
+  debug:
+    var: cluster_info
+
+- name: Set kubernetes_server_url fact
+  set_fact:
+    kubernetes_server_url: "{{ cluster_info.connection.host }}"
+
+- name: Debug kubernetes_server_url
+  debug:
+    var: kubernetes_server_url
+
+- name: generate-keys
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
+  vars:
+    type: "indy_genesis"
+    # org_name: "{{ org.name | lower }}"
+    # cloud_provider: "{{ org.cloud_provider | lower }}"
+    # vault: "{{ org.vault }}"
+    # component_name: "{{ org_name }}-genesis"
+    # component_type: "generate-genesis"
+    # component_ns: "{{ org_name }}-indy"
+    kubernetes_server: "{{ kubernetes_server_url }}"
+    secondaryGenesis: true
+    secondaryGenesis: true
+    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
+    charts_dir: "{{ org.gitops.chart_source }}"
 
 # # Push the created deployment files to repository
 # - name: "Push the created deployment files to repository"
@@ -23,13 +42,13 @@
 #     GIT_DIR: "{{ playbook_dir }}/../../../"
 #     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
 
-# # Check if vault_kubernetes is completed
-# - name: Check if vault_kubernetes job is completed
-#   include_role:
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
-#   vars:
-#     component_name: "generate-genesis"
-#     component_type: Job
-#     component_ns: "{{ org.name | lower }}-indy"
-#     namespace: "{{ component_ns }}"
-#     kubernetes: "{{ org.k8s }}"
+# Check if vault_kubernetes is completed
+- name: "Check if secondary genesis job {{ org_name }} for is completed"
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    # component_name: "{{ org.name | lower }}-genesis"
+    # component_ns: "{{ org.name | lower }}-indy"
+    # kubernetes: "{{ org.k8s }}"
+    component_type: Job
+    namespace: "{{ component_ns }}"

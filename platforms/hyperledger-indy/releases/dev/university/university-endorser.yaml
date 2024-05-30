@@ -2,7 +2,7 @@ image:
   cli: ghcr.io/hyperledger/bevel-indy-ledger-txn:latest
   pullSecret:
 network: bevel
-admin: {{ trustee_name }}
+admin: authority-trustee
 newIdentity:
-  name: {{ endorser_name }}
+  name: university-endorser
   role: ENDORSER
