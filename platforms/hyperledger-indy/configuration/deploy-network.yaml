@@ -12,101 +12,101 @@
   gather_facts: no
   no_log: "{{ no_ansible_log | default(false) }}"
   tasks:
-  # # clean build directory
-  # - name: Remove build directory
-  #   file:
-  #     path: "./build"
-  #     state: absent
+  # clean build directory
+  - name: Remove build directory
+    file:
+      path: "./build"
+      state: absent
 
-  # # # Validate input network.yaml
-  # # - name: "Validating network.yaml"
-  # #   include_role:
-  # #     name: check/validation
-
-  # - name: Pull push from saurabh-1
-  #   shell: |
-  #     git pull origin saurabh-1
-
-  # # Create namespaces for organizations
-  # - name: 'Create namespace'
+  # # Validate input network.yaml
+  # - name: "Validating network.yaml"
   #   include_role:
-  #     name: create/namespace
-  #   vars:
-  #     component_name: "{{ org.name | lower }}-indy"
-  #     component_type_name: "{{ org.type | lower }}"
-  #     kubernetes: "{{ org.k8s }}"
-  #     release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
+  #     name: check/validation
 
-  # # Create necessary Kubernetes secrets for each organization
-  # - name: "Create k8s secrets"
-  #   include_role:
-  #     name: create/secrets
-  #   vars:
-  #     component_ns: "{{ org.name | lower }}-indy"
-  #     kubernetes: "{{ org.k8s }}"
-  #     vault: "{{ org.vault }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
+  - name: Pull push from saurabh-1
+    shell: |
+      git pull origin saurabh-1
 
-  # - name: generate-keys
-  #   include_role:
-  #     name: setup/new-generate-keys
-  #   vars:
-  #     org_name: "{{ org.name | lower }}"
-  #     stewards: "{{ org.services.stewards }}"
-  #     cloud_provider: "{{ org.cloud_provider | lower }}"
-  #     vault: "{{ org.vault }}"
-  #     kubernetes: "{{ org.k8s }}"
-  #     component_type: "generate-keys"
-  #     component_ns: "{{ org_name }}-indy"
-  #     component_name: "generate-keys"
-  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
-  #     charts_dir: "{{ org.gitops.chart_source }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
+  # Create namespaces for organizations
+  - name: 'Create namespace'
+    include_role:
+      name: create/namespace
+    vars:
+      component_name: "{{ org.name | lower }}-indy"
+      component_type_name: "{{ org.type | lower }}"
+      kubernetes: "{{ org.k8s }}"
+      release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
+
+  # Create necessary Kubernetes secrets for each organization
+  - name: "Create k8s secrets"
+    include_role:
+      name: create/secrets
+    vars:
+      component_ns: "{{ org.name | lower }}-indy"
+      kubernetes: "{{ org.k8s }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
+
+  - name: generate-keys
+    include_role:
+      name: setup/new-generate-keys
+    vars:
+      org_name: "{{ org.name | lower }}"
+      stewards: "{{ org.services.stewards }}"
+      cloud_provider: "{{ org.cloud_provider | lower }}"
+      vault: "{{ org.vault }}"
+      kubernetes: "{{ org.k8s }}"
+      component_type: "generate-keys"
+      component_ns: "{{ org_name }}-indy"
+      component_name: "generate-keys"
+      values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
+      charts_dir: "{{ org.gitops.chart_source }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
 
   # # - name: Pause for 2 minutes - 1
   # #   pause:
   # #     minutes: 2
 
-  # - name: Get Public Keys from Kubernetes for Genesis
-  #   include_role:
-  #     name: setup/new-genesis-public-keys
+  - name: Get Public Keys from Kubernetes for Genesis
+    include_role:
+      name: setup/new-genesis-public-keys
 
   # # - name: Pause for 2 minutes - 2
   # #   pause:
   # #     minutes: 2
   
-  # - name: Generate Genesis
-  #   include_role:
-  #     name: setup/new-genesis
+  - name: Generate Genesis
+    include_role:
+      name: setup/new-genesis
 
   # # - name: Pause for 2 minutes - 3
   # #   pause:
   # #     minutes: 2
 
-  # - name: Start Deploying Stewards
-  #   include_role:
-  #     name: setup/new-stewards
-  #   vars:
-  #     org_name: "{{ org.name | lower }}"
-  #     # stewards: "{{ org.services.stewards }}"
-  #     cloud_provider: "{{ org.cloud_provider | lower }}"
-  #     # vault: "{{ org.vault }}"
-  #     kubernetes: "{{ org.k8s }}"
+  - name: Start Deploying Stewards
+    include_role:
+      name: setup/new-stewards
+    vars:
+      org_name: "{{ org.name | lower }}"
+      # stewards: "{{ org.services.stewards }}"  # REMOVE
+      cloud_provider: "{{ org.cloud_provider | lower }}"
+      # vault: "{{ org.vault }}"  # REMOVE
+      kubernetes: "{{ org.k8s }}"
       # component_name: "stewards" # REMOVE
-  #     component_ns: "{{ org_name }}-indy"
-  #     component_type: "stewards"
-  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
-  #     charts_dir: "{{ org.gitops.chart_source }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
+      component_ns: "{{ org_name }}-indy"
+      component_type: "stewards"
+      values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
+      charts_dir: "{{ org.gitops.chart_source }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
 
   # - name: Pause for 2 minutes - 4
   #   pause:
