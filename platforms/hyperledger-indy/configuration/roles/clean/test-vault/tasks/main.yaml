@@ -1,0 +1,102 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+##############################################################################################
+# This role get vault root token for organization and remove Indy crypto from vault
+##############################################################################################
+
+---
+# - name: Delete Vault secrets
+#   vault:
+#     host: "http://98.64.226.131"
+#     port: 20001
+#     path: "{{ path }}"
+#     state: deleted
+#   register: vault_delete_result
+#   vars:
+#     path:
+#       - secretsv2/authority/trustees/authority-trustee/client/private/private_keys
+#       - secretsv2/authority/trustees/authority-trustee/client/private/sig_keys
+
+################################################################################################
+
+# - name: Delete private keys for authority trustee client
+#   ansible.builtin.vault:
+#     path: secretsv2/authority/trustees/authority-trustee/client/private/private_keys
+#     state: absent
+
+# - name: Delete signature keys for authority trustee client
+#   ansible.builtin.vault:
+#     path: secretsv2/authority/trustees/authority-trustee/client/private/sig_keys
+#     state: absent
+################################################################################################
+
+# - name: Delete secrets
+#   community.hashi_vault.vault_kv2_delete:
+#     path: secretsv2/authority/trustees/authority-trustee/client/private/private_keys
+#   register: result1
+
+# - name: Delete secrets
+#   community.hashi_vault.vault_kv2_delete:
+#     path: secretsv2/authority/trustees/authority-trustee/client/private/sig_keys
+#   register: result2
+################################################################################################
+
+# - name: Delete private keys for authority trustee client
+#   uri:
+#     url: "http://98.64.226.131:20001/v1/secretsv2/authority/trustees/authority-trustee/client/private/private_keys"
+#     method: DELETE
+#     status_code: 204
+#     headers:
+#       X-Vault-Token: 
+#   # ignore_errors: yes  # Ignore errors if the key doesn't exist
+
+# - name: Delete signature keys for authority trustee client
+#   uri:
+#     url: "http://98.64.226.131:20001/v1/secretsv2/authority/trustees/authority-trustee/client/private/sig_keys"
+#     method: DELETE
+#     status_code: 204
+#     headers:
+#       X-Vault-Token: 
+#   # ignore_errors: yes  # Ignore errors if the key doesn't exist
+################################################################################################
+
+# Delete keys associated with trustee nodes
+- name: Delete trustee keys
+  include_tasks: delete_keys.yaml
+  vars:
+    node_name: "{{ org.services.trustee | lower }}"
+    node_type: "trustees"
+  when: (org.services.trustee is defined) and (org.services.trustee | length > 0)
+
+# Delete keys associated with endorser nodes
+- name: Delete endorser keys
+  include_tasks: delete_keys.yaml
+  vars:
+    node_name: "{{ org.services.endorser | lower }}"
+    node_type: "endorsers"
+  when: (org.services.endorser is defined) and (org.services.endorser | length > 0)
+
+# Delete keys associated with steward nodes
+- name: Delete steward keys
+  include_tasks: delete_keys.yaml
+  vars:
+    node_name: "{{ stewards.name | lower }}"
+    node_type: "stewards"
+  loop: "{{ org.services.stewards }}"
+  loop_control:
+    loop_var: stewards
+  when: (stewards is defined) and (stewards | length > 0)
+
+###############################################################################################################
+# org_name: authority, university
+# node_type: trustees, endorsers, stewards
+# node_name: authority-trustee, university-endorser, university-steward-1, university-steward-2
+
+- name: Pause for 2 minutes - 1
+  pause:
+    minutes: 2
+###############################################################################################################

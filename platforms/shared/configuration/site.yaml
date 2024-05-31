@@ -169,8 +169,8 @@
   - network.env.type != 'operator'
   - reset is defined and reset == 'true'
 
-# Delete the generic network resources from kuberentes 
-- import_playbook: delete-network.yaml
-  when:
-  - reset is defined and reset == 'true'
-  - network.env.type != 'operator'
+# # Delete the generic network resources from kuberentes 
+# - import_playbook: delete-network.yaml
+#   when:
+#   - reset is defined and reset == 'true'
+#   - network.env.type != 'operator'

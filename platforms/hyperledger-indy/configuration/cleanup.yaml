@@ -15,15 +15,16 @@
   # Cleanup all organizations' vault indy crypto
   - name: Cleanup Vault indy crypto
     include_role:
-      name: clean/vault
+      name: clean/test-vault
     vars:
-      organization: "{{ organizationItem.name | lower }}"
+      # organization: "{{ org.name | lower }}"
+      org_name: "{{ org.name | lower }}"
       organization_ns: "{{ organization }}-ns"
-      services: "{{ organizationItem.services }}"
+      services: "{{ org.services }}"
       acount: "{{ organization }}-admin-vault-auth"
-      vault: "{{ organizationItem.vault }}"
+      vault: "{{ org.vault }}"
       role: "rw"
       auth_path: "kubernetes-{{ organization }}"
     loop: "{{ network['organizations'] }}"
     loop_control:
-      loop_var: organizationItem
+      loop_var: org

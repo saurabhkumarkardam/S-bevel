@@ -1,7 +1,7 @@
 - name: Initialize variables
   set_fact:
     trustee_name: ""
-    # trustee_org: ""
+    trustee_org: ""
     endorser_name: ""
     endorser_org: ""
     kubernetes: ""
@@ -9,7 +9,7 @@
 - name: Start Deploying Services
   set_fact:
     trustee_name: "{{ trustee_name | default('') if trustee_name != '' else (org.services.trustee | lower if org.services.trustee is defined else trustee_name) }}"
-    # trustee_org: "{{ trustee_org | default('') if trustee_org != '' else (org.name | lower if org.services.trustee is defined else trustee_org) }}"
+    trustee_org: "{{ trustee_org | default('') if trustee_org != '' else (org.name | lower if org.services.trustee is defined else trustee_org) }}"
     endorser_name: "{{ endorser_name | default('') if endorser_name != '' else (org.services.endorser | lower if org.services.endorser is defined else endorser_name) }}"
     endorser_org: "{{ endorser_org | default('') if endorser_org != '' else (org.name | lower if org.services.endorser is defined else endorser_org) }}"
   loop: "{{ network['organizations'] }}"
@@ -79,7 +79,7 @@
     kubernetes: "{{ org.k8s }}"
     kubernetes_server: "{{ kubernetes_server_url.stdout }}"
     component_name: "{{ endorser_name }}"
-    component_ns: "{{ endorser_org }}-indy"
+    component_ns: "{{ trustee_org }}-indy" # "{{ endorser_org }}-indy"
     secondaryGenesis: true
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}"
     charts_dir: "{{ org.gitops.chart_source }}"
