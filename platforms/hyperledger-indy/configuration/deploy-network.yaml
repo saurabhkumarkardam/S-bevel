@@ -77,7 +77,7 @@
 # #####################################################################################
   - name: Pause for 2 minutes - new-generate-keys done
     pause:
-      minutes: 20
+      minutes: 2
 # #####################################################################################
 
   - name: Get keys for the Genesis setup # REQUIRED ( UPDATED )

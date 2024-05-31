@@ -1,15 +1,17 @@
-- name: Assign new value to trustee_name if it is empty
+# Store trustee's name if it is not already set
+- name: "Store trustee's name"
   set_fact:
     trustee_name: "{{ org.services.trustee | default('') }}"
   when: trustee_name == ''
 
-- name: Assign new value to endorser_name if it is empty
+# Store endorser's name if it is not already set
+- name: "Store endorser's name"
   set_fact:
     endorser_name: "{{ org.services.endorser | default('') }}"
   when: endorser_name == ''
 
-# Maintain stewards
-- name: "Maintain stewards"
+# Add each steward's details (name, public IP, node port, client port) to the steward_list
+- name: "Maintain each steward's node info"
   set_fact:
     steward_list: "{{ steward_list + [{'name': stewards_item.name, 'publicIp': stewards_item.publicIp, 'nodePort': stewards_item.node.ambassador, 'clientPort': stewards_item.client.ambassador}] }}"
   loop: "{{ stewards }}"

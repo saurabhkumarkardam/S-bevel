@@ -1,5 +1,5 @@
-
-- name: Deploy Stewards
+# Deploy Steward's node
+- name: "Deploy {{ steward.name }} node in the {{ org.name }} organization"
   include_role:
     name: create/helm_component/new-generate-keys
   vars:
@@ -20,8 +20,8 @@
     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
     gitops: "{{ org.gitops }}"
 
-# Check if all stewards are running
-- name: Check if all stewards are running
+# Check if Steward's node is running
+- name: "Check if {{ steward.name }} node is running in the {{ org.name }} organization"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:

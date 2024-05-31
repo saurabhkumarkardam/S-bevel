@@ -1,4 +1,5 @@
-- name: Get trustee identity public secret
+# Get trustee public identity secret
+- name: "Get trustee public identity secret"
   k8s_info:
     kind: Secret
     name: "{{ org.services.trustee }}-identity-public"
@@ -6,10 +7,8 @@
     kubeconfig: "{{ kubernetes.config_file }}"
   register: trustee_identity_public_secret
 
-- debug:
-    var: trustee_identity_public_secret
-
-- name: Extract and save trustee DID to file
+# Extract and save trustee DID  to a JSON file
+- name: "Extract and save trustee DID to a JSON file"
   copy:
     content: "{{ trustee_identity_public_secret.resources[0].data.value | b64decode | from_json | json_query('did') }}"
     dest: "{{ files_dir }}/{{ org.services.trustee }}-did.json"
@@ -17,9 +16,8 @@
     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
   when: trustee_identity_public_secret is defined and trustee_identity_public_secret.resources[0].data.value is defined
 
-###
-
-- name: Get trustee node public verif keys
+# Get trustee node public verif keys
+- name: "Get trustee node public verif keys"
   k8s_info:
     kind: Secret
     name: "{{ org.services.trustee }}-node-public-verif-keys"
@@ -27,18 +25,11 @@
     kubeconfig: "{{ kubernetes.config_file }}"
   register: trustee_node_public_verif_keys
 
-- debug:
-    var: trustee_node_public_verif_keys
-
-- name: Extract and save trustee DID to file
+# Extract and save the trustee's verification key to a JSON file
+- name: "Extract and save the trustee's verification key to a JSON file"
   copy:
-    # content: "{{ trustee_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('`verification-key`') }}"
     content: "{{ trustee_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('\"verification-key\"') }}"
     dest: "{{ files_dir }}/{{ org.services.trustee }}-verkey.json"
   vars:
     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
   when: trustee_node_public_verif_keys is defined and trustee_node_public_verif_keys.resources[0].data.value is defined
-
-- name: Pause for 2 minutes - 1
-  pause:
-    minutes: 2

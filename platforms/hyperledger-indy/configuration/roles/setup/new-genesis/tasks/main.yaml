@@ -1,6 +1,8 @@
-- name: Primary Genesis setup
+# Primary genesis setup
+- name: "Primary genesis setup"
   include_tasks: primary_genesis.yaml
 
-- name: Secondary Genesis Setup
+# Secondary genesis setup if there are multiple organizations
+- name: "Secondary genesis Setup"
   include_tasks: secondary_genesis.yaml
   when: network['organizations'] | length > 1

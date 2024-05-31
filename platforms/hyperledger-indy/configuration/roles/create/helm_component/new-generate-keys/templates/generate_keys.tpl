@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: "{{ component_name }}"
@@ -33,6 +33,8 @@ spec:
         secretPrefix: "data/{{ org_name }}"
     proxy:
       provider: ambassador
+    image:
+      alpineutils: "{{ network.docker.url }}/bevel-indy-key-mgmt:1.12.6"
     settings:
       removeKeysOnDelete: true
       identities:

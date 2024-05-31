@@ -1,56 +1,29 @@
+# Gather Kubernetes cluster information
 - name: Gather cluster info
   community.kubernetes.k8s_cluster_info:
     kubeconfig: "{{ kubernetes.config_file }}"
   register: cluster_info
 
-- name: Debug kubernetes cluster_info
-  debug:
-    var: cluster_info
-
+# Set the Kubernetes server URL fact
 - name: Set kubernetes_server_url fact
   set_fact:
     kubernetes_server_url: "{{ cluster_info.connection.host }}"
 
-- name: Debug kubernetes_server_url
-  debug:
-    var: kubernetes_server_url
-
-- name: generate-keys
+# Install the secondary genesis component for the specified organization
+- name: "Install secondary genesis for the {{ org_name }} organization"
   include_role:
-    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component" # create/helm_component/new-generate-keys
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component"
   vars:
     type: "indy_genesis"
-    # org_name: "{{ org.name | lower }}"
-    # cloud_provider: "{{ org.cloud_provider | lower }}"
-    # vault: "{{ org.vault }}"
-    # component_name: "{{ org_name }}-genesis"
-    # component_type: "generate-genesis"
-    # component_ns: "{{ org_name }}-indy"
     kubernetes_server: "{{ kubernetes_server_url }}"
-    secondaryGenesis: true
     secondaryGenesis: true
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
     charts_dir: "{{ org.gitops.chart_source }}"
 
-#########################################################################################
-# # Push the created deployment files to repository
-# - name: "Push the created deployment files to repository"
-#   include_role:
-#     name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
-#   vars:
-#     gitops: "{{ org.gitops }}"
-#     component_ns: "{{ org.name | lower }}-indy"
-#     GIT_DIR: "{{ playbook_dir }}/../../../"
-#     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
-#########################################################################################
-
-# Check if vault_kubernetes is completed
+# Check if the secondary genesis job for the specified organization is completed
 - name: "Check if secondary genesis job {{ org_name }} for is completed"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    # component_name: "{{ org.name | lower }}-genesis"
-    # component_ns: "{{ org.name | lower }}-indy"
-    # kubernetes: "{{ org.k8s }}"
     component_type: Job
     namespace: "{{ component_ns }}"

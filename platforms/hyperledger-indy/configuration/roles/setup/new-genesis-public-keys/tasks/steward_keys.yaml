@@ -1,4 +1,5 @@
-- name: did
+# Get steward public identity secret
+- name: "Get steward public identity secret"
   k8s_info:
     kind: Secret
     name: "{{ steward.name }}-identity-public"
@@ -6,21 +7,17 @@
     kubeconfig: "{{ kubernetes.config_file }}"
   register: steward_identity_public
 
-- debug:
-    var: steward_identity_public
-
-- name: Extract and save trustee DID to file
+# Extract and save steward DID to a JSON file
+- name: "Extract and save steward DID to a JSON file"
   copy:
-    # content: "{{ trustee_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('`verification-key`') }}"
     content: "{{ steward_identity_public.resources[0].data.value | b64decode | from_json | json_query('did') }}"
     dest: "{{ files_dir }}/{{ steward.name }}-did.json"
   vars:
     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
   when: steward_identity_public is defined and steward_identity_public.resources[0].data.value is defined
 
-###
-
-- name: verkey
+# Get steward node public verif keys
+- name: "Get steward node public verif keys"
   k8s_info:
     kind: Secret
     name: "{{ steward.name }}-node-public-verif-keys"
@@ -28,21 +25,17 @@
     kubeconfig: "{{ kubernetes.config_file }}"
   register: steward_node_public_verif_keys
 
-- debug:
-    var: steward_node_public_verif_keys
-
-- name: Extract and save trustee DID to file
+# Extract and save the steward's verification key to a JSON file
+- name: "Extract and save the steward's verification key to a JSON file"
   copy:
-    # content: "{{ trustee_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('`verification-key`') }}"
     content: "{{ steward_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('\"verification-key\"') }}"
     dest: "{{ files_dir }}/{{ steward.name }}-verkey.json"
   vars:
     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
   when: steward_node_public_verif_keys is defined and steward_node_public_verif_keys.resources[0].data.value is defined
 
-###
-
-- name: blspop
+# Get steward's node public BLS keys
+- name: "Get steward's node public BLS keys"
   k8s_info:
     kind: Secret
     name: "{{ steward.name }}-node-public-bls-keys"
@@ -50,10 +43,8 @@
     kubeconfig: "{{ kubernetes.config_file }}"
   register: steward_node_public_bls_keys
 
-- debug:
-    var: steward_node_public_bls_keys
-
-- name: Extract and save trustee DID to file
+# Extract and save the steward's BLS POP to a JSON file
+- name: "Extract and save the steward's BLS POP to a JSON file"
   copy:
     content: "{{ steward_node_public_bls_keys.resources[0].data.value | b64decode | from_json | json_query('\"bls-key-pop\"') }}"
     dest: "{{ files_dir }}/{{ steward.name }}-blspop.json"
@@ -61,9 +52,8 @@
     files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
   when: steward_node_public_bls_keys is defined and steward_node_public_bls_keys.resources[0].data.value is defined
 
-###
-
-- name: blspub
+# Extract and save the steward's BLS public key to a JSON file
+- name: "Extract and save the steward's BLS public key to a JSON file"
   copy:
     content: "{{ steward_node_public_bls_keys.resources[0].data.value | b64decode | from_json | json_query('\"bls-public-key\"') }}"
     dest: "{{ files_dir }}/{{ steward.name }}-blspub.json"

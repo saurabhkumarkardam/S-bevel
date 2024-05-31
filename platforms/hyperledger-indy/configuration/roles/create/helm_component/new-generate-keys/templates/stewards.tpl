@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: "{{ component_name }}"
@@ -28,13 +28,20 @@ spec:
     storage:
       keys: "512Mi"
       data: "4Gi"
+      reclaimPolicy: "Delete"
+      volumeBindingMode: Immediate
+      allowedTopologies:
+        enabled: false
     
     image:
+      initContainer: "{{ network.docker.url }}/bevel-alpine-ext:latest"
+      cli: "{{ network.docker.url }}/bevel-indy-ledger-txn:latest"
       indyNode:
-        repository: ghcr.io/hyperledger/bevel-indy-node
+        repository: "{{ network.docker.url }}/bevel-indy-node"
         tag: 1.12.6
     
     settings:
+      network: bevel
       serviceType: ClusterIP
       node:
         publicIp: {{ node_public_ip }}
