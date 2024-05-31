@@ -1,5 +1,5 @@
-# - name: Primary Genesis setup
-#   include_tasks: primary_genesis.yaml
+- name: Primary Genesis setup
+  include_tasks: primary_genesis.yaml
 
 - name: Secondary Genesis Setup
   include_tasks: secondary_genesis.yaml

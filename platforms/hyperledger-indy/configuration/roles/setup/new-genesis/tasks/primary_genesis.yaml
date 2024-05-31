@@ -56,6 +56,7 @@
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
     charts_dir: "{{ org.gitops.chart_source }}"
 
+#########################################################################################
 # # Push the created deployment files to repository
 # - name: "Push the created deployment files to repository"
 #   include_role:
@@ -66,6 +67,7 @@
 #     component_ns: "{{ org.name | lower }}-indy"
 #     GIT_DIR: "{{ playbook_dir }}/../../../"
 #     msg: "[ci skip] Pushing key management job files for {{ component_ns }}"
+#########################################################################################
 
 # Check if vault_kubernetes is completed
 - name: Check if vault_kubernetes job is completed

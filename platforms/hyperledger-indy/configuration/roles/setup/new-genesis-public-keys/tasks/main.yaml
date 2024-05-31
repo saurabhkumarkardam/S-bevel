@@ -1,3 +1,4 @@
+################################################################################################
 # - name: Get trustee identity public secret
 #   k8s_info:
 #     kind: Secret
@@ -53,9 +54,9 @@
     - org.services.trustee is defined
     - org.services.trustee | length > 0
 
-- name: Pause for 2 minutes - 1
-  pause:
-    minutes: 2
+# - name: Pause for 2 minutes - 1
+#   pause:
+#     minutes: 2
 
 - name: Steward's keys
   include_tasks: steward_keys.yaml
