@@ -33,7 +33,7 @@
     validateVaultResponse ${response_status}
 
 # Remove Kubernetes Authentication Methods of organizations
-- name: Remove Kubernetes Authentication Methods of {{ organization }}
+- name: Remove Kubernetes Authentication Methods of {{ org_name }}
   vars:
     auth_path: "kubernetes-{{ organization }}"
   environment:
