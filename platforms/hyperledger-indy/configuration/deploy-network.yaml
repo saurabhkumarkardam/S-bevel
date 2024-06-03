@@ -133,8 +133,6 @@
     include_role:
       name: setup/new-endorser
 
-  
-
   # These variables can be overriden from the command line
   vars: 
     install_os: "linux"                           # Default to linux OS
