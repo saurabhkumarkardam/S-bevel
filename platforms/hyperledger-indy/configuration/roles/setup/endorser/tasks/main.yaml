@@ -57,7 +57,7 @@
     # kubernetes: "{{ org.k8s }}"
     component_name: "{{ endorser_name }}"
     component_ns: "{{ trustee_org }}-ns"
-    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}"
+    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}/build"
     charts_dir: "{{ org.gitops.chart_source }}"
     # cloud_provider: "{{ org.cloud_provider | lower }}"
     # vault: "{{ org.vault }}"

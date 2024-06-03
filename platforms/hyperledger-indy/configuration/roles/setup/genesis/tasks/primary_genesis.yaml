@@ -44,7 +44,7 @@
     component_ns: "{{ org_name }}-ns"
     component_name: "{{ org_name }}-genesis"
     secondaryGenesis: false
-    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
+    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}/build"
     charts_dir: "{{ org.gitops.chart_source }}"
 
 # Check if primary genesis job is completed
