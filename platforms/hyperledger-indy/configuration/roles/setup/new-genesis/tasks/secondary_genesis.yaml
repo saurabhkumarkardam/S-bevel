@@ -10,7 +10,7 @@
     api_version: v1
     kind: ConfigMap
     name: dtg
-    namespace: "{{ first_org_name }}-indy"
+    namespace: "{{ first_org_name }}-ns"
     kubeconfig: "{{ first_org_kubernetes.config_file }}"
   register: dtg_configmap
 
@@ -20,7 +20,7 @@
     api_version: v1
     kind: ConfigMap
     name: ptg
-    namespace: "{{ first_org_name }}-indy"
+    namespace: "{{ first_org_name }}-ns"
     kubeconfig: "{{ first_org_kubernetes.config_file }}"
   register: ptg_configmap
 
@@ -44,7 +44,7 @@
   vars:
     org_name: "{{ org.name | lower }}"
     component_name: "{{ org_name }}-genesis"
-    component_ns: "{{ org_name }}-indy"
+    component_ns: "{{ org_name }}-ns"
     component_type: "generate-genesis"
     cloud_provider: "{{ org.cloud_provider | lower }}"
     kubernetes: "{{ org.k8s }}"

@@ -36,7 +36,7 @@
     include_role:
       name: create/namespace
     vars:
-      component_name: "{{ org.name | lower }}-indy"
+      component_name: "{{ org.name | lower }}-ns"
       component_type_name: "{{ org.type | lower }}"
       kubernetes: "{{ org.k8s }}"
       release_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org.name | lower }}"
@@ -49,7 +49,7 @@
     include_role:
       name: create/secrets
     vars:
-      component_ns: "{{ org.name | lower }}-indy"
+      component_ns: "{{ org.name | lower }}-ns"
       kubernetes: "{{ org.k8s }}"
       vault: "{{ org.vault }}"
     loop: "{{ network['organizations'] }}"
@@ -66,7 +66,7 @@
       vault: "{{ org.vault }}"
       kubernetes: "{{ org.k8s }}"
       component_type: "generate-keys"
-      component_ns: "{{ org_name }}-indy"
+      component_ns: "{{ org_name }}-ns"
       component_name: "{{ org_name }}-keys"
       values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
       charts_dir: "{{ org.gitops.chart_source }}"
@@ -84,7 +84,7 @@
     include_role:
       name: setup/new-genesis-public-keys
     vars:
-      component_ns: "{{ org.name | lower }}-indy"
+      component_ns: "{{ org.name | lower }}-ns"
       kubernetes: "{{ org.k8s }}"
     loop: "{{ network['organizations'] }}"
     loop_control:
@@ -116,7 +116,7 @@
       # vault: "{{ org.vault }}"  # REMOVE
       kubernetes: "{{ org.k8s }}"
       # component_name: "stewards" # REMOVE
-      component_ns: "{{ org_name }}-indy"
+      component_ns: "{{ org_name }}-ns"
       component_type: "stewards"
       values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
       charts_dir: "{{ org.gitops.chart_source }}"

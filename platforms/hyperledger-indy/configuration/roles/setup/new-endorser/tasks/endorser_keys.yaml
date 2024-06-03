@@ -3,7 +3,7 @@
   k8s_info:
     kind: Secret
     name: "{{ endorser_name }}-identity-public"
-    namespace: "{{ endorser_org }}-indy"
+    namespace: "{{ endorser_org }}-ns"
     kubeconfig: "{{ kubernetes.config_file }}"
   register: endorser_identity_public
 
@@ -21,7 +21,7 @@
   k8s_info:
     kind: Secret
     name: "{{ endorser_name }}-node-public-verif-keys"
-    namespace: "{{ endorser_org }}-indy"
+    namespace: "{{ endorser_org }}-ns"
     kubeconfig: "{{ kubernetes.config_file }}"
   register: endorser_node_public_verif_keys
 

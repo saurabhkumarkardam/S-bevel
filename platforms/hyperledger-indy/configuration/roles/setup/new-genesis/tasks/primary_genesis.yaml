@@ -41,7 +41,7 @@
     kubernetes_server: "{{ kubernetes_server_url }}"
     kubernetes: "{{ org.k8s }}"
     component_type: "generate-genesis"
-    component_ns: "{{ org_name }}-indy"
+    component_ns: "{{ org_name }}-ns"
     component_name: "{{ org_name }}-genesis"
     secondaryGenesis: false
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
@@ -57,6 +57,6 @@
     component_name: "{{ org_name }}-genesis"
     component_type: Job
     org: "{{ network['organizations'] | first }}"
-    component_ns: "{{ org.name | lower }}-indy"
+    component_ns: "{{ org.name | lower }}-ns"
     namespace: "{{ component_ns }}"
     kubernetes: "{{ org.k8s }}"

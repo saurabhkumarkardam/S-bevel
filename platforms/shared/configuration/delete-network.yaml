@@ -101,7 +101,7 @@
   vars:
     # Map object to hold namespace suffix used for each platform 
     namespace_suffix: [{
-      "indy": "indy",
+      "indy": "ns",
       "fabric": "net",
       "quorum": "quo",
       "corda-enterprise": "ent",

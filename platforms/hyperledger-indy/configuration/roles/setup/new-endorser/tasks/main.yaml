@@ -56,7 +56,7 @@
     org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
     # kubernetes: "{{ org.k8s }}"
     component_name: "{{ endorser_name }}"
-    component_ns: "{{ trustee_org }}-indy"
+    component_ns: "{{ trustee_org }}-ns"
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}"
     charts_dir: "{{ org.gitops.chart_source }}"
     # cloud_provider: "{{ org.cloud_provider | lower }}"
@@ -74,7 +74,7 @@
     org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
     component_name: "{{ endorser_name }}"
     component_type: Job
-    namespace: "{{ trustee_org }}-indy"
+    namespace: "{{ trustee_org }}-ns"
     kubernetes: "{{ org.k8s }}"
   when:
     - (endorser_name is defined) and (endorser_name | length > 0)

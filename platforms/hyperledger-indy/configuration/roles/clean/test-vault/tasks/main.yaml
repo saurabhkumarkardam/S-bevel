@@ -3,7 +3,7 @@
   set_fact:
     trustee_name: ""
 
-# Set trusteevariables
+# Set trustee variables
 - name: "Set trustee variables"
   set_fact:
     trustee_name: "{{ trustee_name | default('') if trustee_name != '' else (org.services.trustee | lower if org.services.trustee is defined else trustee_name) }}"
@@ -15,7 +15,7 @@
   include_tasks: nested.yaml
   vars:
     org_name: "{{ org.name | lower }}"
-    org_ns: "{{ org_name }}-indy"
+    org_ns: "{{ org_name }}-ns"
     services: "{{ org.services }}"
     vault: "{{ org.vault }}"
   loop: "{{ network['organizations'] }}"
