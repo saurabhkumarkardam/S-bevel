@@ -1,0 +1,19 @@
+global:
+  serviceAccountName: vault-auth
+  cluster:
+    provider: "azure"
+    cloudNativeServices: false
+    kubernetesUrl: "https://devcluster-devresourcegroup-d1d33f-kncld871.hcp.westeurope.azmk8s.io:443"
+  vault:
+    type: hashicorp
+    role: vault-role
+    network: indy
+    address: "http://98.64.226.131:20001"
+    authPath: "three"
+    secretEngine: secretsv2
+    secretPrefix: "data/three"
+proxy:
+  provider: ambassador
+settings:
+  removeKeysOnDelete: true
+  secondaryGenesis: True
