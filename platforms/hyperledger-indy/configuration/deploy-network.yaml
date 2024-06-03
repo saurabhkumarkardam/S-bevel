@@ -58,7 +58,7 @@
 
   - name: generate-keys
     include_role:
-      name: setup/new-generate-keys
+      name: setup/generate-keys # setup/new-generate-keys
     vars:
       org_name: "{{ org.name | lower }}"
       stewards: "{{ org.services.stewards }}"
@@ -82,7 +82,7 @@
 
   - name: Get keys for the Genesis setup # REQUIRED ( UPDATED )
     include_role:
-      name: setup/new-genesis-public-keys
+      name: setup/genesis-public-keys # setup/new-genesis-public-keys
     vars:
       component_ns: "{{ org.name | lower }}-ns"
       kubernetes: "{{ org.k8s }}"
@@ -98,7 +98,7 @@
 
   - name: Generate Genesis
     include_role:
-      name: setup/new-genesis
+      name: setup/genesis # setup/new-genesis
 
 #####################################################################################
   - name: Pause for 2 minutes - Generate Genesis done
@@ -108,7 +108,7 @@
 
   - name: Start Deploying Stewards
     include_role:
-      name: setup/new-stewards
+      name: setup/stewards # setup/new-stewards
     vars:
       org_name: "{{ org.name | lower }}"
       # stewards: "{{ org.services.stewards }}"  # REMOVE
@@ -131,7 +131,7 @@
 #####################################################################################
   - name: Start Deploying Endorser
     include_role:
-      name: setup/new-endorser
+      name: setup/endorser # setup/new-endorser
 
   # These variables can be overriden from the command line
   vars: 
