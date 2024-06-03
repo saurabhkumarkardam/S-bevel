@@ -96,7 +96,7 @@
 # node_type: trustees, endorsers, stewards
 # node_name: authority-trustee, university-endorser, university-steward-1, university-steward-2
 
-- name: Pause for 2 minutes - 1
-  pause:
-    minutes: 2
+# - name: Pause for 2 minutes - 1
+#   pause:
+#     minutes: 2
 ###############################################################################################################
