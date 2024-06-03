@@ -1,12 +1,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: "university-steward-3"
+  name: "university-steward-4"
   annotations:
     fluxcd.io/automated: "false"
   namespace: "university-indy"
 spec:
-  releaseName: "university-steward-3"
+  releaseName: "university-steward-4"
   interval: 1m
   chart:
     spec:
@@ -45,9 +45,9 @@ spec:
       serviceType: ClusterIP
       node:
         publicIp: 108.142.59.4
-        port: 9731
-        externalPort: 15031
+        port: 9741
+        externalPort: 15041
       client:
         publicIp: 108.142.59.4
-        port: 9732
-        externalPort: 15032
+        port: 9742
+        externalPort: 15042
