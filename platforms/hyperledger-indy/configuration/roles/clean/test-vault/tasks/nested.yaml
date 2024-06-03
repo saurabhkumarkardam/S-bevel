@@ -1,0 +1,43 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+##############################################################################################
+# This role get vault root token for organization and remove Indy crypto from vault
+##############################################################################################
+
+---
+# Delete keys associated with trustee nodes
+- name: Delete trustee keys
+  include_tasks: delete_keys.yaml
+  vars:
+    node_name: "{{ trustee_name }}" # "{{ org.services.trustee | lower }}"
+    node_type: "trustees"
+  # when: (org.services.trustee is defined) and (org.services.trustee | length > 0)
+
+# Delete keys associated with endorser nodes
+- name: Delete endorser keys
+  include_tasks: delete_keys.yaml
+  vars:
+    node_name: "{{ org.services.endorser | lower }}"
+    node_type: "endorsers"
+  when: (org.services.endorser is defined) and (org.services.endorser | length > 0)
+
+# Delete keys associated with steward nodes
+- name: Delete steward keys
+  include_tasks: delete_keys.yaml
+  vars:
+    node_name: "{{ stewards.name | lower }}"
+    node_type: "stewards"
+  loop: "{{ org.services.stewards }}"
+  loop_control:
+    loop_var: stewards
+  when: (stewards is defined) and (stewards | length > 0)
+
+###############################################################################################################
+# org_name: authority, university
+# node_type: trustees, endorsers, stewards
+# node_name: authority-trustee, university-endorser, university-steward-1, university-steward-2
+###############################################################################################################
