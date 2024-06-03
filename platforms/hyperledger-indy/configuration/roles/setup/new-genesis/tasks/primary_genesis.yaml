@@ -42,7 +42,7 @@
     kubernetes: "{{ org.k8s }}"
     component_type: "generate-genesis"
     component_ns: "{{ org_name }}-indy"
-    component_name: "generate-genesis"
+    component_name: "{{ org_name }}-genesis"
     secondaryGenesis: false
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
     charts_dir: "{{ org.gitops.chart_source }}"
@@ -52,7 +52,9 @@
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    component_name: "generate-genesis"
+    org: "{{ network['organizations'] | first }}"
+    org_name: "{{ org.name | lower }}"
+    component_name: "{{ org_name }}-genesis"
     component_type: Job
     org: "{{ network['organizations'] | first }}"
     component_ns: "{{ org.name | lower }}-indy"

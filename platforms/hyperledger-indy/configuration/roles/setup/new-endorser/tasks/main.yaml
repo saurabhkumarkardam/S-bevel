@@ -19,12 +19,12 @@
     loop_var: org
 
 ###########################################################################
-# - name: Set Kubernetes
-#   set_fact:
-#     kubernetes: "{{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
-#   when:
-#     - (endorser_name is defined) and (endorser_name | length > 0)
-#     - (endorser_org is defined) and (endorser_org | length > 0)
+- name: Set Kubernetes
+  set_fact:
+    kubernetes: "{{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
+  when:
+    - (endorser_name is defined) and (endorser_name | length > 0)
+    - (endorser_org is defined) and (endorser_org | length > 0)
 ###########################################################################
 
 # Get Endorser keys
@@ -54,7 +54,7 @@
   vars:
     type: "indy_endorser"
     org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
-    kubernetes: "{{ org.k8s }}"
+    # kubernetes: "{{ org.k8s }}"
     component_name: "{{ endorser_name }}"
     component_ns: "{{ trustee_org }}-indy"
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}"
@@ -74,9 +74,8 @@
     org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
     component_name: "{{ endorser_name }}"
     component_type: Job
-    namespace: "{{ endorser_org }}-indy"
+    namespace: "{{ trustee_org }}-indy"
     kubernetes: "{{ org.k8s }}"
-    # component_ns: "{{ endorser_org }}-indy"
   when:
     - (endorser_name is defined) and (endorser_name | length > 0)
     - (endorser_org is defined) and (endorser_org | length > 0)

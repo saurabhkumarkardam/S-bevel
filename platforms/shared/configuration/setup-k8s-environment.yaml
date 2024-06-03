@@ -34,17 +34,17 @@
     with_items: "{{ network.organizations }}"
     when: network.env.type != 'operator'
 
-  # # Setup ambassador edge stack (enabled for besu and quorum)
-  # - include_role:
-  #     name: setup/edge-stack
-  #   vars:
-  #     kubeconfig_path: "{{ item.k8s.config_file }}"
-  #     kubecontext: "{{ item.k8s.context }}"
-  #     aws: "{{ item.aws }}"
-  #     organization: "{{ item }}"
-  #   with_items: "{{ network.organizations }}"
-  #   when: 
-  #   - network.env.proxy == 'ambassador' 
+  # Setup ambassador edge stack (enabled for besu and quorum)
+  - include_role:
+      name: setup/edge-stack
+    vars:
+      kubeconfig_path: "{{ item.k8s.config_file }}"
+      kubecontext: "{{ item.k8s.context }}"
+      aws: "{{ item.aws }}"
+      organization: "{{ item }}"
+    with_items: "{{ network.organizations }}"
+    when: 
+    - network.env.proxy == 'ambassador' 
 
   # Installs cert-manager
   - include_role:

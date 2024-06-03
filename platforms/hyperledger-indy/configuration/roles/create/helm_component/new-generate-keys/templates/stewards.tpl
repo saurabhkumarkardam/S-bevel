@@ -24,7 +24,6 @@ spec:
         cloudNativeServices: false
       proxy:
         provider: ambassador
-    
     storage:
       keys: "512Mi"
       data: "4Gi"
@@ -32,14 +31,12 @@ spec:
       volumeBindingMode: Immediate
       allowedTopologies:
         enabled: false
-    
     image:
       initContainer: "{{ network.docker.url }}/bevel-alpine-ext:latest"
       cli: "{{ network.docker.url }}/bevel-indy-ledger-txn:latest"
       indyNode:
         repository: "{{ network.docker.url }}/bevel-indy-node"
         tag: 1.12.6
-    
     settings:
       network: bevel
       serviceType: ClusterIP
