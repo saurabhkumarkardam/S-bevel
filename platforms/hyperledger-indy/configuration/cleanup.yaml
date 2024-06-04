@@ -13,6 +13,11 @@
   no_log: "{{ no_ansible_log | default(false) }}"
   tasks:
   # Cleanup all organizations' vault indy crypto
-  - name: Cleanup Vault indy crypto
+  - name: "Clean up Vault indy crypto"
     include_role:
       name: clean/vault
+  
+  # Clean up helpers directory
+  - name: "Clean up helpers directory"
+    include_role:
+      name: clean/local_directories
