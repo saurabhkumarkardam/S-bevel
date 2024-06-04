@@ -28,7 +28,7 @@
 # Generate the HR file for the specified organization
 - name: "Generate HR file for {{ org_name }} organization"
   include_role:
-    name: create/helm_component/new-generate-keys
+    name: create/helm_component/peer
   vars: 
     kubernetes_server: "{{ kubernetes_server_url }}"
 

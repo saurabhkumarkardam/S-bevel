@@ -1,7 +1,7 @@
 # Deploy Steward's node
 - name: "Deploy {{ steward.name }} node in the {{ org.name }} organization"
   include_role:
-    name: create/helm_component/new-generate-keys
+    name: create/helm_component/peer
   vars:
     node_public_ip: "{{ steward.publicIp }}"
     node_port: "{{ steward.node.port | int }}"

@@ -82,7 +82,7 @@
 
   - name: Get keys for the Genesis setup # REQUIRED ( UPDATED )
     include_role:
-      name: setup/genesis-public-keys # setup/new-genesis-public-keys
+      name: setup/genesis-node-keys # setup/new-genesis-public-keys
     vars:
       component_ns: "{{ org.name | lower }}-ns"
       kubernetes: "{{ org.k8s }}"
