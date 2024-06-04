@@ -5,7 +5,6 @@
     trustee_org: ""
     endorser_name: ""
     endorser_org: ""
-    # kubernetes: ""
 
 # Set trustee and endorser variables
 - name: "Set trustee and endorser variables"
@@ -18,14 +17,13 @@
   loop_control:
     loop_var: org
 
-###########################################################################
-- name: Set Kubernetes
+# Set Kubernetes info
+- name: "Set Kubernetes info"
   set_fact:
     kubernetes: "{{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
   when:
     - (endorser_name is defined) and (endorser_name | length > 0)
     - (endorser_org is defined) and (endorser_org | length > 0)
-###########################################################################
 
 # Get Endorser keys
 - name: "Get Endorser keys"
@@ -34,19 +32,6 @@
     - (endorser_name is defined) and (endorser_name | length > 0)
     - (endorser_org is defined) and (endorser_org | length > 0)
 
-###########################################################################
-# # Gather Kubernetes cluster information
-# - name: Gather cluster info
-#   community.kubernetes.k8s_cluster_info:
-#     kubeconfig: "{{ kubernetes.config_file }}"
-#   register: cluster_info
-
-# # Set the Kubernetes server URL fact
-# - name: Set kubernetes_server_url fact
-#   set_fact:
-#     kubernetes_server_url: "{{ cluster_info.connection.host }}"
-###########################################################################
-
 # Deploy endorser node
 - name: "Deploy endorser node"
   include_role:
@@ -54,14 +39,10 @@
   vars:
     type: "indy_endorser"
     org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
-    # kubernetes: "{{ org.k8s }}"
     component_name: "{{ endorser_name }}"
     component_ns: "{{ trustee_org }}-ns"
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}/build"
     charts_dir: "{{ org.gitops.chart_source }}"
-    # cloud_provider: "{{ org.cloud_provider | lower }}"
-    # vault: "{{ org.vault }}"
-    # kubernetes_server: "{{ kubernetes_server_url }}"
   when:
     - (endorser_name is defined) and (endorser_name | length > 0)
     - (endorser_org is defined) and (endorser_org | length > 0)

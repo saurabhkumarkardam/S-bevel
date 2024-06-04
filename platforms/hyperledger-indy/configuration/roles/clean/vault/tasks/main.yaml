@@ -22,7 +22,3 @@
   loop: "{{ network['organizations'] }}"
   loop_control:
     loop_var: org
-
-- name: Pause for 2 minutes - VAULT DONE
-  pause:
-    minutes: 2

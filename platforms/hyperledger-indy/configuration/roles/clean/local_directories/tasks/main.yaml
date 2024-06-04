@@ -31,7 +31,3 @@
   file:
     path: "{{ playbook_dir }}/../../hyperledger-indy/configuration/build"
     state: absent
-
-- name: Pause for 2 minutes - VAULT DONE
-  pause:
-    minutes: 2

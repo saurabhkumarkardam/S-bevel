@@ -23,16 +23,8 @@
     include_role:
       name: check/validation
 
-  - name: Pause for 2 minutes - Validating done
-    pause:
-      minutes: 2
-
-  - name: Pull push from saurabh-1
-    shell: |
-      git pull origin saurabh-1
-
   # Create namespaces for organizations
-  - name: 'Create namespace'
+  - name: "Create namespace"
     include_role:
       name: create/namespace
     vars:
@@ -56,9 +48,10 @@
     loop_control:
       loop_var: org
 
-  - name: generate-keys
+  # Generate keys for each nodes
+  - name: "Generate keys"
     include_role:
-      name: setup/generate-keys # setup/new-generate-keys
+      name: setup/generate-keys
     vars:
       org_name: "{{ org.name | lower }}"
       stewards: "{{ org.services.stewards }}"
@@ -74,15 +67,10 @@
     loop_control:
       loop_var: org
 
-# #####################################################################################
-  - name: Pause for 2 minutes - new-generate-keys done
-    pause:
-      minutes: 2
-# #####################################################################################
-
-  - name: Get keys for the Genesis setup # REQUIRED ( UPDATED )
+  # Get each node keys for the Genesis setup
+  - name: "Get keys for the Genesis setup"
     include_role:
-      name: setup/genesis-node-keys # setup/new-genesis-public-keys
+      name: setup/genesis-node-keys
     vars:
       component_ns: "{{ org.name | lower }}-ns"
       kubernetes: "{{ org.k8s }}"
@@ -90,32 +78,19 @@
     loop_control:
       loop_var: org
 
-# #####################################################################################
-  - name: Pause for 2 minutes - Get keys for the Genesis setup done
-    pause:
-      minutes: 2
-#####################################################################################
-
-  - name: Generate Genesis
+  # Install Genesis
+  - name: "Install Genesis"
     include_role:
-      name: setup/genesis # setup/new-genesis
+      name: setup/genesis
 
-#####################################################################################
-  - name: Pause for 2 minutes - Generate Genesis done
-    pause:
-      minutes: 2
-#####################################################################################
-
-  - name: Start Deploying Stewards
+  # Install Steward nodes
+  - name: Install Steward nodes
     include_role:
-      name: setup/stewards # setup/new-stewards
+      name: setup/stewards
     vars:
       org_name: "{{ org.name | lower }}"
-      # stewards: "{{ org.services.stewards }}"  # REMOVE
       cloud_provider: "{{ org.cloud_provider | lower }}"
-      # vault: "{{ org.vault }}"  # REMOVE
       kubernetes: "{{ org.k8s }}"
-      # component_name: "stewards" # REMOVE
       component_ns: "{{ org_name }}-ns"
       component_type: "stewards"
       values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}"
@@ -124,14 +99,10 @@
     loop_control:
       loop_var: org
 
-#####################################################################################
-  - name: Pause for 2 minutes - Start Deploying Stewards done
-    pause:
-      minutes: 2
-#####################################################################################
-  - name: Start Deploying Endorser
+  # Install Endorser node
+  - name: "Install Endorser node"
     include_role:
-      name: setup/endorser # setup/new-endorser
+      name: setup/endorser
 
   # These variables can be overriden from the command line
   vars: 
