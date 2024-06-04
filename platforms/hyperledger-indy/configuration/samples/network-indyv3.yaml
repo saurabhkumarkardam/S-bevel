@@ -68,7 +68,7 @@ network:
     # Specification for the 1st organization. Each organization maps to a VPC and a separate k8s cluster
     - organization:
       name: authority
-      type: peer
+      # type: peer
       external_url_suffix: indy.blockchaincloudpoc.com  # Provide the external dns suffix. Only used when Indy webserver/Clients are deployed.
       cloud_provider: aws                               # Supported values: 'aws-baremetal' | 'aws' | 'azure' | 'gcp' | 'minikube' | 
 
@@ -113,7 +113,7 @@ network:
     # Specification for the 2nd organization. Each organization maps to a VPC and a separate k8s cluster
     - organization:
       name: university
-      type: peer
+      # type: peer
       cloud_provider: aws                               # Supported values: 'aws-baremetal' | 'aws' | 'azure' | 'gcp' | 'minikube' | 
       external_url_suffix: indy.blockchaincloudpoc.com  # Provide the external dns suffix. Only used when Indy webserver/Clients are deployed.
 
