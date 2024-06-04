@@ -12,8 +12,8 @@ job_templates:
   indy_genesis: indy_genesis.tpl
   indy_endorser: indy_endorser.tpl
 charts:
-  primary_genesis: besu-genesis
-  secondary_genesis: besu-genesis
+  primary_genesis: "{{ network.type }}-genesis"
+  secondary_genesis: "{{ network.type }}-genesis"
   primary_init: corda-init
   secondary_init: corda-init
   indy_genesis: indy-genesis

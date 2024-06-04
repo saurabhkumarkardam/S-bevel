@@ -30,7 +30,7 @@ spec:
       restartPolicy: "Never"
       containers:
         - name: delete-secrets
-          image: "{{ $.Values.image.alpineUtils }}"
+          image: "{{ .Values.image.alpineUtils }}"
           securityContext:
             runAsUser: 0
           imagePullPolicy: IfNotPresent
@@ -38,27 +38,27 @@ spec:
           command: ["sh", "-c"]
           args:
             - |-
-{{- if .Values.settings.removeGenesisOnDelete }}
-
-              function deleteSecret {
-                key=$1
-                kubectl get secret ${key} --namespace {{ .Release.Namespace }} -o json > /dev/null 2>&1
-                if [ $? -eq 0 ]; then
-                  kubectl delete secret ${key} --namespace {{ .Release.Namespace }}
+{{- if .Values.settings.removeConfigMapOnDelete }}
+            {{- range $channel := $.Values.channels }}
+              if kubectl get configmap --namespace {{ $.Release.Namespace }}  {{ $channel.name }}-genesis &> /dev/null; then
+                echo "Deleting genesis-file configmap in k8s ..."
+                kubectl delete configmap --namespace {{ $.Release.Namespace }} {{ $channel.name }}-genesis
+              fi
+              if kubectl get configmap --namespace {{ $.Release.Namespace }}  syschannel-genesis &> /dev/null; then
+                echo "Deleting genesis-file configmap in k8s ..."
+                kubectl delete configmap --namespace {{ $.Release.Namespace }} syschannel-genesis
+              fi
+              if kubectl get configmap --namespace {{ $.Release.Namespace }}  {{ $channel.name }}-channeltx &> /dev/null; then
+                echo "Deleting channeltx configmap in k8s ..."
+                kubectl delete configmap --namespace {{ $.Release.Namespace }} {{ $channel.name }}-channeltx
+              fi
+              {{- range $participant := $channel.participants }}
+                if kubectl get configmap --namespace {{ $.Release.Namespace }}  {{ $channel.name }}-{{ $participant }}-anchortx &> /dev/null; then
+                  echo "Deleting anchortx configmap in k8s ..."
+                  kubectl delete configmap --namespace {{ $.Release.Namespace }} {{ $channel.name }}-{{ $participant }}-anchortx
                 fi
-              }
-              
-              {{- range $channel := $.Values.channels }}
-                deleteSecret {{ $channel.channel_name | lower}}-genesis
-              {{- end}} 
-{{- end}} 
-{{- if .Values.settings.removeGenesisConfigMapOnDelete }}
-              {{- range $channel := $.Values.channels }}
-                if kubectl get configmap --namespace {{ $.Release.Namespace }}  {{ $channel.channel_name | lower}}-genesis-file &> /dev/null; then
-                  echo "Deleting {{ $channel.channel_name | lower}}-genesis-file configmap in k8s ..."
-                  kubectl delete configmap --namespace {{ $.Release.Namespace }} {{ $channel.channel_name | lower}}-genesis-file
-                fi
-              {{- end}} 
+              {{- end }}
+            {{- end }}
 {{- end}}
   
 

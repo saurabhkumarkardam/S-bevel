@@ -9,26 +9,12 @@
   set_fact:
     node_list: []
 
-###############################################################
-# # Fetch the bootnode's node ID from Vault
-# - name: Fetch node_id of {{ peer.name }} node
-#   shell: |
-#     vault kv get -field=node_id "{{ vault.secret_path | default('secretsv2') }}/{{ network.env.type }}{{ name }}/substrate-node-{{ peer.name | lower }}-keys"
-#   environment:
-#     VAULT_ADDR: "{{ vault.url }}"
-#     VAULT_TOKEN: "{{ vault.root_token }}"
-#   register: node_id
-###############################################################
-
+# Fetch the bootnode's node ID from Vault
 - name: Fetch node_id of {{ peer.name }} node
   shell: |
     KUBECONFIG={{ kubernetes.config_file }} kubectl get secret "substrate-node-{{ peer.name | lower }}-keys" --namespace {{ component_ns }} -o jsonpath="{.data['substrate-node-keys']}" | base64 -d | jq -r '.data.node_id'
   register: node_id
   ignore_errors: true
-
-- name: Debug node_id
-  debug:
-    msg: "Node ID of {{ peer.name }} node is: {{ node_id.stdout }}"
 
 # Append bootnode information to node_list
 - name: Collect Bootnode data
@@ -80,4 +66,3 @@
     label_selectors:
       - name = {{ component_name }}
     namespace: "{{ component_ns }}"
-  tags: notest
