@@ -17,7 +17,7 @@
     type: "indy_genesis"
     kubernetes_server: "{{ kubernetes_server_url }}"
     secondaryGenesis: true
-    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
+    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}/build"
     charts_dir: "{{ org.gitops.chart_source }}"
 
 # Check if the secondary genesis job for the specified organization is completed
