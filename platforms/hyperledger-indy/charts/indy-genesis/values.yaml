@@ -65,4 +65,4 @@ settings:
     #     - name: partner-steward-2
     #       publicIp: 
     #       nodePort: 15041
-    #       clientPort: 15042
+    #       clientPort: 15042 

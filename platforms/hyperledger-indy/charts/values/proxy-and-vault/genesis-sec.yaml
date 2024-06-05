@@ -11,7 +11,7 @@ global:
     #Provide the network type
     network: indy
     #Provide the vault server address
-    address: "http://vault.url:8200"
+    address: "http://98.64.226.131:20001" # "http://vault.url:8200"
     #Provide the vault authPath configured to be used.
     authPath: university
     #Provide the secret engine.
