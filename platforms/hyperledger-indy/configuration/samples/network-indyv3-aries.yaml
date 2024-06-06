@@ -96,13 +96,7 @@ network:
       # Services maps to the pods that will be deployed on the k8s cluster
       # This sample has trustee
       services:
-        trustees:
-        - trustee:
-          name: authority-trustee
-          genesis: true
-          server:
-            port: 8000
-            ambassador: 15010
+        trustee: authority-trustee
 
     # Specification for the 2nd organization. Each organization maps to a VPC and a separate k8s cluster
     - organization:
@@ -203,15 +197,4 @@ network:
             port: 15742
             targetPort: 15742
             ambassador: 15742        # Port for ambassador service
-        endorsers:
-        - endorser:
-          name: university-endorser
-          full_name: Faber university of the Demo.
-          avatar: http://faber.com/avatar.png
-          # public endpoint will be {{ endorser.name}}.{{ external_url_suffix}}:{{endorser.server.httpPort}}
-          # Eg. In this sample http://university-endorser.indy.blockchaincloudpoc.com:15033/
-          # For minikube: http://<minikubeip>>:15033
-          server:
-            httpPort: 15033
-            apiPort: 15034
-            webhookPort: 15035          
+        endorser: university-endorser
