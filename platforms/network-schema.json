@@ -2414,11 +2414,20 @@
         },
         "services": {
           "$ref": "#/definitions/indy_services"
+        },
+        "publicIps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+          },
+          "description": "List of all public IP addresses of each availability zone from all organizations in the same k8s cluster"
         }
       },
       "required": [
         "type",
-        "services"
+        "services",
+        "publicIps"
       ]
     },
     "indy_services": {
