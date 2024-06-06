@@ -27,6 +27,11 @@
     file:
       path: "./build"
       state: absent
+  
+  - name: Pull push from saurabh-1
+    shell: |
+      git pull origin saurabh-1
+      git pull origin saurabh-1
 
   # Create Kubernetes namespaces for each organization
   - name: "Create namespace"

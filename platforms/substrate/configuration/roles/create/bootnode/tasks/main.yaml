@@ -9,7 +9,7 @@
   include_role:
     name: create/helm_component
   vars:
-    component_name: "{{ name }}{{ peer.name }}bootnode"
+    component_name: "{{ peer.name }}" # "{{ name }}{{ peer.name }}bootnode"
     type: "node_substrate"  
     storageclass_name: "{{ item.name | lower }}-bevel-storageclass"
     external_url: "{{ item.external_url_suffix }}"
@@ -22,6 +22,7 @@
     values_dir: "{{playbook_dir}}/../../../{{item.gitops.release_dir}}/{{ item.name | lower }}"
     command: "{{ network.config.command }}"
     role: "full"
+    isBootnode: false
   loop: "{{ peers }}"
   loop_control:
     loop_var: peer
