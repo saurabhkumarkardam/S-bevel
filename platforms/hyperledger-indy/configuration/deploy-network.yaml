@@ -23,6 +23,11 @@
     include_role:
       name: check/validation
 
+  # Optional
+  - name: Ensure Pull from indy-demo
+    shell: |
+      git pull origin indy-demo
+
   # Create namespaces for organizations
   - name: "Create namespace"
     include_role:
