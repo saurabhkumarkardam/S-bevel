@@ -13,7 +13,7 @@
     content: "{{ endorser_identity_public.resources[0].data.value | b64decode | from_json | json_query('did') }}"
     dest: "{{ files_dir }}/{{ endorser_name }}-did.json"
   vars:
-    files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
+    files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-register-identity/files"
   when: endorser_identity_public is defined and endorser_identity_public.resources[0].data.value is defined
 
 # Get endorser node public verification keys secret
@@ -31,5 +31,5 @@
     content: "{{ endorser_node_public_verif_keys.resources[0].data.value | b64decode | from_json | json_query('\"verification-key\"') }}"
     dest: "{{ files_dir }}/{{ endorser_name }}-verkey.json"
   vars:
-    files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files"
+    files_dir: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-register-identity/files"
   when: endorser_node_public_verif_keys is defined and endorser_node_public_verif_keys.resources[0].data.value is defined

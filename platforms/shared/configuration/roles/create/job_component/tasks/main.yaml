@@ -33,7 +33,7 @@
     release_name: "{{ component_name }}"
     release_namespace: "{{ component_ns }}"
     kubeconfig: "{{ kubernetes.config_file }}"
-  register: helm_check
+  # register: helm_check
 
 # Run helm install 
 - name: Helm install {{ component_name }}
@@ -48,4 +48,4 @@
     update_repo_cache: true
     kubeconfig: "{{ kubernetes.config_file }}"
   when:
-    - helm_check.status is not defined
+    # - helm_check.status is not defined
