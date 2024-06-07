@@ -53,9 +53,9 @@
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
     component_type: Job
+    namespace: "{{ component_ns }}"
     # org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
     # component_name: "{{ endorser_name }}"
-    # namespace: "{{ trustee_org }}-ns"
     # kubernetes: "{{ org.k8s }}"
   # when:
   #   - (endorser is defined) and (endorser | length > 0)
