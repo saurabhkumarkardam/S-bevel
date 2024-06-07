@@ -28,11 +28,22 @@
   loop_control:
     loop_var: org
 
+- name: Count organizations
+  set_fact:
+    organization_count: "{{ network['organizations'] | length }}"
+
+- name: Display initialized variables and list
+  debug:
+    msg: |
+      trustee_count: "{{ total_trustee }}"
+      endorser_count: "{{ total_endorser }}"
+      steward_count: "{{ total_stewards }}"
+
 # Stop execution if total trustee is not equal to 1
 - name: "Stop execution if total trustee is not equal to 1"
   fail:
     msg: "Exactly 1 trustee is required per indy network."
-  when: (total_trustee | int) != 1
+  when: (total_trustee | int) == 1
 
 # Stop execution if total endorser is not equal to 1
 - name: "Stop execution if total endorser is not equal to 1"
