@@ -23,6 +23,10 @@
   #   include_role:
   #     name: check/validation
 
+  - name: Pull push from indy-updates-1
+    shell: |
+      git pull origin indy-updates-1
+
   # Create namespaces for organizations
   - name: "Create namespace"
     include_role:
