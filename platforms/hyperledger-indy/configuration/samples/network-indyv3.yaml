@@ -11,9 +11,9 @@
 ## Overview
 # This configuration file is intended for deploying a HyperLedger-Indy platform. 
 # The deployment must adhere to the following network rules:
-# - Exactly one Trustee per network
-# - Exactly one Endorser per network
-# - A minimum of four Stewards per network
+# - Exactly 1 trustee is required per organization.
+# - Up to 1 endorser is allowed per organization.
+# - At least 4 stewards are required collectively across the entire Indy network.
 
 ## Sample Configuration
 # This sample configuration file demonstrates a HyperLedger-Indy network with two organizations:

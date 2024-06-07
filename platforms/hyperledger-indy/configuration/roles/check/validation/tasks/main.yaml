@@ -7,9 +7,9 @@
 ##############################################################################################
 # This role checks for validation of network.yaml
 # Conditions to be checked:
-# - Exactly 1 trustee is required per indy network.
-# - Exactly 1 endorser is required per indy network.
-# - At least 4 stewards are required per indy network.
+# - Exactly 1 trustee is required per organization.
+# - Up to 1 endorser is allowed per organization.
+# - At least 4 stewards are required collectively across the entire Indy network.
 ##############################################################################################
 
 # Set variables
@@ -18,6 +18,7 @@
     total_stewards=0
     total_trustee=0
     total_endorser=0
+    organization_count="{{ network['organizations'] | length }}"
 
 # Loop through each organization to count nodes
 - name: Count nodes
@@ -28,31 +29,28 @@
   loop_control:
     loop_var: org
 
-- name: Count organizations
-  set_fact:
-    organization_count: "{{ network['organizations'] | length }}"
-
 - name: Display initialized variables and list
   debug:
     msg: |
       trustee_count: "{{ total_trustee }}"
       endorser_count: "{{ total_endorser }}"
       steward_count: "{{ total_stewards }}"
+      organization_count: "{{ organization_count }}"
 
 # Stop execution if total trustee is not equal to 1
 - name: "Stop execution if total trustee is not equal to 1"
   fail:
     msg: "Exactly 1 trustee is required per indy network."
-  when: (total_trustee | int) == 1
+  when: (total_trustee | int) != (organization_count | int)
 
 # Stop execution if total endorser is not equal to 1
 - name: "Stop execution if total endorser is not equal to 1"
   fail:
-    msg: "Exactly 1 endorser is required per indy network."
-  when: (total_endorser | int) != 1
+    msg: "Up to 1 endorser is allowed per organization."
+  when: (total_endorser | int) > (organization_count | int)
 
 # Stop execution if total stewards are less than 4
 - name: Stop execution if total stewards are less than 4
   fail:
-    msg: "At least 4 stewards are required per indy network."
+    msg: "At least 4 stewards are required collectively across the entire Indy network."
   when: (total_stewards | int) < 4
