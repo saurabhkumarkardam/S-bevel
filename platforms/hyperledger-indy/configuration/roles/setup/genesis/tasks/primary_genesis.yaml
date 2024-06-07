@@ -2,7 +2,7 @@
 # Initialize variable and list
 - name: "Initialize variable and list"
   set_fact:
-    trustee_name: ''
+    trustee_list: [] # ''
     endorser_name: ''
     steward_list: []
 
@@ -15,6 +15,14 @@
   loop: "{{ network['organizations'] }}"
   loop_control:
     loop_var: org
+
+########################################################
+- name: Display initialized variables and list
+  debug:
+    msg: |
+      trustee_list: "{{ trustee_list }}"
+      steward_list: "{{ steward_list }}"
+########################################################
 
 # Gather Kubernetes cluster information
 - name: Gather Kubernetes cluster information

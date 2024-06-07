@@ -1,14 +1,24 @@
+##############################################################################################
+# # Store trustee's name if it is not already set
+# - name: "Store trustee's name"
+#   set_fact:
+#     trustee_name: "{{ org.services.trustee | default('') }}"
+#   when: trustee_name == ''
+##############################################################################################
+
 # Store trustee's name if it is not already set
 - name: "Store trustee's name"
   set_fact:
-    trustee_name: "{{ org.services.trustee | default('') }}"
-  when: trustee_name == ''
+    trustee_list: "{{ trustee_list + [org.services.trustee] }}"
+  when: (org.services.trustee is defined) and (org.services.trustee | length > 0)
 
-# Store endorser's name if it is not already set
-- name: "Store endorser's name"
-  set_fact:
-    endorser_name: "{{ org.services.endorser | default('') }}"
-  when: endorser_name == ''
+##############################################################################################
+# # Store endorser's name if it is not already set
+# - name: "Store endorser's name"
+#   set_fact:
+#     endorser_name: "{{ org.services.endorser | default('') }}"
+#   when: endorser_name == ''
+##############################################################################################
 
 # Add each steward's details (name, public IP, node port, client port) to the steward_list
 - name: "Maintain each steward's node info"

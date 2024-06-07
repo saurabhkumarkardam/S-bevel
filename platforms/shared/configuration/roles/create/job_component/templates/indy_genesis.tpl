@@ -17,9 +17,11 @@ proxy:
 settings:
   removeKeysOnDelete: true
   secondaryGenesis: {{ secondaryGenesis }}
-{% if (not secondaryGenesis) and (trustee_name is defined) %}
+{% if (not secondaryGenesis) and (trustee_list is defined) %}
   trustees:
-    - name: "{{ trustee_name }}"
+{% for trustee in trustee_list %}
+    - name: "{{ trustee }}"
+{% endfor %}
 {% if steward_list is defined %}
       stewards:
 {% for steward in steward_list %}
