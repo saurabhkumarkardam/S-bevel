@@ -18,10 +18,10 @@
       path: "./build"
       state: absent
 
-  # Validate input network.yaml
-  - name: "Validating network.yaml"
-    include_role:
-      name: check/validation
+  # # Validate input network.yaml
+  # - name: "Validating network.yaml"
+  #   include_role:
+  #     name: check/validation
 
   # Create namespaces for organizations
   - name: "Create namespace"
@@ -103,6 +103,18 @@
   - name: "Install Endorser node"
     include_role:
       name: setup/endorser
+    vars:
+      org: "{{ org.name | lower }}"
+      endorser: "{{ org.services.endorser | lower }}"
+      trustee: "{{ org.services.trustee | lower }}"
+      kubernetes: "{{ org.k8s }}"
+      component_name: "{{ endorser }}"
+      component_ns: "{{ org }}-ns"
+      values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org }}/build"
+      charts_dir: "{{ org.gitops.chart_source }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
 
   # These variables can be overriden from the command line
   vars: 

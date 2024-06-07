@@ -1,36 +1,37 @@
-# Initialize variables for trustee & endorser
-- name: "Initialize variables for trustee & endorser"
-  set_fact:
-    trustee_name: ""
-    trustee_org: ""
-    endorser_name: ""
-    endorser_org: ""
+########################################################################################################################
+# # Initialize variables for trustee & endorser
+# - name: "Initialize variables for trustee & endorser"
+#   set_fact:
+#     trustee_name: ""
+#     trustee_org: ""
+#     endorser_name: ""
+#     endorser_org: ""
 
-# Set trustee and endorser variables
-- name: "Set trustee and endorser variables"
-  set_fact:
-    trustee_name: "{{ trustee_name | default('') if trustee_name != '' else (org.services.trustee | lower if org.services.trustee is defined else trustee_name) }}"
-    trustee_org: "{{ trustee_org | default('') if trustee_org != '' else (org.name | lower if org.services.trustee is defined else trustee_org) }}"
-    endorser_name: "{{ endorser_name | default('') if endorser_name != '' else (org.services.endorser | lower if org.services.endorser is defined else endorser_name) }}"
-    endorser_org: "{{ endorser_org | default('') if endorser_org != '' else (org.name | lower if org.services.endorser is defined else endorser_org) }}"
-  loop: "{{ network['organizations'] }}"
-  loop_control:
-    loop_var: org
+# # Set trustee and endorser variables
+# - name: "Set trustee and endorser variables"
+#   set_fact:
+#     trustee_name: "{{ trustee_name | default('') if trustee_name != '' else (org.services.trustee | lower if org.services.trustee is defined else trustee_name) }}"
+#     trustee_org: "{{ trustee_org | default('') if trustee_org != '' else (org.name | lower if org.services.trustee is defined else trustee_org) }}"
+#     endorser_name: "{{ endorser_name | default('') if endorser_name != '' else (org.services.endorser | lower if org.services.endorser is defined else endorser_name) }}"
+#     endorser_org: "{{ endorser_org | default('') if endorser_org != '' else (org.name | lower if org.services.endorser is defined else endorser_org) }}"
+#   loop: "{{ network['organizations'] }}"
+#   loop_control:
+#     loop_var: org
 
-# Set Kubernetes info
-- name: "Set Kubernetes info"
-  set_fact:
-    kubernetes: "{{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
-  when:
-    - (endorser_name is defined) and (endorser_name | length > 0)
-    - (endorser_org is defined) and (endorser_org | length > 0)
+# # Set Kubernetes info
+# - name: "Set Kubernetes info"
+#   set_fact:
+#     kubernetes: "{{ (network['organizations'] | selectattr('name', 'equalto', endorser_org) | first).k8s }}"
+#   when:
+#     - (endorser_name is defined) and (endorser_name | length > 0)
+#     - (endorser_org is defined) and (endorser_org | length > 0)
+########################################################################################################################
 
 # Get Endorser keys
 - name: "Get Endorser keys"
   include_tasks: endorser_keys.yaml
   when:
-    - (endorser_name is defined) and (endorser_name | length > 0)
-    - (endorser_org is defined) and (endorser_org | length > 0)
+    - (endorser is defined) and (endorser | length > 0)
 
 # Deploy endorser node
 - name: "Deploy endorser node"
@@ -38,25 +39,23 @@
     name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component"
   vars:
     type: "indy_endorser"
-    org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
-    component_name: "{{ endorser_name }}"
-    component_ns: "{{ trustee_org }}-ns"
-    values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}/build"
-    charts_dir: "{{ org.gitops.chart_source }}"
+    # org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
+    # component_name: "{{ endorser_name }}"
+    # component_ns: "{{ trustee_org }}-ns"
+    # values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org.name | lower }}/build"
+    # charts_dir: "{{ org.gitops.chart_source }}"
   when:
-    - (endorser_name is defined) and (endorser_name | length > 0)
-    - (endorser_org is defined) and (endorser_org | length > 0)
+    - (endorser is defined) and (endorser | length > 0)
 
 # Check if endorser job is completed
 - name: "Check if endorser job is completed"
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
   vars:
-    org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
-    component_name: "{{ endorser_name }}"
     component_type: Job
-    namespace: "{{ trustee_org }}-ns"
-    kubernetes: "{{ org.k8s }}"
+    # org: "{{ network['organizations'] | selectattr('name', 'equalto', endorser_org) | first }}"
+    # component_name: "{{ endorser_name }}"
+    # namespace: "{{ trustee_org }}-ns"
+    # kubernetes: "{{ org.k8s }}"
   when:
-    - (endorser_name is defined) and (endorser_name | length > 0)
-    - (endorser_org is defined) and (endorser_org | length > 0)
+    - (endorser is defined) and (endorser | length > 0)
