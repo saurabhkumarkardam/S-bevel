@@ -2433,11 +2433,8 @@
     "indy_services": {
       "type": "object",
       "properties": {
-        "trustees": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/indy_service_trustee"
-          }
+        "trustee": {
+          "type": "string"
         },
         "stewards": {
           "type": "array",
@@ -2445,11 +2442,8 @@
             "$ref": "#/definitions/indy_service_steward"
           }
         },
-        "endorsers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/indy_service_endorser"
-          }
+        "endorser": {
+          "type": "string"
         }
       },
       "additionalProperties": false
