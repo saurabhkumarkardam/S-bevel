@@ -11,7 +11,7 @@ global:
     #Provide the network type
     network: indy
     #Provide the vault server address
-    address: "http://vault.url:8200"
+    address: "http://98.64.226.131:20001" # "http://vault.url:8200"
     #Provide the vault authPath configured to be used.
     authPath: authority
     #Provide the secret engine.
@@ -29,18 +29,18 @@ settings:
     - name: authority-trustee
       stewards:
         - name: university-steward-1  # Steward name
-          publicIp: "ambassador-public-ip"                   # Steward public IP Address /Kubernetes API IP for noproxy
+          publicIp: 108.142.59.4 # "ambassador-public-ip"                   # Steward public IP Address /Kubernetes API IP for noproxy
           nodePort: 15011           # Client external port
           clientPort: 15012             # Node external port
         - name: university-steward-2
-          publicIp: "ambassador-public-ip"
+          publicIp: 108.142.59.4 # "ambassador-public-ip"
           nodePort: 15021
           clientPort: 15022
         - name: university-steward-3
-          publicIp: "ambassador-public-ip"
+          publicIp: 108.142.59.4 # "ambassador-public-ip"
           nodePort: 15031
           clientPort: 15032
         - name: university-steward-4
-          publicIp: "ambassador-public-ip"
+          publicIp: 108.142.59.4 # "ambassador-public-ip"
           nodePort: 15041
           clientPort: 15042
