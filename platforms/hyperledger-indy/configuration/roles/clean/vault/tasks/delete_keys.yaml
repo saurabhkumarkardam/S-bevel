@@ -1,3 +1,9 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
 # Delete keys from HashiCorp Vault
 - name: "Delete keys for {{ node_name }} in {{ org_name }} organization from Vault"
   shell: |
@@ -31,6 +37,8 @@
     }
     response_status=$(curl -o /dev/null -s -w "%{http_code}\n" --header "X-Vault-Token: ${vault_token}" --request DELETE {{ vault.url }}/v1/sys/policy/bevel-vault-mgmt-{{ org_name }}-keys-{{ org_ns }}-policy)
     validateVaultResponse ${response_status}
+  when: vault.root_token is defined
+  ignore_errors: yes
 
 # Remove Kubernetes Authentication Methods of organizations
 - name: Remove Kubernetes Authentication Methods of {{ org_name }}
@@ -48,3 +56,4 @@
     response_status=$(curl -o /dev/null -s -w "%{http_code}\n" --header "X-Vault-Token: ${vault_token}" --request DELETE {{ vault.url }}/v1/sys/auth/{{ org_name }})
     validateVaultResponse ${response_status}
   when: vault.root_token is defined
+  ignore_errors: yes

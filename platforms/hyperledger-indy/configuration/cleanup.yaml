@@ -12,10 +12,18 @@
   gather_facts: no
   no_log: "{{ no_ansible_log | default(false) }}"
   tasks:
-  # Cleanup all organizations' vault indy crypto
+  # Clean up all organizations' vault indy crypto
   - name: "Clean up Vault indy crypto"
     include_role:
       name: clean/vault
+    vars:
+      org_name: "{{ org.name | lower }}"
+      org_ns: "{{ org_name }}-ns"
+      services: "{{ org.services }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
   
   # Clean up helpers directory
   - name: "Clean up helpers directory"
