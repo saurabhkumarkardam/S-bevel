@@ -106,8 +106,8 @@
       name: setup/endorser
     vars:
       org_name: "{{ org.name | lower }}"
-      endorser: "{{ org.services.endorser | lower }}"
-      trustee: "{{ org.services.trustee | lower }}"
+      endorser: "{{ org.services.endorser.name | lower }}"
+      trustee: "{{ org.services.trustee.name | lower }}"
       kubernetes: "{{ org.k8s }}"
       component_name: "{{ endorser }}"
       component_ns: "{{ org_name }}-ns"
