@@ -29,7 +29,3 @@
   - name: "Clean up helpers directory"
     include_role:
       name: clean/local_directories
-  
-  - name: Pause | Clean up done
-    pause:
-      minutes: 2
