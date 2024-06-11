@@ -17,10 +17,10 @@
 - name: "Count trustee nodes"
   set_fact:
     total_trustee: "{{ total_trustee | int + 1 }}"
-  when: (org.services.trustee is defined) and (org.services.trustee | length > 0)
+  when: (org.services.trustee is defined) and (org.services.trustee.name | length > 0)
 
 # Counting the number of endorser nodes
 - name: "Count endorser nodes"
   set_fact:
     total_endorser: "{{ total_endorser | int + 1 }}"
-  when: (org.services.endorser is defined) and (org.services.endorser | length > 0)
+  when: (org.services.endorser is defined) and (org.services.endorser.name | length > 0)

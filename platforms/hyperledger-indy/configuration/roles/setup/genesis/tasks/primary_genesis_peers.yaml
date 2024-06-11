@@ -7,8 +7,8 @@
 # Store trustee's name if it is not already set
 - name: "Store trustee's name"
   set_fact:
-    trustee_list: "{{ trustee_list + [org.services.trustee] }}"
-  when: (org.services.trustee is defined) and (org.services.trustee | length > 0)
+    trustee_list: "{{ trustee_list + [org.services.trustee.name] }}"
+  when: (org.services.trustee is defined) and (org.services.trustee.name | length > 0)
 
 # Add each steward's details (name, public IP, node port, client port) to the steward_list
 - name: "Maintain each steward's node info"

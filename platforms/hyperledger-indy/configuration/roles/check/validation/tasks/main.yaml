@@ -46,3 +46,12 @@
   fail:
     msg: "At least 4 stewards are required collectively across the entire Indy network."
   when: (total_stewards | int) < 4
+
+######################################################## REMOVE
+- name: Display initialized variables and list
+  debug:
+    msg: |
+      total_trustee: "{{ total_trustee }}"
+      total_endorser: "{{ total_endorser }}"
+      total_stewards: "{{ total_stewards }}"
+########################################################

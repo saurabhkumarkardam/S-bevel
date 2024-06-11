@@ -7,8 +7,8 @@
 # Initialize variables for trustee, endorser, and stewards
 - name: "Initialize trustee, endorser and stewards variables"
   set_fact:
-    trustee_name: "{{ org.services.trustee | default('') }}"
-    endorser_name: "{{ org.services.endorser | default('') }}"
+    trustee_name: "{{ org.services.trustee.name | default('') }}"
+    endorser_name: "{{ org.services.endorser.name | default('') }}"
     steward_list: []
 
 # Add stewards to the steward list
@@ -19,6 +19,15 @@
   loop_control:
     loop_var: stewards_item
   ignore_errors: true
+
+######################################################### REMOVE
+- name: Display initialized variables and list
+  debug:
+    msg: |
+      trustee_name: "{{ trustee_name }}"
+      endorser_name: "{{ endorser_name }}"
+      steward_list: "{{ steward_list }}"
+#########################################################
 
 # Gather Kubernetes cluster information
 - name: Gather Kubernetes cluster information

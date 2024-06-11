@@ -24,6 +24,14 @@
     include_role:
       name: check/validation
 
+  - name: Pause | Validation done
+    pause:
+      minutes: 2
+
+  - name: Pull push from indy-updates-2
+    shell: |
+      git pull origin indy-updates-2
+
   # Create namespaces for organizations
   - name: "Create namespace"
     include_role:
@@ -68,6 +76,10 @@
     loop_control:
       loop_var: org
 
+  - name: Pause | generate-keys done
+    pause:
+      minutes: 2
+
   # Get each node keys for the Genesis setup
   - name: "Get keys for the Genesis setup"
     include_role:
@@ -78,6 +90,7 @@
     loop: "{{ network['organizations'] }}"
     loop_control:
       loop_var: org
+
 
   # Install Genesis
   - name: "Install Genesis"
@@ -106,8 +119,8 @@
       name: setup/endorser
     vars:
       org_name: "{{ org.name | lower }}"
-      endorser: "{{ org.services.endorser | lower }}"
-      trustee: "{{ org.services.trustee | lower }}"
+      endorser: "{{ org.services.endorser.name | lower }}"
+      # trustee: "{{ org.services.trustee.name | lower }}" # REMOVE
       kubernetes: "{{ org.k8s }}"
       component_name: "{{ endorser }}"
       component_ns: "{{ org_name }}-ns"
@@ -117,7 +130,7 @@
     loop_control:
       loop_var: org
     when:
-    - (org.services.endorser is defined) and (org.services.endorser | length > 0)
+    - (org.services.endorser is defined) and (org.services.endorser.name | length > 0)
 
   # These variables can be overriden from the command line
   vars: 
