@@ -16,8 +16,20 @@
   - name: "Clean up Vault indy crypto"
     include_role:
       name: clean/vault
+    vars:
+      org_name: "{{ org.name | lower }}"
+      org_ns: "{{ org_name }}-ns"
+      services: "{{ org.services }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
   
   # Clean up helpers directory
   - name: "Clean up helpers directory"
     include_role:
       name: clean/local_directories
+  
+  - name: Pause | Clean up done
+    pause:
+      minutes: 2
