@@ -11,6 +11,8 @@ job_templates:
   secondary_init: secondary_init.tpl
   indy_genesis: indy_genesis.tpl
   indy_endorser: indy_endorser.tpl
+  corda_ent_init: corda_ent_init.tpl
+  corda_ent_cenm: corda_ent_cenm.tpl
 charts:
   primary_genesis: "{{ network.type }}-genesis"
   secondary_genesis: "{{ network.type }}-genesis"
@@ -18,3 +20,5 @@ charts:
   secondary_init: corda-init
   indy_genesis: indy-genesis
   indy_endorser: indy-register-identity
+  corda_ent_init: enterprise-init
+  corda_ent_cenm: cenm
