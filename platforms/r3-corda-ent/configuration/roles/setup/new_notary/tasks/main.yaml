@@ -1,0 +1,45 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+##############################################################################################
+# This role creates the deployment files for node and pushes them to repository
+##############################################################################################
+
+# Create deployment file for notary node
+- name: Create notary node deployment file
+  include_role: 
+    name: helm_component
+  vars:    
+    type: corda_ent_notary
+    node_name: "{{ node.name | lower }}"
+    p2p_port: "{{ node.p2p.port }}"
+    rpc_port: "{{ node.rpc.targetPort }}"
+    rpc_admin_port: "{{ node.rpcadmin.targetPort }}"
+    subject: "{{ node.subject }}"
+    service_name: "{{ node.serviceName }}"
+    validating: "{{ node.validating }}"
+
+    nms_url: "{{ network | json_query('network_services[?type==`idman`].uri') | first }}"
+    doorman_url: "{{ network | json_query('network_services[?type==`networkmap`].uri') | first }}"
+  loop: "{{ node }}"
+  loop_control:
+    loop_var: node
+
+# Git Push: Push the deployment files for notary node
+- name: Push notary deployment files
+  include_role: 
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/git_push"
+  vars:
+    GIT_DIR: "{{ playbook_dir }}/../../../"
+    msg: "[ci skip] Pushing notary deployment file for notary"
+
+# Check if the job is completed
+- name: "Check if {{ component_name }} job is completed in the {{ org_name }} organization"
+  include_role:
+    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+  vars:
+    component_type: Job
+    namespace: "{{ component_ns }}"

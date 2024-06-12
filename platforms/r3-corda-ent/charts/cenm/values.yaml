@@ -72,6 +72,7 @@ image:
 settings:
   removeKeysOnDelete: false
 
+# Include the entire subjects into the tpl ---------------------------------------------------
 subjects:
   # Mention the subject for auth
   # Eg. auth: "CN=Test TLS Auth Service Certificate, OU=HQ, O=HoldCo LLC, L=New York, C=US"

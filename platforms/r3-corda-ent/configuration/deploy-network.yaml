@@ -61,7 +61,6 @@
   #   loop_control:
   #     loop_var: org
 
-
   # Setup CENM
   - name: "Setup cenm"   
     include_role: 
@@ -80,11 +79,26 @@
       loop_var: org
     when: org.type == 'cenm'
 
-
-
-
-
-
+  # Deploy notaries
+  - name: Deploy notary service
+    include_role:
+      name: setup/new_notary
+    vars:
+      org_name: "{{ org.name | lower }}"
+      component_name: "{{ org_name }}-notary"
+      component_ns: "{{ org_name }}-ent"
+      external_url_suffix: "{{ org.external_url_suffix }}"
+      node: "{{ org.services.notaries }}"
+      kubernetes: "{{ org.k8s }}"
+      vault: "{{ org.vault }}"
+      gitops: "{{ org.gitops }}"
+      charts_dir: "{{ org.gitops.chart_source }}"
+      values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
+    when: 
+      - org.services.notaries is defined
 
   # These variables can be overriden from the command line
   vars:
