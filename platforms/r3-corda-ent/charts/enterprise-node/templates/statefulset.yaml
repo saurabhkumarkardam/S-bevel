@@ -101,6 +101,7 @@ spec:
           echo "Getting vault Token..."
           vaultBevelFunc "init"
           # Read if secret exists in Vault
+          echo "=====================> PATH: ${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/{{ .Release.Name }}-certs"
           vaultBevelFunc 'readJson' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/{{ .Release.Name }}-certs"
           if [ "$SECRETS_AVAILABLE" == "yes" ]
           then
