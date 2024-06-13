@@ -110,6 +110,9 @@ spec:
           if [ "$SECRETS_AVAILABLE" == "yes" ]
           then
             echo "Inside IF --------------------------------------------------------------------"
+            NODE_KEYSTORE=$(echo ${VAULT_SECRET} | jq -r '.["nodekeystore_base64"]')
+            SSL_KEYSTORE=$(echo ${VAULT_SECRET} | jq -r '.["sslkeystore_base64"]')
+            TRUSTSTORE=$(echo ${VAULT_SECRET} | jq -r '.["truststore_base64"]')
             ###############################################################################################
             echo "IF---------------------------------------------START"
             echo "NODE_KEYSTORE: ${NODE_KEYSTORE}"
@@ -119,9 +122,6 @@ spec:
             echo "TRUSTSTORE: ${TRUSTSTORE}"
             echo "IF---------------------------------------------END"
             ###############################################################################################
-            NODE_KEYSTORE=$(echo ${VAULT_SECRET} | jq -r '.["nodekeystore_base64"]')
-            SSL_KEYSTORE=$(echo ${VAULT_SECRET} | jq -r '.["sslkeystore_base64"]')
-            TRUSTSTORE=$(echo ${VAULT_SECRET} | jq -r '.["truststore_base64"]')
             echo "saving the cert contents to file"
             echo $NODE_KEYSTORE | base64 -d > /opt/corda/certificates/nodekeystore.jks
             echo $SSL_KEYSTORE | base64 -d > /opt/corda/certificates/sslkeystore.jks
