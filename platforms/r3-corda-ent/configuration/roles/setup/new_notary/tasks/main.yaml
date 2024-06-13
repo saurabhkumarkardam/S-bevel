@@ -29,6 +29,7 @@
     rpc_port: "{{ node.ports.rpc }}"
     rpc_admin_port: "{{ node.ports.admin_rpc }}"
     subject: "{{ node.subject }}"
+    legal_name: "{{ node.subject }}"
     service_name: "{{ node.serviceName }}"
     validating: "{{ node.validating }}"
     # nms_url: "{{ network | json_query('network_services[?type==`idman`].uri') | first }}"
