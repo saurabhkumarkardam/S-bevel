@@ -81,6 +81,10 @@
       charts_dir: "{{ org.gitops.chart_source }}"
       values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}/build"
 
+  - name: Stop for 5 mins
+    pause:
+      minutes: 5m
+
   # Deploy notaries
   - name: Deploy notary service
     include_role:
