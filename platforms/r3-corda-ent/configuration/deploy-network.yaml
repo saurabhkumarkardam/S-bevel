@@ -42,7 +42,7 @@
     include_role:
       name: create/secrets
     vars:
-      component_ns: "{{ org.name | lower }}-ns"
+      component_ns: "{{ org.name | lower }}-ent"
       kubernetes: "{{ org.k8s }}"
       vault: "{{ org.vault }}"
     loop: "{{ network['organizations'] }}"
