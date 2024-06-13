@@ -70,3 +70,4 @@ charts:
   generate-keys: indy-key-mgmt
   generate-genesis: indy-genesis
   stewards: indy-node
+  corda_ent_notary: enterprise-node
