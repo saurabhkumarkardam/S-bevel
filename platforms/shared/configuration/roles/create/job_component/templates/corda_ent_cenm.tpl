@@ -47,17 +47,10 @@ storage:
   allowedTopologies:
     enabled: false
 subjects:
-  # services.auth.subject
-  auth: "CN=Test TLS Auth Service Certificate, OU=HQ, O=HoldCo LLC, L=New York, C=US"
-  # services.signer.subject
-  tlscrlsigner: "CN=Test TLS Signer Certificate, OU=HQ, O=HoldCo LLC, L=New York, C=US"
-  # services.idman.crlissuer_subject
-  tlscrlissuer: "CN=Corda TLS CRL Authority,OU=Corda UAT,O=R3 HoldCo LLC,L=New York,C=US"
-  # org.subject
-  rootca: "CN=DLT Root CA,OU=DLT,O=DLT,L=London,C=GB"
-  # org.subordinate_ca_subject
-  subordinateca: "CN=Test Subordinate CA Certificate, OU=HQ, O=HoldCo LLC, L=New York, C=US"
-  # services.idman.subject
-  idmanca: "CN=Test Identity Manager Service Certificate, OU=HQ, O=HoldCo LLC, L=New York, C=US"
-  # services.networkmap.subject
-  networkmap: "CN=Test Network Map Service Certificate, O
+  auth: {{ auth_subject }}
+  tlscrlsigner: {{ signer_subject}}
+  tlscrlissuer: {{ idman_crlissuer_subject }}
+  rootca: {{ root_ca }}
+  subordinateca: {{ subordinate_ca }}
+  idmanca: {{ idman_subject }}
+  networkmap: {{ networkmap_subject }}

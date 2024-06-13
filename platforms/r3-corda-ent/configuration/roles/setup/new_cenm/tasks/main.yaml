@@ -3,7 +3,6 @@
 #
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
-
 # Gather Kubernetes cluster information
 - name: Gather Kubernetes cluster information
   community.kubernetes.k8s_cluster_info:
@@ -20,8 +19,15 @@
   include_role:
     name: "{{ playbook_dir }}/../../shared/configuration/roles/create/job_component"
   vars: 
-    cloud_provider: "{{ org.cloud_provider | lower }}"
     type: "corda_ent_cenm"
+    cloud_provider: "{{ org.cloud_provider | lower }}"
+    root_ca: "{{ org.subject }}"
+    subordinate_ca: "{{ org.subordinate_ca_subject }}"
+    auth_subject: "{{ org_services.auth.subject }}"
+    signer_subject: "{{ org_services.signer.subject }}"
+    idman_subject: "{{ org_services.idman.subject }}"
+    idman_crlissuer_subject: "{{ org_services.idman.crlissuer_subject }}"
+    networkmap_subject: "{{ org_services.networkmap.subject }}"
     secondaryInit: false
 
 # Check if the job is completed

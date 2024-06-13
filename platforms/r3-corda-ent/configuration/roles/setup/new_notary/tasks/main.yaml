@@ -15,15 +15,14 @@
   vars:    
     type: corda_ent_notary
     node_name: "{{ node.name | lower }}"
-    p2p_port: "{{ node.p2p.port }}"
-    rpc_port: "{{ node.rpc.targetPort }}"
-    rpc_admin_port: "{{ node.rpcadmin.targetPort }}"
+    p2p_port: "{{ node.ports.p2p }}"
+    rpc_port: "{{ node.ports.rpc }}"
+    rpc_admin_port: "{{ node.ports.admin_rpc }}"
     subject: "{{ node.subject }}"
     service_name: "{{ node.serviceName }}"
     validating: "{{ node.validating }}"
-
-    nms_url: "{{ network | json_query('network_services[?type==`idman`].uri') | first }}"
-    doorman_url: "{{ network | json_query('network_services[?type==`networkmap`].uri') | first }}"
+    # nms_url: "{{ network | json_query('network_services[?type==`idman`].uri') | first }}"
+    # doorman_url: "{{ network | json_query('network_services[?type==`networkmap`].uri') | first }}"
   loop: "{{ node }}"
   loop_control:
     loop_var: node
