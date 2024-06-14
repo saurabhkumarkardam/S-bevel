@@ -65,6 +65,10 @@
     loop_control:
       loop_var: org
 
+  - name: Stop for 5 mins
+    pause:
+      minutes: 5
+
   # Setup CENM
   - name: "Setup cenm"   
     include_role: 
@@ -81,9 +85,9 @@
       charts_dir: "{{ org.gitops.chart_source }}"
       values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}/build"
 
-  - name: Stop for 1 mins
+  - name: Stop for 5 mins
     pause:
-      minutes: 1
+      minutes: 5
 
   # Deploy notaries
   - name: Deploy notary service

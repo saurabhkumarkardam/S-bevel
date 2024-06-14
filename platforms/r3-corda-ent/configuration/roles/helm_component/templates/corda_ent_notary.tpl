@@ -88,10 +88,10 @@ spec:
         validating: {{ validating }}
       doormanPort: 443
       networkMapPort: 443
-      doormanDomain: cenm-doorman.{{ external_url_suffix }}
-      networkMapDomain: cenm-nms.{{ external_url_suffix }}
-      networkMapURL: https://cenm-nms.{{ external_url_suffix }}
-      doormanURL: https://cenm-doorman.{{ external_url_suffix }}
+      doormanDomain: {{ component_name }}-doorman.{{ external_url_suffix }}
+      networkMapDomain: {{ component_name }}-nms.{{ external_url_suffix }}
+      doormanURL: https://{{ component_name }}-doorman.{{ external_url_suffix }}
+      networkMapURL: https://{{ component_name }}-nms.{{ external_url_suffix }}
 {% if (org.cordapps is defined) and (org.cordapps|length > 0) %}
     cordapps:
       getcordapps: true
