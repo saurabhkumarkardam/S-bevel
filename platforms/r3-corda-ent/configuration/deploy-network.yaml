@@ -124,7 +124,7 @@
       org_name: "{{ org.name | lower }}"
       cloud_provider: "{{ org.cloud_provider | lower }}"
       org_services: "{{ org.services }}"
-      component_name: "{{ org_name }}-nm"
+      component_name: "{{ org_name }}-cenm"
       component_ns: "{{ org_name }}-ent"
       kubernetes: "{{ org.k8s }}"
       vault: "{{ org.vault }}"
