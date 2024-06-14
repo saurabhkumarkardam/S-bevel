@@ -71,3 +71,4 @@ charts:
   generate-genesis: indy-genesis
   stewards: indy-node
   corda_ent_notary: enterprise-node
+  corda_ent_network_map: cenm-networkmap
