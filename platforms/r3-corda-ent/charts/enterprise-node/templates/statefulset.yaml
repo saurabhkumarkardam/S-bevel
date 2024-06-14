@@ -180,6 +180,8 @@ spec:
         args:
         - |-
           bin/node-initial-registration.sh
+          ls certificates/
+          ls additional-node-infos/
         volumeMounts:
         - name: node-conf
           mountPath: /opt/corda/etc/node.conf
