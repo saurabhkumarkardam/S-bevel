@@ -32,6 +32,7 @@ spec:
         secretPrefix: "data/{{ org_name }}"
       proxy:
         provider: ambassador
+        externalUrlSuffix: {{ external_url_suffix }}
     image:
       notary:
         repository: corda/corda-enterprise
@@ -88,10 +89,10 @@ spec:
         validating: {{ validating }}
       doormanPort: 443
       networkMapPort: 443
-      doormanDomain: {{ component_name }}-doorman.{{ external_url_suffix }}
-      networkMapDomain: {{ component_name }}-nms.{{ external_url_suffix }}
-      doormanURL: https://{{ component_name }}-doorman.{{ external_url_suffix }}
-      networkMapURL: https://{{ component_name }}-nms.{{ external_url_suffix }}
+      doormanDomain: {{ org_name }}-cenm-doorman.{{ external_url_suffix }}
+      networkMapDomain: {{ org_name }}-cenm-nms.{{ external_url_suffix }}
+      doormanURL: https://{{ org_name }}-cenm-doorman.{{ external_url_suffix }}
+      networkMapURL: https://{{ org_name }}-cenm-nms.{{ external_url_suffix }}
 {% if (org.cordapps is defined) and (org.cordapps|length > 0) %}
     cordapps:
       getcordapps: true
