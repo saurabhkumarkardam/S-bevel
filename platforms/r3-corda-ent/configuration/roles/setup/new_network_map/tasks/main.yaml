@@ -25,12 +25,12 @@
     idman_int_port: "{{ org_services.idman.ports.internal }}"
     idman_ext_port: "{{ org_services.idman.ports.external }}"
     idman_rev_port: "{{ org_services.idman.ports.revocation }}"
-    auth_port: {{ org_services.auth.port }}
-    gateway_port: {{ org_services.gateway.port }}
-    zone_enm_port: {{ org_services.zone.ports.enm }}
-    network_map_int_port: {{ org_services.networkmap.ports.internal }}
-    network_map_ext_port: {{ org_services.networkmap.ports.external }}
-    network_map_admin_listener_port: {{ org_services.networkmap.ports.admin_listener }}
+    auth_port: "{{ org_services.auth.port }}"
+    gateway_port: "{{ org_services.gateway.port }}"
+    zone_enm_port: "{{ org_services.zone.ports.enm }}"
+    network_map_int_port: "{{ org_services.networkmap.ports.internal }}"
+    network_map_ext_port: "{{ org_services.networkmap.ports.external }}"
+    network_map_admin_listener_port: "{{ org_services.networkmap.ports.admin_listener }}"
 
 # Git Push: Push the deployment files for notary node
 - name: Push notary deployment files
