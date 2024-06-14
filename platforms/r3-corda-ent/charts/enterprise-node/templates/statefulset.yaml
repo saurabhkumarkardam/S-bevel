@@ -183,7 +183,6 @@ spec:
           ls certificates/
           ls additional-node-infos/
           echo "---"
-          cat /etc/node.conf
         volumeMounts:
         - name: node-conf
           mountPath: /opt/corda/etc/node.conf
