@@ -1,12 +1,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: first-cenm
+  name: first-nm
   namespace: first-ent
   annotations:
     fluxcd.io/automated: "false"
 spec:
-  releaseName: first-cenm
+  releaseName: first-nm
   interval: 1m
   chart:
    spec:

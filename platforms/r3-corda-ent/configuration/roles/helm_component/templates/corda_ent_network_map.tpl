@@ -31,6 +31,7 @@ spec:
       proxy:
         provider: "ambassador"
         externalUrlSuffix: "{{ external_url_suffix }}"
+        prefix: "{{ org_name }}-cenm"
       cenm:
         sharedCreds:
           truststore: {{ cred_truststore }}
