@@ -46,10 +46,10 @@
     GIT_DIR: "{{ playbook_dir }}/../../../"
     msg: "[ci skip] Pushing notary deployment file for notary"
 
-# Check if the job is completed
-- name: "Check if {{ component_name }} job is completed in the {{ org_name }} organization"
-  include_role:
-    name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
-  vars:
-    component_type: Job
-    namespace: "{{ component_ns }}"
+# # Check if the job is completed
+# - name: "Check if {{ component_name }} job is completed in the {{ org_name }} organization"
+#   include_role:
+#     name: "{{ playbook_dir }}/../../shared/configuration/roles/check/helm_component"
+#   vars:
+#     component_type: Job
+#     namespace: "{{ component_ns }}"
