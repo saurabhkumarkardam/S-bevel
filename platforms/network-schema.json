@@ -2434,7 +2434,9 @@
       "type": "object",
       "properties": {
         "trustee": {
-          "type": "string"
+          "items": {
+            "$ref": "#/definitions/indy_service_trustee"
+          }
         },
         "stewards": {
           "type": "array",
@@ -2443,7 +2445,9 @@
           }
         },
         "endorser": {
-          "type": "string"
+          "items": {
+            "$ref": "#/definitions/indy_service_endorser"
+          }
         }
       },
       "additionalProperties": false

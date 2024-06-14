@@ -105,7 +105,13 @@ network:
       # Services maps to the pods that will be deployed on the k8s cluster
       # This sample has trustee
       services:
-        trustee: authority-trustee
+        trustees:
+        - trustee:
+          name: authority-trustee
+          genesis: true
+          server:
+            port: 8000
+            ambassador: 15010
 
     # Specification for the 2nd organization. Each organization maps to a VPC and a separate k8s cluster
     - organization:
@@ -154,6 +160,10 @@ network:
       # Services maps to the pods that will be deployed on the k8s cluster
       # This sample has trustee, 2 stewards and endoorser
       services:
+        trustees:
+        - trustee:
+          name: provider-trustee
+          genesis: true
         stewards:
         - steward:
           name: university-steward-1
@@ -180,36 +190,21 @@ network:
           client:
             port: 9722
             targetPort: 9722
-            ambassador:  9722        # Port for ambassador service
-        - steward:
-          name: university-steward-3
-          type: VALIDATOR
-          genesis: true
-          publicIp: 3.221.78.194    # IP address of the ambassador proxy
-          node:
-            port: 9731
-            targetPort: 9731
-            ambassador: 9721        # Port for ambassador service
-          client:
-            port: 9732
-            targetPort: 9732
             ambassador: 9722        # Port for ambassador service
-        - steward:
-          name: university-steward-4
-          type: VALIDATOR
-          genesis: true
-          publicIp: 3.221.78.194    # IP address of the ambassador proxy
-          node:
-            port: 9741
-            targetPort: 9741
-            ambassador: 9721        # Port for ambassador service
-          client:
-            port: 9742
-            targetPort: 9742
-            ambassador: 9722        # Port for ambassador service
-        endorser: university-endorser
-    
-    # Specification for the 3nd organization. Each organization maps to a VPC and a separate k8s cluster
+        endorsers:
+        - endorser:
+          name: provider-endorser
+          full_name: Some Decentralized Identity Mobile Services Provider
+          avatar: http://provider.com/avatar.png
+          # public endpoint will be {{ endorser.name}}.{{ external_url_suffix}}:{{endorser.server.httpPort}}
+          # Eg. In this sample http://provider-endorser.indy.blockchaincloudpoc.com:15023/
+          # For minikube: http://<minikubeip>>:15023
+          server:
+            httpPort: 15023
+            apiPort: 15024
+            webhookPort: 15025
+
+    # Specification for the 3rd organization. Each organization maps to a VPC and a separate k8s cluster
     - organization:
       name: provider
       type: peer
@@ -256,9 +251,13 @@ network:
       # Services maps to the pods that will be deployed on the k8s cluster
       # This sample has trustee, 2 stewards and endoorser
       services:
+        trustees:
+        - trustee:
+          name: partner-trustee
+          genesis: true
         stewards:
         - steward:
-          name: provider-steward-3
+          name: partner-steward-1
           type: VALIDATOR
           genesis: true
           publicIp: 3.221.78.194    # IP address of the ambassador proxy
@@ -271,7 +270,7 @@ network:
             targetPort: 9732
             ambassador: 9722        # Port for ambassador service
         - steward:
-          name: provider-steward-4
+          name: partner-steward-2
           type: VALIDATOR
           genesis: true
           publicIp: 3.221.78.194    # IP address of the ambassador proxy
@@ -282,55 +281,16 @@ network:
           client:
             port: 9742
             targetPort: 9742
-            ambassador: 9722        # Port for ambassador service
-        endorser: provider-endorser
-    
-    # Specification for the 4th organization. Each organization maps to a VPC and a separate k8s cluster
-    - organization:
-      name: partner
-      type: peer
-      cloud_provider: aws                               # Supported values: 'aws-baremetal' | 'aws' | 'azure' | 'gcp' | 'minikube' | 
-      external_url_suffix: indy.blockchaincloudpoc.com  # Provide the external dns suffix. Only used when Indy webserver/Clients are deployed.
-
-      aws:
-        access_key: "aws_access_key"            # AWS Access key
-        secret_key: "aws_secret_key"            # AWS Secret key
-        encryption_key: "encryption_key_id"     # AWS encryption key. If present, it's used as the KMS key id for K8S storage class encryption.
-        zone: "availability_zone"               # AWS availability zone
-        region: "region"                        # AWS region
-
-      publicIps: ["3.221.78.194"]               # List of all public IP addresses of each availability zone from all organizations in the same k8s cluster
-      azure:
-        node_resource_group: "MC_myResourceGroup_myCluster_westeurope"
-
-      # Kubernetes cluster deployment variables. The config file path has to be provided in case
-      # the cluster has already been created.
-      k8s:
-        config_file: "/path/to/cluster_config"
-        context: "kubernetes-admin@kubernetes"
-
-      # Hashicorp Vault server address and root-token. Vault should be unsealed.
-      # Do not check-in root_token
-      vault:
-        url: "vault_addr"
-        root_token: "vault_root_token"
-        
-      # Git Repo details which will be used by GitOps/Flux.
-      # Do not check-in git_access_token
-      gitops:
-        git_protocol: "https" # Option for git over https or ssh
-        git_url: "https://github.com/<username>/bevel.git"                   # Gitops https or ssh url for flux value files 
-        branch: "develop"                     # Git branch where release is being made
-        release_dir: "platforms/hyperledger-indy/releases/dev"           # Relative Path in the Git repo for flux sync per environment. 
-        chart_source: "platforms/hyperledger-indy/charts"               # Relative Path where the Helm charts are stored in Git repo
-        git_repo: "github.com/<username>/bevel.git"             # Gitops git repository URL for git push 
-        username: "git_username"                    # Git Service user who has rights to check-in in all branches
-        password: "git_access_token"                    # Git Server user password
-        email: "git@email.com"                          # Email to use in git config
-        private_key: "path_to_private_key"          # Path to private key file which has write-access to the git repo (Optional for https; Required for ssh)
-
-      # Services maps to the pods that will be deployed on the k8s cluster
-      # This sample has trustee, 2 stewards and endoorser
-      services:
-        trustee: partner-trustee
-        endorser: partner-endorser
+            ambassador: 9742            # Port for ambassador service
+        endorsers:
+        - endorser:
+          name: partner-endorser
+          full_name: Some Decentralized Identity Mobile Services Partner
+          avatar: http://partner.com/avatar.png
+          # public endpoint will be {{ endorser.name}}.{{ external_url_suffix}}:{{endorser.server.httpPort}}
+          # Eg. In this sample http://partner-endorser.indy.blockchaincloudpoc.com:15033/
+          # For minikube: http://<minikubeip>>:15033
+          server:
+            httpPort: 15033
+            apiPort: 15034
+            webhookPort: 15035

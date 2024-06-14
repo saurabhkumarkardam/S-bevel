@@ -10,19 +10,18 @@ spec:
   interval: 1m
   chart:
    spec:
-    chart: {{ charts_dir }}/corda-ent-notary-initial-registration
+    chart: {{ charts_dir }}/corda-ent-notary
     sourceRef:
       kind: GitRepository
       name: flux-{{ network.env.type }}
       namespace: flux-{{ network.env.type }}
   values:
-    nodeName: {{ notary_service.name }}-initial-registration
-    nodePath: {{ notary_service.name }}
+    nodeName: {{ component_name }}
     metadata:
       namespace: {{ component_ns }}
     image:
-      initContainerName: {{ network.docker.url}}/{{ init_container_image }}
-      nodeContainerName: {{ network.docker.url}}/{{ main_container_image }}
+      initContainerName: {{ network.docker.url }}/{{ init_container_image }}
+      nodeContainerName: {{ network.docker.url }}/{{ main_container_image }}
       imagePullSecret: regcred
       pullPolicy: IfNotPresent
       privateCertificate: true
@@ -36,6 +35,7 @@ spec:
       retryInterval: 10
     service:
       p2pPort: {{ notary_service.p2p.port }}
+      sshdPort: 2222
       rpc:
         address: "0.0.0.0"
         addressPort: 10003
@@ -57,11 +57,23 @@ spec:
     dataSourceProperties:
       dataSource:
         password: "{{ notary_service.name }}-db-password"
-        url: "jdbc:h2:tcp://{{ notary_name }}db:{{ notary_service.dbtcp.port }}/persistence;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;WRITE_DELAY=100;AUTO_RECONNECT=TRUE;"
+        url: "jdbc:h2:tcp://{{ component_name }}db:{{ notary_service.dbtcp.port }}/persistence;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;WRITE_DELAY=100;AUTO_RECONNECT=TRUE;"
         user: "{{ notary_service.name }}-db-user"
       dataSourceClassName: "org.h2.jdbcx.JdbcDataSource"
-      dbUrl: "{{ notary_name }}db"
+      dbUrl: "{{ component_name }}db"
       dbPort: {{ notary_service.dbtcp.port }}
+{% if (org.cordapps is defined) and (org.cordapps|length > 0) %}
+    cordapps:
+      getcordapps: true
+      jars:
+        {% for jars in org.cordapps.jars %}
+- url: {{ jars.jar.url }}
+        {% endfor %}
+{% else %}
+    cordapps:
+      getcordapps: false
+{% endif %}
+
     nodeConf:
       legalName: {{ notary_service.subject }}
       emailAddress: {{ notary_service.emailAddress }}
@@ -72,7 +84,7 @@ spec:
         validating: {{ notary_service.validating }}
         type: {{ org.type }}
       p2p:
-        url: {{ notary_name }}.{{ component_ns }}
+        url: {{ component_name }}.{{ component_ns }}
       ambassador:
         p2pPort: {{ notary_service.p2p.ambassador | default('10002') }}
         external_url_suffix: {{ org.external_url_suffix }}
@@ -83,11 +95,15 @@ spec:
         memorySize: 1524
         unit: M
       volume:
-        baseDir: /opt/corda
+        baseDir: /opt/corda/base
       pod:
         resources:
           limits: 2056M
           requests: 2056M
+      storage:
+        name: {{ sc_name }}
+        memory: 512Mi
+      replicas: 1
     healthCheckNodePort: 0
     sleepTimeAfterError: 60
     sleepTime: 10

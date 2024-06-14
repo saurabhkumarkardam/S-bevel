@@ -7,8 +7,8 @@
 # Initialize variables for trustee, endorser, and stewards
 - name: "Initialize trustee, endorser and stewards variables"
   set_fact:
-    trustee_name: "{{ org.services.trustee | default('') }}"
-    endorser_name: "{{ org.services.endorser | default('') }}"
+    trustee_name: "{{ org.services.trustee.name | default('') }}"
+    endorser_name: "{{ org.services.endorser.name | default('') }}"
     steward_list: []
 
 # Add stewards to the steward list

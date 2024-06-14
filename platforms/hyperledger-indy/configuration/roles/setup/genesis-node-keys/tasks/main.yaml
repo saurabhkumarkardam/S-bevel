@@ -9,7 +9,7 @@
   include_tasks: trustee_keys.yaml
   when: 
     - org.services.trustee is defined
-    - org.services.trustee | length > 0
+    - org.services.trustee.name | length > 0
 
 # Retrieve Steward's keys for each steward in the list of stewards if stewards are defined
 - name: "Retrieve Steward's keys"
