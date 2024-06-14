@@ -32,7 +32,7 @@ do
         echo "Node: already registered to Identity Manager - skipping initial registration."
         echo
         EXIT_CODE="0"
-        # break
+        break
     fi
 done
 
