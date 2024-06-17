@@ -37,6 +37,10 @@
     loop_control:
       loop_var: org
 
+  - name: Stop for 5 mins
+    pause:
+      minutes: 5
+
   # Create necessary Kubernetes secrets for each organization
   - name: "Create k8s secrets"
     include_role:
