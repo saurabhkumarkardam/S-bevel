@@ -223,7 +223,7 @@ spec:
           
         {{- if .Values.settings.networkServices }}
             echo "Create certificates for Network Services"
-            DOORMAN_URL="{{ .Release.Name }}-doorman.{{ .Values.global.proxy.externalUrlSuffix }}"
+            DOORMAN_URL="{{ .Release.Name }}-doorman.{{ .Values.global.proxy.externalUrlSuffix }}" # 
             openssl req -x509 -out doorman.crt -keyout doorman.key -newkey rsa:2048 -nodes -sha256 \
               -subj "/CN=${DOORMAN_URL}" -addext "subjectAltName = DNS:${DOORMAN_URL}" -extensions EXT -config openssl.conf
             NMS_URL="{{ .Release.Name }}-nms.{{ .Values.global.proxy.externalUrlSuffix }}"
