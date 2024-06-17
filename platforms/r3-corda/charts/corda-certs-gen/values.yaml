@@ -51,6 +51,6 @@ image:
 
 # Settings for certificate generation
 settings:
-  #Set value to true when useing network_services like doorman and nms
+  #Set value to true when using network_services like doorman and nms
   #Eg. networkServices: true
-  networkServices: false
+  networkServices: true # false 
