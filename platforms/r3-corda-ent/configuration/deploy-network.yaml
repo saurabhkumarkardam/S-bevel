@@ -68,6 +68,10 @@
   # - name: Stop for 5 mins
   #   pause:
   #     minutes: 5
+  - name: "Initialize variables for the first organization"
+    set_fact:
+      first_org_name: "{{ network.organizations[0].name | lower }}"
+      first_org_kubernetes: "{{ network.organizations[0].k8s }}"
 
   # Setup CENM
   - name: "Setup cenm"   
