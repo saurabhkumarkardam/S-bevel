@@ -66,7 +66,8 @@ metadata:
 spec:
   # host: cenm-nms.{{ .Values.global.proxy.externalUrlSuffix }}
   # host: {{ .Release.Name }}-nms.{{ .Values.global.proxy.externalUrlSuffix }}
-  host: {{ .Values.global.proxy.prefix }}-nms.{{ .Values.global.proxy.externalUrlSuffix }}
+  # host: {{ .Values.global.proxy.prefix }}-nms.{{ .Values.global.proxy.externalUrlSuffix }}
+  host: {{ .Values.global.proxy.prefix }}.{{ .Values.global.proxy.externalUrlSuffix }}
   prefix: /
   service: {{ include "networkmap.name" . }}.{{ .Release.Namespace }}:{{ .Values.global.cenm.networkmap.port }}
 {{- end }}
