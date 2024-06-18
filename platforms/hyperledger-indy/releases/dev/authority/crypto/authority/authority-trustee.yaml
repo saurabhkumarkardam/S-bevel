@@ -23,7 +23,7 @@ spec:
       name: bevel
     image:
       name: authority
-      repository: index.docker.io/hyperledgerlabs/bevel-indy-key-mgmt:1.11.0
+      repository: ghcr.io/hyperledger/bevel-indy-key-mgmt:1.11.0
       pullSecret: regcred
       pullPolicy: IfNotPresent
     vault:
