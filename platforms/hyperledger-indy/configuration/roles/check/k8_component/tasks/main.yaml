@@ -34,13 +34,7 @@
   register: token_output
   when: component_type == "GetServiceAccount"
 
-# - name: Print secret, kube_token, and vault_token
-#   debug:
-#     msg:
-      # - "Secret: {{ secret }}"
-#       - "Kube Token: {{ kube_token }}"
-#       - "Vault Token: {{ vault_token }}"
-
+# NEW
 - name: Print token_output
   debug:
     var: token_output
