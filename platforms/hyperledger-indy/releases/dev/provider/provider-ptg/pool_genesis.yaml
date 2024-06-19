@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: provider-ptg
+  annotations:
+    fluxcd.io/automated: "false"
+  namespace: provider-ns
+spec:
+  releaseName: provider-ptg
+  interval: 1m
+  chart:
+   spec:
+    chart: platforms/hyperledger-indy/charts/indy-pool-genesis
+    sourceRef:
+      kind: GitRepository
+      name: flux-main-indy
+      namespace: flux-main-indy
+  values:
+    metadata:
+      name: provider-ptg
+      namespace: provider-ns
+    organization:
+      name: provider
+    configmap:
+      poolGenesis: |-
+        {"reqSignature":{},"txn":{"data":{"data":{"alias":"provider-steward-1","blskey":"2vXS2ou6ZC3A8Jv5KuEGpRMvtojKsExEYWaCj8oNcXL64azaFr1SamG11dKYUJ7B4AbposPkVDJGJypRWi2u4yxU9j77sDC3Bo63yp3ffMfspJzg8FNvsDw2sVyYhshM4jTg7LKecNpkEUzdisdDw2DFMNxQz13Krw7AzaLXESYxHaE","blskey_pop":"RWArwH7fDCnWRJCZB1Tx2TeP676Zggcd7sga86LsyJM3yck3dSPVaJZiLaSe7GGPguCmDG5zfuLoM24cn3y1cwe6jwcsoAU2x7bNiZwz1M6Q4bQJQdAinnS1bWXqVGkeye3KMid3xhqpPhaqTAE7JaTk6e97AQLRe5RghCttJhHsPV","client_ip":"108.142.59.4","client_port":15012,"node_ip":"108.142.59.4","node_port":15011,"services":["VALIDATOR"]},"dest":"8ZaTkWkXkb2NTLw6ff2T61Wbwcx8eaf84TZF7w1DfSZF"},"metadata":{"from":"EsgL9JPR1UPTeaaP66HC4m"},"type":"0"},"txnMetadata":{"seqNo":1,"txnId":"917292505e1e4063b0e6b30d73c131649e5a16271d3c96c3284751a66ef1ff50"},"ver":"1"}
+        {"reqSignature":{},"txn":{"data":{"data":{"alias":"provider-steward-2","blskey":"SWSDc2fPciuiQ4bWhCYEpULDv1DaAqs3YmJMJKSJd1oxziwvWkijEHLJJFmptzVYDm2mSzYr7NDtVBsNF76pjcbYSHiWNbPE3hxy4wCRG7ZrrvyKJhmcoxJvsCo4HFisq5qp4dXkZMGsZowpSvnfUtAcTLhABp9tENGN6qFyqr9SAZ","blskey_pop":"QmjfYMfjgd1dLcoG93NnnTgD12Af5rff4dds5ewsZS4VX2P3fk8GHdHkFWjQqq8LFcAMNZQxTND2Z8TnnE8PuDJYGzgGJnosFwvdGFVWLyLGRzeboGQ5NDDj8EYcig5BaZqfzAzhshSRQVt3BmPefMKvtC1kcBSUVHg3YRDZfp7Yv3","client_ip":"108.142.59.4","client_port":15022,"node_ip":"108.142.59.4","node_port":15021,"services":["VALIDATOR"]},"dest":"GCYrR3ZTnas639b8UZQFBsyZR8dYKnh5K5Zfu5juYc6N"},"metadata":{"from":"UtRPiHxnnvekhLWeRYMN3x"},"type":"0"},"txnMetadata":{"seqNo":2,"txnId":"aecd2adbe0d6c4c0ef6e3f78503bddfa8e6078f030381ae895bae9d0da84124f"},"ver":"1"}
+        {"reqSignature":{},"txn":{"data":{"data":{"alias":"partner-steward-1","blskey":"3p6P5ZdHH5BfQDZhusZdPUBHcWXpxxGW6QnZegfbXLeB46CrSjkFYzBrgkjE2ZmBJL1Qq9VNubCSfasV5LisZ9mYQCLeG9mXrt73P595cZ2SRqLS8KrtjPJCPjDbkZNVYLNEps97iySkFAufUbiEwEYWXTh6LGYGwKxtXvVKXa9go57","blskey_pop":"RVs31aeoYLmQNJEYHCnzcofk4YjqaHrdEGKj6WqXwJb48fZxKukfQL1k8BkuUxV3Gde2wUrY8J2T5CMkQXcAddv8UUdfAtdZh9VkQDeBi7658dR6qpgefMCRuzM6xB5BmB8QDorUkvLn4yQtMZqDHtCnDL7Ycj25KrdsBTEoppwWAb","client_ip":"108.142.59.4","client_port":15032,"node_ip":"108.142.59.4","node_port":15031,"services":["VALIDATOR"]},"dest":"ApFdaQmvQx1NnuVdxFDc1xzZncvoVud6gy1Fps6MF632"},"metadata":{"from":"K1SCMDY6toe8QoT7eeXobb"},"type":"0"},"txnMetadata":{"seqNo":3,"txnId":"62a426a55142745dcd68456212d322c8b63682274fcdffd10c3d274e0f87469b"},"ver":"1"}
+        {"reqSignature":{},"txn":{"data":{"data":{"alias":"partner-steward-2","blskey":"2RWmNBpWEFsKdp419nSHAfg28nRbuabjN7Pf6pmtnRiGtpFehvGy3fYJgx6xdDoQfBtvAnUPFCSXaQuraujcrWyFb4WbieDDH53iyDCbg2q7huu1nJPsarZyd8cCpwhVkPkGeKjstdnJCWhqXYoEAuFtZukXxiWGQzCJML9bXGhmQ6a","blskey_pop":"RFgnRuYVSgk1uFN2EaRF2WLLmtSNh63GQinKZxVRy1KM8igw8B1vfYiWBndJzrSBaUrhGLmv5Hw5KzTigZt9NTQJA678kp3jGztxu6AH8jAzvhHoFX59oeD8uT2AfS5MitMP1Zj1pTqkGNrVpGgwivASqWuJVhBYL47GrC5KYD9sYK","client_ip":"108.142.59.4","client_port":15042,"node_ip":"108.142.59.4","node_port":15041,"services":["VALIDATOR"]},"dest":"7WVXkg3ZCMRUVKSSRQtuQF77mirXjGbfmichYfDdH7Ap"},"metadata":{"from":"CwbwnpQK8dEkE59jJPqz72"},"type":"0"},"txnMetadata":{"seqNo":4,"txnId":"bf525e539b7e0d3e0eeeb2a075198dde681f56ce7d724aca0ebf6d606289a523"},"ver":"1"}
