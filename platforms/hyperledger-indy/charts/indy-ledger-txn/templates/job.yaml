@@ -93,6 +93,7 @@ spec:
 
           ADMIN_SEED=$( cat /data/seed/adminseed.txt)
           echo "Running ledger Transaction Script...";
+          sleep 10m
 
           ./home/indy-ledger.sh $ADMIN_DID $ADMIN_SEED $IDENTITY_DID $IDENTITY_ROLE $IDENTITY_VERKEY $POOL_GENESIS_PATH;
         env:
