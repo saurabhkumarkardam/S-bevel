@@ -21,7 +21,7 @@
   until: component_data.resources|length > 0
   when: component_type == "ConfigMap"
 
-# # Get a service account token
+# # Get a service account token # OLD
 # - name: "Get a ServiceAccount token for {{ component_name }}"
 #   vars:
 #     service_account: "{{ component_name }}"
@@ -34,7 +34,7 @@
 #   register: token_output
 #   when: component_type == "GetServiceAccount"
 
-# Get a service account token
+# Get a service account token # NEW
 - name: "Get a ServiceAccount token for {{ component_name }}"
   vars:
     service_account: "{{ component_name }}"
