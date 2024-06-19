@@ -12,50 +12,50 @@
   gather_facts: no
   no_log: "{{ no_ansible_log | default(false) }}"
   tasks:
-  # clean build directory
-  - name: Remove build directory
-    file:
-      path: "./build"
-      state: absent
+  # # clean build directory
+  # - name: Remove build directory
+  #   file:
+  #     path: "./build"
+  #     state: absent
 
-  # Validate input network.yaml
-  - name: "Validating network.yaml"
-    include_role:
-      name: check/validation
+  # # Validate input network.yaml
+  # - name: "Validating network.yaml"
+  #   include_role:
+  #     name: check/validation
 
-  - name: "Pull from main-indy-1"
-    shell: |
-      git pull origin main-indy-1
+  # - name: "Pull from main-indy-1"
+  #   shell: |
+  #     git pull origin main-indy-1
 
-  # Create namespaces for organizations
-  - name: 'Create namespace'
-    include_role:
-      name: create/namespace
-    vars:
-      component_name: "{{ organizationItem.name | lower }}-ns"
-      component_type_name: "{{ organizationItem.type | lower }}"
-      kubernetes: "{{ organizationItem.k8s }}"
-      release_dir: "{{playbook_dir}}/../../../{{organizationItem.gitops.release_dir}}/{{ organizationItem.name | lower }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: organizationItem
-    when: organizationItem.org_status is not defined or organizationItem.org_status == 'new'
+  # # Create namespaces for organizations
+  # - name: 'Create namespace'
+  #   include_role:
+  #     name: create/namespace
+  #   vars:
+  #     component_name: "{{ organizationItem.name | lower }}-ns"
+  #     component_type_name: "{{ organizationItem.type | lower }}"
+  #     kubernetes: "{{ organizationItem.k8s }}"
+  #     release_dir: "{{playbook_dir}}/../../../{{organizationItem.gitops.release_dir}}/{{ organizationItem.name | lower }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: organizationItem
+  #   when: organizationItem.org_status is not defined or organizationItem.org_status == 'new'
 
-  # Create service accounts
-  - name: 'Create service accounts'
-    include_role:
-      name: create/serviceaccount/main
-    vars:
-      component_ns: "{{ organizationItem.name | lower }}-ns"
-      organization: "{{ organizationItem.name | lower }}"
-      component_type_name: "{{ organization }}"
-      services: "{{ organizationItem.services }}"
-      gitops: "{{ organizationItem.gitops }}"
-      kubernetes: "{{ organizationItem.k8s }}"
-    loop: "{{ network['organizations'] }}"
-    loop_control:
-      loop_var: organizationItem
-    when: organizationItem.org_status is not defined or organizationItem.org_status == 'new'
+  # # Create service accounts
+  # - name: 'Create service accounts'
+  #   include_role:
+  #     name: create/serviceaccount/main
+  #   vars:
+  #     component_ns: "{{ organizationItem.name | lower }}-ns"
+  #     organization: "{{ organizationItem.name | lower }}"
+  #     component_type_name: "{{ organization }}"
+  #     services: "{{ organizationItem.services }}"
+  #     gitops: "{{ organizationItem.gitops }}"
+  #     kubernetes: "{{ organizationItem.k8s }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: organizationItem
+  #   when: organizationItem.org_status is not defined or organizationItem.org_status == 'new'
 
   # Create StorageClass
   - name: Create Storage Class
