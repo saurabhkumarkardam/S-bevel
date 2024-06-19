@@ -102,4 +102,3 @@ spec:
       keys:
         storagesize: 3Gi
         storageClassName: {{ sc_name }}
-
