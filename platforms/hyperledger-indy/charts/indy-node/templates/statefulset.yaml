@@ -147,6 +147,7 @@ spec:
             chmod 644 ${KEY_PATH}/identity/public/did;
 
           fi;
+          # sleep 10m # NEW
         volumeMounts:
         - name: ebs-indy-node-keys
           mountPath: /keys
@@ -219,7 +220,7 @@ spec:
             - containerPort: {{ $.Values.client.port }}
           env:
             - name: INDY_NODE_NAME
-              value: "{{ $.Values.node.name }}"
+              value: "{{ $.Values.vault.nodeId }}" # "{{ $.Values.node.name }}"
             - name: INDY_NODE_IP
               value: "{{ $.Values.node.ip }}"
             - name: INDY_NODE_PORT
