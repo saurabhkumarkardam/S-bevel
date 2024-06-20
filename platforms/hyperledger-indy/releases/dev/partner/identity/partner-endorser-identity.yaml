@@ -1,0 +1,48 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: partner-partner-endorser-transaction
+  annotations:
+    fluxcd.io/automated: "false"
+  namespace: partner-ns
+spec:
+  releaseName: partner-partner-endorser-transaction
+  interval: 1m
+  chart:
+   spec:
+    chart: platforms/hyperledger-indy/charts/indy-ledger-txn
+    sourceRef:
+      kind: GitRepository
+      name: flux-main-indy
+      namespace: flux-main-indy
+  values:
+    metadata:
+      name: partner-partner-endorser-transaction
+      namespace: partner-ns
+    network:
+      name: bevel
+    image:
+      cli:
+        name: partner
+        repository: ghcr.io/hyperledger/bevel-indy-ledger-txn:latest
+        pullSecret: regcred
+        pullPolicy: IfNotPresent
+    vault:
+      address: http://98.64.226.131:20001
+      role: rw
+      serviceAccountName: partner-admin-vault-auth
+      auth_path: kubernetes-partner-admin-auth
+    organization:
+      name: partner
+      adminIdentity:
+        name: authority-trustee
+        did: XWoejFuWa4ATPzJjtGKrzX
+        path: authority/data/trustees
+      newIdentity:
+        name: partner-endorser
+        role: ENDORSER
+        did: AJvLvsbwMmWaqxUBj7X6UP
+        verkey: 65GvkG5vtHtsBY7ssGfVVQEGHLV9b1UEHbDsNUemibcs
+        path: partner/data/endorsers
+    node:
+      name: partner
