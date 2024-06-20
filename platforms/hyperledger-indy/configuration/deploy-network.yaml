@@ -23,6 +23,10 @@
     include_role:
       name: check/validation
 
+  - name: "Pull from main-indy-1"
+    shell: |
+      git pull origin main-indy-1
+
   # Create namespaces for organizations
   - name: 'Create namespace'
     include_role:
@@ -114,6 +118,14 @@
     loop: "{{ network['organizations'] }}"
     loop_control:
       loop_var: organizationItem
+
+  - name: Print ac_vault_tokens
+    debug:
+      var: ac_vault_tokens
+
+  - name: "Pause 5 min"
+    pause:
+      minutes: 5
 
   # Generate indy crypto and insert into Vault
   - name: 'Generate indy crypto and insert into Vault'

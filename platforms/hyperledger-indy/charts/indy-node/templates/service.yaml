@@ -74,4 +74,3 @@ spec:
   port: {{ .Values.client.ambassadorPort }}
   service:  "{{ .Values.client.name }}.{{ .Values.metadata.namespace }}:{{ .Values.client.targetPort }}"
 {{- end }}
-
