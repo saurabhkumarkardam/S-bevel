@@ -220,7 +220,7 @@ spec:
             - containerPort: {{ $.Values.client.port }}
           env:
             - name: INDY_NODE_NAME
-              value: "{{ $.Values.vault.nodeId }}" # "{{ $.Values.node.name }}"
+              value: "{{ $.Values.vault.nodeId }}" # "{{ $.Values.node.name }}" # NEW
             - name: INDY_NODE_IP
               value: "{{ $.Values.node.ip }}"
             - name: INDY_NODE_PORT

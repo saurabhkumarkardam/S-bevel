@@ -132,12 +132,12 @@
     - network.env.type != 'operator'
     - (reset is undefined or reset == 'false')
 
-# Cleanup platform specific resources
-- import_playbook: "{{ playbook_dir }}/../../hyperledger-indy/configuration/cleanup.yaml"
-  when: 
-  - network.type == 'indy'
-  - network.env.type != 'operator'
-  - reset is defined and reset == 'true'
+# # Cleanup platform specific resources
+# - import_playbook: "{{ playbook_dir }}/../../hyperledger-indy/configuration/cleanup.yaml"
+#   when: 
+#   - network.type == 'indy'
+#   - network.env.type != 'operator'
+#   - reset is defined and reset == 'true'
 - import_playbook: "{{ playbook_dir }}/../../r3-corda/configuration/cleanup.yaml"
   when: 
   - network.type == 'corda'
