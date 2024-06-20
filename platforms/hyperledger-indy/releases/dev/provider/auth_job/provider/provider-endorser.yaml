@@ -1,0 +1,40 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: provider-provider-endorser-auth-job
+  annotations:
+    fluxcd.io/automated: "false"
+  namespace: provider-ns
+spec:
+  releaseName: provider-provider-endorser-auth-job
+  interval: 1m
+  chart:
+   spec:
+    chart: platforms/hyperledger-indy/charts/indy-auth-job
+    sourceRef:
+      kind: GitRepository
+      name: flux-main-indy
+      namespace: flux-main-indy
+  values:
+    metadata:
+      name: provider-provider-endorser-auth-job
+      namespace: provider-ns
+    network:
+      name: bevel
+      kubernetes_url: https://devcluster-devresourcegroup-d1d33f-kncld871.hcp.westeurope.azmk8s.io:443
+    image:
+      name: provider
+      repository: alpine:3.9.4
+      pullPolicy: IfNotPresent
+    vault:
+      address: http://98.64.226.131:20001
+      identity: provider-endorser
+      admin_auth_path: kubernetes-provider-admin-auth
+      policy: provider-provider-endorser-ro
+      policy_content: path \"/provider/data/endorsers/provider-endorser/*\" { capabilities = [ \"read\", \"list\" ] }
+      auth_path: kubernetes-provider-provider-endorser-auth
+    account:
+      admin_service: provider-admin-vault-auth
+      admin_role: rw
+      service: provider-provider-endorser-vault-auth
+      role: ro
