@@ -21,20 +21,7 @@
   until: component_data.resources|length > 0
   when: component_type == "ConfigMap"
 
-# # Get a service account token # OLD
-# - name: "Get a ServiceAccount token for {{ component_name }}"
-#   vars:
-#     service_account: "{{ component_name }}"
-#     role: "ro"
-#   shell: |
-#     # secret="$(KUBECONFIG={{ kubernetes.config_file }} kubectl get serviceaccount {{ service_account }} -n {{ component_ns }} -o go-template={% raw %}'{{ (index .secrets 0).name }}'{% endraw %})"
-#     secret="{{ service_account }}-token"
-#     kube_token="$(KUBECONFIG={{ kubernetes.config_file }} kubectl get secret ${secret} -n {{ component_ns }} -o go-template={% raw %}'{{ .data.token }}'{% endraw %} | base64 -d)"
-#     vault_token=$(curl --request POST --data '{"jwt": "'"$kube_token"'", "role": "{{ role }}"}' {{ vault.url }}/v1/auth/kubernetes-{{ organization }}-bevel-ac-auth/login | jq -j '.auth.client_token')
-#   register: token_output
-#   when: component_type == "GetServiceAccount"
-
-# Get a service account token # NEW
+# Get a service account token
 - name: "Get a ServiceAccount token for {{ component_name }}"
   vars:
     service_account: "{{ component_name }}"
@@ -46,15 +33,6 @@
     echo $vault_token
   register: token_output
   when: component_type == "GetServiceAccount"
-
-# NEW
-- name: Print token_output
-  debug:
-    var: token_output
-
-- name: Print token_output_stdout
-  debug:
-    var: token_output.stdout
 
 # Store token
 - name: "Store token"

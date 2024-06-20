@@ -11,7 +11,7 @@ network:
   # Network level configuration specifies the attributes required for each organization
   # to join an existing network.
   type: indy
-  version: 1.11.0                         # Supported versions 1.11.0 and 1.12.1
+  version: 1.12.6                         # Supported versions 1.11.0, 1.12.1 & 1.12.6
 
   #Environment section for Kubernetes setup
   env:
@@ -45,6 +45,8 @@ network:
       type: peer
       cloud_provider: minikube             
       publicIps: []                        # Public Ips of stewards/nodes [public ip of minikube]
+      azure:
+        node_resource_group: "MC_myResourceGroup_myCluster_westeurope"
 
       # Kubernetes cluster deployment variables. The config file path has to be provided in case
       # the cluster has already been created.
@@ -89,6 +91,8 @@ network:
       type: peer
       cloud_provider: minikube             
       publicIps: ["192.168.99.173"]        # Public Ips of stewards/nodes [public ip of minikube]
+      azure:
+        node_resource_group: "MC_myResourceGroup_myCluster_westeurope"
 
       # Kubernetes cluster deployment variables. The config file path has to be provided in case
       # the cluster has already been created.
@@ -165,6 +169,8 @@ network:
       type: peer
       cloud_provider: minikube             
       publicIps: ["192.168.99.173"]        # Public Ips of stewards/nodes [public ip of minikube]
+      azure:
+        node_resource_group: "MC_myResourceGroup_myCluster_westeurope"
 
       # Kubernetes cluster deployment variables. The config file path has to be provided in case
       # the cluster has already been created.
