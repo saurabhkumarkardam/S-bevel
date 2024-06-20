@@ -1,0 +1,38 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: provider-provider-endorser
+  annotations:
+    fluxcd.io/automated: "false"
+  namespace: provider-ns
+spec:
+  releaseName: provider-provider-endorser
+  interval: 1m
+  chart:
+   spec:
+    chart: platforms/hyperledger-indy/charts/indy-key-mgmt
+    sourceRef:
+      kind: GitRepository
+      name: flux-main-indy
+      namespace: flux-main-indy
+  values:
+    metadata:
+      name: provider-provider-endorser
+      namespace: provider-ns
+    network:
+      name: bevel
+    image:
+      name: provider
+      repository: ghcr.io/hyperledger/bevel-indy-key-mgmt:1.12.6
+      pullSecret: regcred
+      pullPolicy: IfNotPresent
+    vault:
+      address: http://98.64.226.131:20001
+      version: "2"
+      keyPath: provider.endorsers
+      identity: provider-endorser
+      auth_path: kubernetes-provider-admin-auth
+      certsecretprefix: provider
+    account:
+      service: provider-admin-vault-auth
+      role: rw
