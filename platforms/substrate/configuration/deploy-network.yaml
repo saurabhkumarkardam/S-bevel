@@ -28,6 +28,10 @@
       path: "./build"
       state: absent
 
+  - name: "Git pull inteli-subs-1"
+    shell: |
+      git pull origin inteli-subs-1
+
   # Create Kubernetes namespaces for each organization
   - name: "Create namespace"
     include_role: 
