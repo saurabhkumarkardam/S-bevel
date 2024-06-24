@@ -23,9 +23,9 @@
     include_role:
       name: check/validation
 
-  - name: "Pull from main-indy-1"
+  - name: "Pull from indy-demo-1"
     shell: |
-      git pull origin main-indy-1
+      git pull origin indy-demo-1
 
   # Create namespaces for organizations
   - name: 'Create namespace'
