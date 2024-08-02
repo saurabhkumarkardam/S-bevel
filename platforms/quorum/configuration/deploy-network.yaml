@@ -47,6 +47,10 @@
     when: 
     - org.org_status is not defined or org.org_status == 'new'
 
+  - name: Pause 1
+    pause:
+      minutes: 1
+
   # Execute primary genesis for the first organization
   - name: "Setup primary genesis with first org as Validators"
     include_role:
@@ -64,6 +68,10 @@
     when: 
       - not (add_new_org | bool)
 
+  - name: Pause 2
+    pause:
+      minutes: 1
+
   # # This role deploy validator nodes
   - name: "Deploy validator nodes"
     include_role:
@@ -80,6 +88,10 @@
       values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
     when: 
     - org.org_status is not defined or org.org_status == 'new'
+
+  - name: Pause 3
+    pause:
+      minutes: 1
 
   # Deploy member nodes
   - name: "Deploy member nodes with tessera transaction manager"
@@ -102,6 +114,10 @@
       loop_var: org
     when: 
       - org.org_status is not defined or org.org_status == 'new'
+
+  - name: Pause 4
+    pause:
+      minutes: 1
 
   #These variables can be overriden from the command line
   vars:

@@ -10,11 +10,20 @@
     path: "{{ build_path }}"
     state: directory
 
+# # Get number of validators
+# - name: Validator count
+#   set_fact:
+#     validator_count={{ validator_count | default(0) | int + 1  }}
+#   loop: "{{ org.services.validators | default([]) }}"
+
 # Get number of validators
 - name: Validator count
   set_fact:
     validator_count={{ validator_count | default(0) | int + 1  }}
-  loop: "{{ org.services.validators | default([]) }}"
+  loop: "{{ org.services.peers | default([]) }}"
+  loop_control:
+      loop_var: peer
+  whem: peer.type == 'validator'
 
 - name: Fail when no validators detected
   ansible.builtin.fail:
