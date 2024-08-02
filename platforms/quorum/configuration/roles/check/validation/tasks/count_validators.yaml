@@ -1,0 +1,14 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+# Counting the number of validator nodes
+- name: "Count validator nodes"
+  set_fact:
+    total_validators: "{{ total_validators | int + 1 }}"
+  loop: "{{ peers }}"
+  loop_control:
+    loop_var: peer
+  when: (peer is defined) and (peer.type == 'validator')

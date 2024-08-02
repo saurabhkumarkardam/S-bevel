@@ -10,25 +10,27 @@
     path: "{{ build_path }}"
     state: directory
 
+# ################################ MANAGE VALIDATION SEPARATELY #################################
 # # Get number of validators
 # - name: Validator count
 #   set_fact:
 #     validator_count={{ validator_count | default(0) | int + 1  }}
 #   loop: "{{ org.services.validators | default([]) }}"
 
-# Get number of validators
-- name: Validator count
-  set_fact:
-    validator_count={{ validator_count | default(0) | int + 1  }}
-  loop: "{{ org.services.peers | default([]) }}"
-  loop_control:
-      loop_var: peer
-  whem: peer.type == 'validator'
+# # Get number of validators
+# - name: Validator count
+#   set_fact:
+#     validator_count: "{{ validator_count | default(0) | int + 1 }}"
+#   loop: "{{ org.services.peers | default([]) }}"
+#   loop_control:
+#     loop_var: peer
+#   when: peer.type == 'validator'
 
-- name: Fail when no validators detected
-  ansible.builtin.fail:
-    msg: The first organization must have Validators.
-  when: validator_count == 0
+# - name: Fail when no validators detected
+#   ansible.builtin.fail:
+#     msg: The first organization must have Validators.
+#   when: validator_count == 0
+##################################################################################################
 
 - name: Get the kubernetes server url
   shell: |

@@ -1,0 +1,25 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+# Set initial counter for validators
+- name: Set initial validator count
+  set_fact:
+    total_validators: 0
+
+# Loop through each organization to count nodes
+- name: Count validator nodes
+  include_tasks: count_validators.yaml
+  vars:
+    peers: "{{ org.services.peers }}"
+  loop: "{{ network['organizations'] }}"
+  loop_control:
+    loop_var: org
+
+# Stop execution if total validators are less than 4
+- name: Fail if total validators are less than 4
+  fail:
+    msg: "A minimum of 4 validators are required per GoQuorum network."
+  when: (total_validators | int) < 4
