@@ -10,15 +10,15 @@
     first_org_name: "{{ network.organizations[0].name | lower }}"
     first_org_kubernetes: "{{ network.organizations[0].k8s }}"
 
-# Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
-- name: "Get static nodes ConfigMap"
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: ConfigMap
-    name: quorum-peers
-    namespace: "{{ first_org_name }}-ns"
-    kubeconfig: "{{ first_org_kubernetes.config_file }}"
-  register: peers_configmap
+# # Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
+# - name: "Get static nodes ConfigMap"
+#   community.kubernetes.k8s_info:
+#     api_version: v1
+#     kind: ConfigMap
+#     name: quorum-peers
+#     namespace: "{{ first_org_name }}-quo"
+#     kubeconfig: "{{ first_org_kubernetes.config_file }}"
+#   register: peers_configmap
 
 # Retrieve genesis from the ConfigMap belongs to the primary (first) organization
 - name: "Get genesis ConfigMap"
@@ -26,23 +26,31 @@
     api_version: v1
     kind: ConfigMap
     name: quorum-genesis
-    namespace: "{{ first_org_name }}-ns"
+    namespace: "{{ first_org_name }}-quo"
     kubeconfig: "{{ first_org_kubernetes.config_file }}"
   register: genesis_configmap
+
+# - name: "Print static nodes ConfigMap"
+#   ansible.builtin.debug:
+#     msg: "Static nodes ConfigMap: {{ peers_configmap }}"
+
+- name: "Print genesis ConfigMap"
+  ansible.builtin.debug:
+    msg: "Genesis ConfigMap: {{ genesis_configmap }}"
 
 # Save the domain transactions genesis content to a file
 - name: "Save domain transactions genesis to file"
   copy:
-    content: "{{ peers_configmap.resources[0].data.domain_transactions_genesis }}"
-    dest: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/domain_transactions_genesis.json"
-  when: peers_configmap.resources[0].data.domain_transactions_genesis is defined
+    content: "{{ peers_configmap.resources[0].data['genesis.json'] }}"
+    dest: "{{ playbook_dir }}/../../quorum/charts/quorum-genesis/files/static-nodes.json"
+  when: peers_configmap.resources[0].data['genesis.json'] is defined
 
 # Save the pool transactions genesis content to a file
 - name: "Save pool transactions genesis to file"
   copy:
-    content: "{{ genesis_configmap.resources[0].data.pool_transactions_genesis }}"
-    dest: "{{ playbook_dir }}/../../hyperledger-indy/charts/indy-genesis/files/pool_transactions_genesis.json"
-  when: genesis_configmap.resources[0].data.pool_transactions_genesis is defined
+    content: "{{ genesis_configmap.resources[0].data['genesis.json'] }}"
+    dest: "{{ playbook_dir }}/../../quorum/charts/quorum-genesis/files/genesis.json"
+  when: genesis_configmap.resources[0].data['genesis.json'] is defined
 
 # Generate secondary genesis HR files for the remaining organizations
 - name: "Generate secondary genesis HR file for the remaining organization"
@@ -50,7 +58,7 @@
   vars:
     name: "{{ org.name | lower }}"
     component_name: "{{ name }}-genesis"
-    component_ns: "{{ name }}-ns"
+    component_ns: "{{ name }}-quo"
     component_type: "generate-genesis"
     cloud_provider: "{{ org.cloud_provider | lower }}"
     kubernetes: "{{ org.k8s }}"
