@@ -27,56 +27,63 @@
     include_role:
       name: check/validation
 
-  # # create namespace
-  # - name: "Create namespace"
-  #   include_role:
-  #     name: create/namespace
-  #   vars:
-  #     component_ns: "{{ item.name | lower }}-quo"
-  #     organisation: "{{ item.name | lower }}"
-  #     kubernetes: "{{ item.k8s }}"
-  #     gitops: "{{ item.gitops }}"
-  #   loop: "{{ network['organizations'] }}"
-  
-  # # Create necessary secrets
-  # - name: "Create k8s secrets"
-  #   include_role:
-  #     name: create/secrets
-  #   vars:
-  #     component_ns: "{{ org.name | lower }}-quo"
-  #     kubernetes: "{{ org.k8s }}"
-  #     vault: "{{ org.vault }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
-  #   when: 
-  #   - org.org_status is not defined or org.org_status == 'new'
-
-  # - name: Pause 1
-  #   pause:
-  #     minutes: 1
-
-  # Execute primary genesis for the first organization
-  - name: "Setup primary genesis with first org as Validators"
+  # create namespace
+  - name: "Create namespace"
     include_role:
-      name: setup/genesis/primary
+      name: create/namespace
     vars:
-      build_path: "./build"
-      org: "{{ network['organizations'] | first }}"
-      name: "{{ org.name | lower }}"
+      component_ns: "{{ item.name | lower }}-quo"
+      organisation: "{{ item.name | lower }}"
+      kubernetes: "{{ item.k8s }}"
+      gitops: "{{ item.gitops }}"
+    loop: "{{ network['organizations'] }}"
+  
+  # Create necessary secrets
+  - name: "Create k8s secrets"
+    include_role:
+      name: create/secrets
+    vars:
       component_ns: "{{ org.name | lower }}-quo"
       kubernetes: "{{ org.k8s }}"
       vault: "{{ org.vault }}"
-      gitops: "{{ org.gitops }}"
-      charts_dir: "{{ org.gitops.chart_source }}"
-      values_dir: "./build/{{ component_ns }}"
-      validator_count: "{{ total_validators | int }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
     when: 
-      - not (add_new_org | bool)
+    - org.org_status is not defined or org.org_status == 'new'
+
+  - name: Pause 1
+    pause:
+      minutes: 1
+
+  # # Execute primary genesis for the first organization
+  # - name: "Setup primary genesis with first org as Validators"
+  #   include_role:
+  #     name: setup/genesis/primary
+  #   vars:
+  #     build_path: "./build"
+  #     org: "{{ network['organizations'] | first }}"
+  #     name: "{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     kubernetes: "{{ org.k8s }}"
+  #     vault: "{{ org.vault }}"
+  #     gitops: "{{ org.gitops }}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #     values_dir: "./build/{{ component_ns }}"
+  #     validator_count: "{{ total_validators | int }}"
+  #   when: 
+  #     - not (add_new_org | bool)
+
+  # Install Genesis
+  - name: "Install Genesis"
+    include_role:
+      name: setup/genesis_new
+    vars:
+      validator_count: "{{ total_validators | int }}"
 
   - name: Pause 2
     pause:
-      minutes: 1
+      minutes: 10
 
   # # This role deploy validator nodes
   - name: "Deploy validator nodes"

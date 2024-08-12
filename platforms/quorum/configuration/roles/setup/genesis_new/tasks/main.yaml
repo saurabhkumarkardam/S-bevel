@@ -4,11 +4,11 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 
-# Counting the number of validator nodes
-- name: "Count validator nodes"
-  set_fact:
-    total_validators: "{{ total_validators | int + 1 }}"
-  loop: "{{ validators }}"
-  loop_control:
-    loop_var: validator
-  when: validator is defined
+# Primary genesis setup
+- name: "Primary genesis setup"
+  include_tasks: primary_genesis.yaml
+
+# Secondary genesis setup if there are multiple organizations
+- name: "Secondary genesis Setup"
+  include_tasks: secondary_genesis.yaml
+  when: network['organizations'] | length > 1

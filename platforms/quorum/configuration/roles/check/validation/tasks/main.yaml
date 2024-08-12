@@ -13,7 +13,7 @@
 - name: Count validator nodes
   include_tasks: count_validators.yaml
   vars:
-    peers: "{{ org.services.peers }}"
+    validators: "{{ org.services.validators }}"
   loop: "{{ network['organizations'] }}"
   loop_control:
     loop_var: org
