@@ -7,18 +7,18 @@
 # Initialize variables for the first organization
 - name: "Initialize variables for the first organization"
   set_fact:
-    first_org_name: "{{ network.organizations[0].name | lower }}"
-    first_org_kubernetes: "{{ network.organizations[0].k8s }}"
+    first_org_name: "{{ network.organizations[(org_index - 1) | int].name | lower }}"
+    first_org_kubernetes: "{{ network.organizations[(org_index - 1) | int].k8s }}"
 
-# # Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
-# - name: "Get static nodes ConfigMap"
-#   community.kubernetes.k8s_info:
-#     api_version: v1
-#     kind: ConfigMap
-#     name: quorum-peers
-#     namespace: "{{ first_org_name }}-quo"
-#     kubeconfig: "{{ first_org_kubernetes.config_file }}"
-#   register: peers_configmap
+# Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
+- name: "Get static nodes ConfigMap"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: quorum-peers
+    namespace: "{{ first_org_name }}-quo"
+    kubeconfig: "{{ first_org_kubernetes.config_file }}"
+  register: peers_configmap
 
 # Retrieve genesis from the ConfigMap belongs to the primary (first) organization
 - name: "Get genesis ConfigMap"
@@ -30,22 +30,22 @@
     kubeconfig: "{{ first_org_kubernetes.config_file }}"
   register: genesis_configmap
 
-# - name: "Print static nodes ConfigMap"
-#   ansible.builtin.debug:
-#     msg: "Static nodes ConfigMap: {{ peers_configmap }}"
+- name: "Print static nodes ConfigMap"
+  ansible.builtin.debug:
+    msg: "Static nodes ConfigMap: {{ peers_configmap }}"
 
 - name: "Print genesis ConfigMap"
   ansible.builtin.debug:
     msg: "Genesis ConfigMap: {{ genesis_configmap }}"
 
-# Save the domain transactions genesis content to a file
+# Save peers_configmap content to a file
 - name: "Save domain transactions genesis to file"
   copy:
     content: "{{ peers_configmap.resources[0].data['genesis.json'] }}"
     dest: "{{ playbook_dir }}/../../quorum/charts/quorum-genesis/files/static-nodes.json"
   when: peers_configmap.resources[0].data['genesis.json'] is defined
 
-# Save the pool transactions genesis content to a file
+# Save genesis_configmap content to a file
 - name: "Save pool transactions genesis to file"
   copy:
     content: "{{ genesis_configmap.resources[0].data['genesis.json'] }}"
@@ -54,15 +54,15 @@
 
 # Generate secondary genesis HR files for the remaining organizations
 - name: "Generate secondary genesis HR file for the remaining organization"
-  include_tasks: secondary_genesis_orgs.yaml
+  include_tasks: deploy_secondary_genesis.yaml
   vars:
-    name: "{{ org.name | lower }}"
+    name: "{{ org_name }}"
     component_name: "{{ name }}-genesis"
     component_ns: "{{ name }}-quo"
-    component_type: "generate-genesis"
+    # component_type: "generate-genesis"
     cloud_provider: "{{ org.cloud_provider | lower }}"
     kubernetes: "{{ org.k8s }}"
     vault: "{{ org.vault }}"
-  loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
-  loop_control:
-    loop_var: org
+  # loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
+  # loop_control:
+  #   loop_var: org

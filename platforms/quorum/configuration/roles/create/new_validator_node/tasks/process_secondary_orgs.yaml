@@ -1,0 +1,18 @@
+
+# # Initialize variables for the first organization
+# - name: "Initialize variables for the first organization"
+#   set_fact:
+#     org_index: 0
+
+# # Process Secondary organization
+# - name: "Process Secondary organization"
+#   include_tasks: process_secondary_orgs_validators.yaml
+#   vars:
+#     org_name: "{{ org.name | lower }}"
+#     component_ns: "{{ org_name }}-quo"
+#     vault: "{{ org.vault }}"
+#     validators: "{{ org.services.validators }}"
+#   loop: "{{ secondary_orgs }}"
+#   loop_control:
+#     loop_var: org
+#   when: org.services.validators is defined or org.services.peers is defined

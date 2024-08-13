@@ -1,0 +1,16 @@
+
+
+# Process primary organization's validators
+- name: "Process primary organization's validators"
+  include_tasks: deploy_primary_validators.yaml
+  vars:
+    # org: "{{ primary_org }}"
+    org_name: "{{ primary_org.name | lower }}"
+    component_ns: "{{ org_name }}-quo"
+    component_name: "{{ validator.name | lower }}"
+    vault: "{{ primary_org.vault }}"
+  # loop: "{{ network['organizations'][0].services.validators }}"
+  loop: "{{ primary_org.services.validators }}"
+  loop_control:
+    loop_var: validator
+  when: primary_org.services.validators is defined

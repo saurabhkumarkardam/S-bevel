@@ -1,0 +1,38 @@
+# # Monitor org_index
+# - name: "Update org_index"
+#   set_fact:
+#     org_index: "{{ org_index | int + 1 }}"
+
+# # Install Secondary Genesis
+# - name: "Install Secondary Genesis"
+#   include_role:
+#     name: setup/genesis_new/secondary_genesis
+#   when: org_name != network.organizations[0].name
+
+- name: "Print org_index"
+  ansible.builtin.debug:
+    msg: "org_index: {{ current_org_index }}"
+
+
+# Process primary organization's validators
+- name: "Deploy validators of {{ org_name }}"
+  include_role:
+    name: create/sau_validator
+  vars:
+    component_name: "{{ validator.name | lower }}"
+  loop: "{{ validators }}"
+  loop_control:
+    loop_var: validator
+  when: validator is defined
+
+# Process primary organization's validators
+- name: "Deploy members of {{ org_name }}"
+  include_role:
+    name: create/sau_member
+  vars:
+    component_name: "{{ members.name | lower }}"
+  loop: "{{ members }}"
+  loop_control:
+    loop_var: member
+  when: members is defined
+

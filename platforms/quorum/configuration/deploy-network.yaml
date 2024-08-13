@@ -77,7 +77,7 @@
   # Install Genesis
   - name: "Install Genesis"
     include_role:
-      name: setup/genesis_new
+      name: setup/genesis_new/primary_genesis
     vars:
       validator_count: "{{ total_validators | int }}"
 
@@ -85,52 +85,70 @@
     pause:
       minutes: 10
 
-  # # This role deploy validator nodes
-  - name: "Deploy validator nodes"
+  - name: "Deploy nodes"
     include_role:
-      name: create/validator_node
+      name: setup/nodes
     vars:
-      build_path: "./build"
-      org: "{{ network['organizations'] | first }}"
-      name: "{{ org.name | lower }}"
-      component_ns: "{{ org.name | lower }}-quo"
+      org_name: "{{ org.name | lower }}"
+      component_ns: "{{ org_name }}-quo"
+      validators: "{{ org.services.validators }}"
+      members: "{{ org.services.peers }}"
       kubernetes: "{{ org.k8s }}"
       vault: "{{ org.vault }}"
       gitops: "{{ org.gitops }}"
+      current_org_index: "{{ loop.index0 }}"
       charts_dir: "{{ org.gitops.chart_source }}"
-      values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
-    when: 
-    - org.org_status is not defined or org.org_status == 'new'
-
-  - name: Pause 3
-    pause:
-      minutes: 1
-
-  # Deploy member nodes
-  - name: "Deploy member nodes with tessera transaction manager"
-    include_role:
-      name: create/member_node
-    vars:
-      build_path: "./build"
-      kubernetes: "{{ org.k8s }}"
-      name: "{{ org.name | lower }}"
-      firstorg: "{{ network['organizations'] | first }}"
-      consensus: "{{ network.config.consensus }}"
-      component_ns: "{{ org.name | lower }}-quo"
-      vault: "{{ org.vault }}"
-      gitops: "{{ org.gitops }}"
-      charts_dir: "{{ org.gitops.chart_source }}"
-      values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
-      geth_data: "{{ network.config.bootnode | default('null') }}"
+      values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ org_name }}"
     loop: "{{ network['organizations'] }}"
     loop_control:
       loop_var: org
-    when: 
-      - org.org_status is not defined or org.org_status == 'new'
 
-  - name: Pause 4
-    pause:
-      minutes: 1
+  # # # This role deploy validator nodes
+  # - name: "Deploy validator nodes"
+  #   include_role:
+  #     name: create/validator_node
+  #   vars:
+  #     build_path: "./build"
+  #     org: "{{ network['organizations'] | first }}"
+  #     name: "{{ org.name | lower }}"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     kubernetes: "{{ org.k8s }}"
+  #     vault: "{{ org.vault }}"
+  #     gitops: "{{ org.gitops }}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
+  #   when: 
+  #   - org.org_status is not defined or org.org_status == 'new'
+
+  # - name: Pause 3
+  #   pause:
+  #     minutes: 1
+
+  # # Deploy member nodes
+  # - name: "Deploy member nodes with tessera transaction manager"
+  #   include_role:
+  #     name: create/member_node
+  #   vars:
+  #     build_path: "./build"
+  #     kubernetes: "{{ org.k8s }}"
+  #     name: "{{ org.name | lower }}"
+  #     firstorg: "{{ network['organizations'] | first }}"
+  #     consensus: "{{ network.config.consensus }}"
+  #     component_ns: "{{ org.name | lower }}-quo"
+  #     vault: "{{ org.vault }}"
+  #     gitops: "{{ org.gitops }}"
+  #     charts_dir: "{{ org.gitops.chart_source }}"
+  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
+  #     geth_data: "{{ network.config.bootnode | default('null') }}"
+  #   loop: "{{ network['organizations'] }}"
+  #   loop_control:
+  #     loop_var: org
+  #   when: 
+  #     - org.org_status is not defined or org.org_status == 'new'
+
+  # - name: Pause 4
+  #   pause:
+  #     minutes: 1
 
   #These variables can be overriden from the command line
   vars:

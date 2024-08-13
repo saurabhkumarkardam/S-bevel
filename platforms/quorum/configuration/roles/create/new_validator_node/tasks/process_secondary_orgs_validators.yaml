@@ -1,0 +1,23 @@
+# # Counting the number of validator nodes
+# - name: "Update org_index"
+#   set_fact:
+#     org_index: "{{ org_index | int + 1 }}"
+
+# - name: "Print org_index"
+#   ansible.builtin.debug:
+#     msg: "org_index: {{ org_index }}"
+
+# # Install Secondary Genesis
+# - name: "Install Secondary Genesis"
+#   include_role:
+#     name: setup/genesis_new/secondary_genesis
+
+# # Process Secondary organization
+# - name: "Process Secondary organization"
+#   include_tasks: deploy_secondary_orgs_validators.yaml
+#   vars:
+#     component_name: "{{ validator.name | lower }}"
+#   loop: "{{ validators }}"
+#   loop_control:
+#     loop_var: validator
+#   when: validator is defined
