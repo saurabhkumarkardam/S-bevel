@@ -7,8 +7,8 @@
 # Initialize variables for the first organization
 - name: "Initialize variables for the first organization"
   set_fact:
-    first_org_name: "{{ network.organizations[(org_index - 1) | int].name | lower }}"
-    first_org_kubernetes: "{{ network.organizations[(org_index - 1) | int].k8s }}"
+    first_org_name: "{{ network.organizations[0].name | lower }}"
+    first_org_kubernetes: "{{ network.organizations[0].k8s }}"
 
 # Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
 - name: "Get static nodes ConfigMap"
@@ -56,13 +56,13 @@
 - name: "Generate secondary genesis HR file for the remaining organization"
   include_tasks: deploy_secondary_genesis.yaml
   vars:
-    name: "{{ org_name }}"
-    component_name: "{{ name }}-genesis"
-    component_ns: "{{ name }}-quo"
+    # name: "{{ org_name }}"
+    # component_name: "{{ name }}-genesis"
+    # component_ns: "{{ name }}-quo"
     # component_type: "generate-genesis"
-    cloud_provider: "{{ org.cloud_provider | lower }}"
-    kubernetes: "{{ org.k8s }}"
-    vault: "{{ org.vault }}"
+    # cloud_provider: "{{ org.cloud_provider | lower }}"
+    # kubernetes: "{{ org.k8s }}"
+    # vault: "{{ org.vault }}"
   # loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
   # loop_control:
   #   loop_var: org

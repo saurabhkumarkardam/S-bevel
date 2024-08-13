@@ -32,4 +32,4 @@ spec:
       proxy:
         provider: "ambassador"
         externalUrlSuffix: {{ org.external_url_suffix }}
-        p2p: {{ peer.p2p.ambassador }}
+        p2p: {{ validator.p2p.ambassador }}
