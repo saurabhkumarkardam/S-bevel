@@ -39,14 +39,14 @@
     msg: "Genesis ConfigMap: {{ genesis_configmap }}"
 
 # Save peers_configmap content to a file
-- name: "Save domain transactions genesis to file"
+- name: "Save peers_configmap to file"
   copy:
-    content: "{{ peers_configmap.resources[0].data['genesis.json'] }}"
+    content: "{{ peers_configmap.resources[0].data['static-nodes.json'] }}"
     dest: "{{ playbook_dir }}/../../quorum/charts/quorum-genesis/files/static-nodes.json"
-  when: peers_configmap.resources[0].data['genesis.json'] is defined
+  when: peers_configmap.resources[0].data['static-nodes.json'] is defined
 
 # Save genesis_configmap content to a file
-- name: "Save pool transactions genesis to file"
+- name: "Save genesis_configmap to file"
   copy:
     content: "{{ genesis_configmap.resources[0].data['genesis.json'] }}"
     dest: "{{ playbook_dir }}/../../quorum/charts/quorum-genesis/files/genesis.json"

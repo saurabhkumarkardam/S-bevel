@@ -11,9 +11,9 @@
     component_name: "{{ org_name }}-genesis"
   when: org_name != network.organizations[0].name
 
-- name: Pause 2.1
-  pause:
-    seconds: 10
+# - name: Pause 2.1
+#   pause:
+#     seconds: 10
 
 
 
@@ -34,9 +34,9 @@
     loop_var: validator
   when: validator is defined
 
-- name: Pause 2.2
-  pause:
-    seconds: 10
+# - name: Pause 2.2
+#   pause:
+#     seconds: 10
 
 
 # Process primary organization's validators
@@ -51,6 +51,6 @@
     loop_var: member
   when: members is defined
 
-- name: Pause 2.3
-  pause:
-    seconds: 10
+# - name: Pause 2.3
+#   pause:
+#     seconds: 10

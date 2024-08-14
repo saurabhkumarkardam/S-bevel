@@ -83,9 +83,9 @@
   #   vars:
   #     validator_count: "{{ total_validators | int }}"
 
-  - name: Pause 2
-    pause:
-      minutes: 1
+  # - name: Pause 2
+  #   pause:
+  #     minutes: 1
 
   - name: "Deploy nodes"
     include_role:
