@@ -45,7 +45,7 @@
     name: create/sau_member
   vars:
     name: "{{ org_name }}"
-    component_name: "{{ members.name | lower }}"
+    component_name: "{{ member.name | lower }}"
   loop: "{{ members }}"
   loop_control:
     loop_var: member
