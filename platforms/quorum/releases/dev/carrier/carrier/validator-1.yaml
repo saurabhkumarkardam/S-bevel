@@ -33,3 +33,7 @@ spec:
         provider: "ambassador"
         externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com
         p2p: 15010
+    tessera:
+      enabled: false
+    tls:
+      enabled: false
