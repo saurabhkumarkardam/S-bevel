@@ -33,3 +33,7 @@ spec:
         provider: "ambassador"
         externalUrlSuffix: {{ org.external_url_suffix }}
         p2p: {{ validator.p2p.ambassador }}
+    tessera:
+      enabled: false
+    tls:
+      enabled: false
