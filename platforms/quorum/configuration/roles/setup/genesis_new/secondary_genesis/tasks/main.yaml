@@ -56,7 +56,7 @@
 - name: "Generate secondary genesis HR file for the remaining organization"
   include_tasks: deploy_secondary_genesis.yaml
   vars:
-    # name: "{{ org_name }}"
+    name: "{{ org_name }}"
     # component_name: "{{ name }}-genesis"
     # component_ns: "{{ name }}-quo"
     # component_type: "generate-genesis"
