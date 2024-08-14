@@ -1,6 +1,14 @@
-- name: Example task with index recording
-  debug:
-    msg: "Current index is {{ current_org_index }}"
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
+################################################################# NR
+# - name: Example task with index recording
+#   debug:
+#     msg: "Current index is {{ current_org_index }}"
+################################################################# NR
 
 # Install Secondary Genesis
 - name: "Install Secondary Genesis"
@@ -10,9 +18,11 @@
     component_name: "{{ org_name }}-genesis"
   when: org_name != network.organizations[0].name
 
-# # - name: Pause 2.1
-# #   pause:
-# #     seconds: 10
+################################################################# NR
+# - name: Pause 2.1
+#   pause:
+#     seconds: 10
+################################################################# NR
 
 # Process primary organization's validators
 - name: "Deploy validators of {{ org_name }}"
@@ -26,9 +36,11 @@
     loop_var: validator
   when: validator is defined
 
+################################################################# NR
 # - name: Pause 2.2
 #   pause:
 #     seconds: 10
+################################################################# NR
 
 # Process primary organization's validators
 - name: "Deploy members of {{ org_name }}"
@@ -42,6 +54,8 @@
     loop_var: member
   when: members is defined
 
+################################################################# NR
 # - name: Pause 2.3
 #   pause:
 #     seconds: 10
+################################################################# NR

@@ -22,9 +22,7 @@
   vars:
     type: "secondary_genesis"
     kubernetes_url: "{{ kubernetes_server_url }}"
-    # secondary_genesis: true
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ org_name }}/build"
-    # charts_dir: "{{ org.gitops.chart_source }}"
 
 # Check if the secondary genesis job for the specified organization is completed
 - name: "Check if secondary genesis job {{ org_name }} for is completed"

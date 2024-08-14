@@ -10,9 +10,11 @@
     previous_org_name: "{{ network.organizations[(current_org_index | int) - 1].name | lower }}"
     previous_org_kubernetes: "{{ network.organizations[(current_org_index | int) - 1].k8s }}"
 
-- name: Example task with index recording
-  debug:
-    msg: "previous_org_name: {{ previous_org_name }} & previous_org_kubernetes: {{ previous_org_kubernetes }}"
+################################################################# NR
+# - name: Example task with index recording
+#   debug:
+#     msg: "previous_org_name: {{ previous_org_name }} & previous_org_kubernetes: {{ previous_org_kubernetes }}"
+################################################################# NR
 
 # Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
 - name: "Get static nodes ConfigMap"
@@ -34,13 +36,15 @@
     kubeconfig: "{{ previous_org_kubernetes.config_file }}"
   register: genesis_configmap
 
-- name: "Print static nodes ConfigMap"
-  ansible.builtin.debug:
-    msg: "Static nodes ConfigMap: {{ peers_configmap }}"
+################################################################# NR
+# - name: "Print static nodes ConfigMap"
+#   ansible.builtin.debug:
+#     msg: "Static nodes ConfigMap: {{ peers_configmap }}"
 
-- name: "Print genesis ConfigMap"
-  ansible.builtin.debug:
-    msg: "Genesis ConfigMap: {{ genesis_configmap }}"
+# - name: "Print genesis ConfigMap"
+#   ansible.builtin.debug:
+#     msg: "Genesis ConfigMap: {{ genesis_configmap }}"
+################################################################# NR
 
 # Save peers_configmap content to a file
 - name: "Save peers_configmap to file"
@@ -61,12 +65,3 @@
   include_tasks: deploy_secondary_genesis.yaml
   vars:
     name: "{{ org_name }}"
-    # component_name: "{{ name }}-genesis"
-    # component_ns: "{{ name }}-quo"
-    # component_type: "generate-genesis"
-    # cloud_provider: "{{ org.cloud_provider | lower }}"
-    # kubernetes: "{{ org.k8s }}"
-    # vault: "{{ org.vault }}"
-  # loop: "{{ network['organizations'][1:] }}"  # Skip the first organization
-  # loop_control:
-  #   loop_var: org

@@ -21,17 +21,14 @@
   vars:
     org: "{{ network['organizations'] | first }}"
     name: "{{ org.name | lower }}"
-    # component_name: "genesis"
     component_name: "{{ name }}-genesis"
     component_ns: "{{ name }}-quo"
     type: "primary_genesis"
     kubernetes: "{{ org.k8s }}"
-    # kubernetes_url: "{{ kubernetes_server_url.stdout }}"
     kubernetes_url: "{{ kubernetes_server_url }}"
     vault: "{{ org.vault }}"
     values_dir: "{{ playbook_dir }}/../../../{{ org.gitops.release_dir }}/{{ name }}/build"
     charts_dir: "{{ org.gitops.chart_source }}"
-    # secondary_genesis: false
 
 # Check if primary genesis job is completed
 - name: "Check if primary genesis job is completed"
