@@ -27,30 +27,30 @@
   #   include_role:
   #     name: check/validation
 
-  # # create namespace
-  # - name: "Create namespace"
-  #   include_role:
-  #     name: create/namespace
-  #   vars:
-  #     component_ns: "{{ item.name | lower }}-quo"
-  #     organisation: "{{ item.name | lower }}"
-  #     kubernetes: "{{ item.k8s }}"
-  #     gitops: "{{ item.gitops }}"
-  #   loop: "{{ network['organizations'] }}"
+  # create namespace
+  - name: "Create namespace"
+    include_role:
+      name: create/namespace
+    vars:
+      component_ns: "{{ item.name | lower }}-quo"
+      organisation: "{{ item.name | lower }}"
+      kubernetes: "{{ item.k8s }}"
+      gitops: "{{ item.gitops }}"
+    loop: "{{ network['organizations'] }}"
   
-  # # Create necessary secrets
-  # - name: "Create k8s secrets"
-  #   include_role:
-  #     name: create/secrets
-  #   vars:
-  #     component_ns: "{{ org.name | lower }}-quo"
-  #     kubernetes: "{{ org.k8s }}"
-  #     vault: "{{ org.vault }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
-  #   when: 
-  #   - org.org_status is not defined or org.org_status == 'new'
+  # Create necessary secrets
+  - name: "Create k8s secrets"
+    include_role:
+      name: create/secrets
+    vars:
+      component_ns: "{{ org.name | lower }}-quo"
+      kubernetes: "{{ org.k8s }}"
+      vault: "{{ org.vault }}"
+    loop: "{{ network['organizations'] }}"
+    loop_control:
+      loop_var: org
+    when: 
+    - org.org_status is not defined or org.org_status == 'new'
 
   # - name: Pause 1
   #   pause:
