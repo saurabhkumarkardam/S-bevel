@@ -7,8 +7,12 @@
 # Initialize variables for the first organization
 - name: "Initialize variables for the first organization"
   set_fact:
-    first_org_name: "{{ network.organizations[0].name | lower }}"
-    first_org_kubernetes: "{{ network.organizations[0].k8s }}"
+    previous_org_name: "{{ network.organizations[(current_org_index | int) - 1].name | lower }}"
+    previous_org_kubernetes: "{{ network.organizations[(current_org_index | int) - 1].k8s }}"
+
+- name: Example task with index recording
+  debug:
+    msg: "previous_org_name: {{ previous_org_name }} & previous_org_kubernetes: {{ previous_org_kubernetes }}"
 
 # Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
 - name: "Get static nodes ConfigMap"
@@ -16,8 +20,8 @@
     api_version: v1
     kind: ConfigMap
     name: quorum-peers
-    namespace: "{{ first_org_name }}-quo"
-    kubeconfig: "{{ first_org_kubernetes.config_file }}"
+    namespace: "{{ previous_org_name }}-quo"
+    kubeconfig: "{{ previous_org_kubernetes.config_file }}"
   register: peers_configmap
 
 # Retrieve genesis from the ConfigMap belongs to the primary (first) organization
@@ -26,8 +30,8 @@
     api_version: v1
     kind: ConfigMap
     name: quorum-genesis
-    namespace: "{{ first_org_name }}-quo"
-    kubeconfig: "{{ first_org_kubernetes.config_file }}"
+    namespace: "{{ previous_org_name }}-quo"
+    kubeconfig: "{{ previous_org_kubernetes.config_file }}"
   register: genesis_configmap
 
 - name: "Print static nodes ConfigMap"

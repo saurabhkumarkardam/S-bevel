@@ -1,7 +1,6 @@
-# # Monitor org_index
-# - name: "Update org_index"
-#   set_fact:
-#     org_index: "{{ org_index | int + 1 }}"
+- name: Example task with index recording
+  debug:
+    msg: "Current index is {{ current_org_index }}"
 
 # Install Secondary Genesis
 - name: "Install Secondary Genesis"
@@ -11,16 +10,9 @@
     component_name: "{{ org_name }}-genesis"
   when: org_name != network.organizations[0].name
 
-# - name: Pause 2.1
-#   pause:
-#     seconds: 10
-
-
-
-# - name: "Print org_index"
-#   ansible.builtin.debug:
-#     msg: "org_index: {{ current_org_index }}"
-
+# # - name: Pause 2.1
+# #   pause:
+# #     seconds: 10
 
 # Process primary organization's validators
 - name: "Deploy validators of {{ org_name }}"
@@ -37,7 +29,6 @@
 # - name: Pause 2.2
 #   pause:
 #     seconds: 10
-
 
 # Process primary organization's validators
 - name: "Deploy members of {{ org_name }}"
