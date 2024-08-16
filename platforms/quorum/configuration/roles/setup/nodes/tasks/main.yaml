@@ -27,7 +27,7 @@
 # Process primary organization's validators
 - name: "Deploy validators of {{ org_name }}"
   include_role:
-    name: create/sau_validator
+    name: create/validator_node
   vars:
     name: "{{ org_name }}"
     component_name: "{{ validator.name | lower }}"
@@ -45,7 +45,7 @@
 # Process primary organization's validators
 - name: "Deploy members of {{ org_name }}"
   include_role:
-    name: create/sau_member
+    name: create/member_node
   vars:
     name: "{{ org_name }}"
     component_name: "{{ member.name | lower }}"

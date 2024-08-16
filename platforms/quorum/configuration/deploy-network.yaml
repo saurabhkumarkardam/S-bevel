@@ -54,9 +54,11 @@
     when: 
     - org.org_status is not defined or org.org_status == 'new'
 
+################################################################# NR
   # - name: Pause 1
   #   pause:
   #     seconds: 10
+################################################################# NR
 
 ################################################################# NR
   # # Execute primary genesis for the first organization
@@ -81,7 +83,7 @@
   # Install Genesis
   - name: "Install Genesis"
     include_role:
-      name: setup/genesis_new/primary_genesis
+      name: setup/genesis/primary_genesis
     vars:
       validator_count: "{{ total_validators | int }}"
 
@@ -109,6 +111,7 @@
       loop_var: org
       index_var: org_index
 
+################################################################# NR
   # # # This role deploy validator nodes
   # - name: "Deploy validator nodes"
   #   include_role:
@@ -155,6 +158,7 @@
   # - name: Pause 4
   #   pause:
   #     minutes: 1
+################################################################# NR
 
   #These variables can be overriden from the command line
   vars:
