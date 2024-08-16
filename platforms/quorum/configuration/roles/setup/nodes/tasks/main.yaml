@@ -13,7 +13,7 @@
 # Install Secondary Genesis
 - name: "Install Secondary Genesis"
   include_role:
-    name: setup/genesis_new/secondary_genesis
+    name: setup/genesis/secondary_genesis
   vars:
     component_name: "{{ org_name }}-genesis"
   when: org_name != network.organizations[0].name
