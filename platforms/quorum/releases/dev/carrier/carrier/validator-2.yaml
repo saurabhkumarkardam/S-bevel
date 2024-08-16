@@ -1,12 +1,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: validator-1
+  name: validator-2
   namespace: carrier-quo
   annotations:
     fluxcd.io/automated: "false"
 spec:
-  releaseName: validator-1
+  releaseName: validator-2
   interval: 1m
   chart:
    spec:
@@ -32,7 +32,7 @@ spec:
       proxy:
         provider: "ambassador"
         externalUrlSuffix: sau99.dev.aws.blockchaincloudpoc-develop.com
-        p2p: 15011
+        p2p: 15012
     tessera:
       enabled: false
     tls:
