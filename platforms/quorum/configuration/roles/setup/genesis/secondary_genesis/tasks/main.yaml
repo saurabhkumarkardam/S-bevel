@@ -10,12 +10,6 @@
     previous_org_name: "{{ network.organizations[(current_org_index | int) - 1].name | lower }}"
     previous_org_kubernetes: "{{ network.organizations[(current_org_index | int) - 1].k8s }}"
 
-################################################################# NR
-# - name: Example task with index recording
-#   debug:
-#     msg: "previous_org_name: {{ previous_org_name }} & previous_org_kubernetes: {{ previous_org_kubernetes }}"
-################################################################# NR
-
 # Retrieve static nodes from the ConfigMap belongs to the primary (first) organization
 - name: "Get static nodes ConfigMap"
   community.kubernetes.k8s_info:
@@ -35,16 +29,6 @@
     namespace: "{{ previous_org_name }}-quo"
     kubeconfig: "{{ previous_org_kubernetes.config_file }}"
   register: genesis_configmap
-
-################################################################# NR
-# - name: "Print static nodes ConfigMap"
-#   ansible.builtin.debug:
-#     msg: "Static nodes ConfigMap: {{ peers_configmap }}"
-
-# - name: "Print genesis ConfigMap"
-#   ansible.builtin.debug:
-#     msg: "Genesis ConfigMap: {{ genesis_configmap }}"
-################################################################# NR
 
 # Save peers_configmap content to a file
 - name: "Save peers_configmap to file"

@@ -23,12 +23,12 @@
     file:
       path: "./build"
       state: absent
-
+  
   # Validate input network.yaml
   - name: "Validating network.yaml"
     include_role:
       name: check/validation
-
+  
   # create namespace
   - name: "Create namespace"
     include_role:
@@ -53,44 +53,15 @@
       loop_var: org
     when: 
     - org.org_status is not defined or org.org_status == 'new'
-
-################################################################# NR
-  # - name: Pause 1
-  #   pause:
-  #     seconds: 10
-################################################################# NR
-
-################################################################# NR
-  # # Execute primary genesis for the first organization
-  # - name: "Setup primary genesis with first org as Validators"
-  #   include_role:
-  #     name: setup/genesis/primary
-  #   vars:
-  #     build_path: "./build"
-  #     org: "{{ network['organizations'] | first }}"
-  #     name: "{{ org.name | lower }}"
-  #     component_ns: "{{ org.name | lower }}-quo"
-  #     kubernetes: "{{ org.k8s }}"
-  #     vault: "{{ org.vault }}"
-  #     gitops: "{{ org.gitops }}"
-  #     charts_dir: "{{ org.gitops.chart_source }}"
-  #     values_dir: "./build/{{ component_ns }}"
-  #     validator_count: "{{ total_validators | int }}"
-  #   when: 
-  #     - not (add_new_org | bool)
-################################################################# NR
-
-  # # Install Genesis
-  # - name: "Install Genesis"
-  #   include_role:
-  #     name: setup/genesis/primary_genesis
-  #   vars:
-  #     validator_count: "{{ total_validators | int }}"
-
-  # - name: Pause 2
-  #   pause:
-  #     minutes: 1
-
+  
+  # Install primary Genesis
+  - name: "Install primary Genesis"
+    include_role:
+      name: setup/genesis/primary_genesis
+    vars:
+      validator_count: "{{ total_validators | int }}"
+  
+  # Deploy nodes
   - name: "Deploy nodes"
     include_role:
       name: setup/nodes
@@ -110,56 +81,7 @@
     loop_control:
       loop_var: org
       index_var: org_index
-
-################################################################# NR
-  # # # This role deploy validator nodes
-  # - name: "Deploy validator nodes"
-  #   include_role:
-  #     name: create/validator_node
-  #   vars:
-  #     build_path: "./build"
-  #     org: "{{ network['organizations'] | first }}"
-  #     name: "{{ org.name | lower }}"
-  #     component_ns: "{{ org.name | lower }}-quo"
-  #     kubernetes: "{{ org.k8s }}"
-  #     vault: "{{ org.vault }}"
-  #     gitops: "{{ org.gitops }}"
-  #     charts_dir: "{{ org.gitops.chart_source }}"
-  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
-  #   when: 
-  #   - org.org_status is not defined or org.org_status == 'new'
-
-  # - name: Pause 3
-  #   pause:
-  #     minutes: 1
-
-  # # Deploy member nodes
-  # - name: "Deploy member nodes with tessera transaction manager"
-  #   include_role:
-  #     name: create/member_node
-  #   vars:
-  #     build_path: "./build"
-  #     kubernetes: "{{ org.k8s }}"
-  #     name: "{{ org.name | lower }}"
-  #     firstorg: "{{ network['organizations'] | first }}"
-  #     consensus: "{{ network.config.consensus }}"
-  #     component_ns: "{{ org.name | lower }}-quo"
-  #     vault: "{{ org.vault }}"
-  #     gitops: "{{ org.gitops }}"
-  #     charts_dir: "{{ org.gitops.chart_source }}"
-  #     values_dir: "{{playbook_dir}}/../../../{{org.gitops.release_dir}}/{{ component_ns }}"
-  #     geth_data: "{{ network.config.bootnode | default('null') }}"
-  #   loop: "{{ network['organizations'] }}"
-  #   loop_control:
-  #     loop_var: org
-  #   when: 
-  #     - org.org_status is not defined or org.org_status == 'new'
-
-  # - name: Pause 4
-  #   pause:
-  #     minutes: 1
-################################################################# NR
-
+  
   #These variables can be overriden from the command line
   vars:
     install_os: "linux"           # Default to linux OS

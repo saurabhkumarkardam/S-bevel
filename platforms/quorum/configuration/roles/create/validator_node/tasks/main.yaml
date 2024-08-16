@@ -1,5 +1,5 @@
-# Deploy primary organization's validators
-- name: Deploy primary organization's validators
+# Create value file for validator node
+- name: Create value file for validator node
   include_role:
     name: create/helm_component
   vars:

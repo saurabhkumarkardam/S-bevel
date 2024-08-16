@@ -1,3 +1,9 @@
+##############################################################################################
+#  Copyright Accenture. All Rights Reserved.
+#
+#  SPDX-License-Identifier: Apache-2.0
+##############################################################################################
+
 # Gather Kubernetes cluster information
 - name: Gather Kubernetes cluster information
   community.kubernetes.k8s_cluster_info:
@@ -8,11 +14,6 @@
 - name: Set kubernetes_server_url fact
   set_fact:
     kubernetes_server_url: "{{ cluster_info.connection.host }}"
-
-# Print the Kubernetes server URL fact
-- name: Print kubernetes_server_url fact
-  debug:
-    msg: "Kubernetes server URL is {{ kubernetes_server_url }}"
 
 # Install primary genesis
 - name: "Install primary genesis"

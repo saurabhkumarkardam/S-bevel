@@ -4,8 +4,8 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 
-# Creates the Quorum node value files for each node of organization
-- name: Create value file for Quorum member node
+# Create value file for member node
+- name: Create value file for member node
   include_role:
     name: create/helm_component
   vars:
