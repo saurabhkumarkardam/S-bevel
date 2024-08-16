@@ -30,7 +30,7 @@
     # Clean up helpers directory
     - name: "Clean up helpers directory"
       include_role:
-        name: clean/local_directories
+        name: delete/local_directories
 
   #These variables can be overriden from the command line
   vars:
