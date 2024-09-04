@@ -13,7 +13,7 @@ global:
     #Eg. kubernetesUrl: https://10.3.8.5:6443
     kubernetesUrl: 
   vault:
-    type: hashicorp # chose from hashicorp | kubernetes
+    type: aws-secrets-manager # chose from hashicorp | kubernetes | aws-secrets-manager
     #Provide the vaultrole for an organization
     #Eg. vaultrole: org1-vault-role
     role: vault-role

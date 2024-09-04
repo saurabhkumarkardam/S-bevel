@@ -1,0 +1,18 @@
+apiVersion: v2
+appVersion: latest
+description: 'Shared: Create configmaps of scripts used in Bevel'
+home: https://hyperledger-bevel.readthedocs.io/en/latest/
+keywords:
+- bevel
+- hyperledger
+- enterprise
+- blockchain
+- deployment
+- accenture
+maintainers:
+- email: bevel@lists.hyperledger.org
+  name: Hyperledger Bevel maintainers
+name: bevel-scripts
+sources:
+- https://github.com/hyperledger/bevel
+version: 1.0.0

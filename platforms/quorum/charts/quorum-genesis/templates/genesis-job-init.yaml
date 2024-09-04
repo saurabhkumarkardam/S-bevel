@@ -64,8 +64,12 @@ spec:
             - |
 
               apt-get update
+              echo "-------------------------------------- 1"
               apt-get install -y python3-pip
-              apt install -y python3-boto3
+              echo "-------------------------------------- 2"
+              # apt install -y python3-boto3
+              DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata python3-boto3
+              echo "-------------------------------------- 3"
               # apt-get install -y jq # Not required
 
               # Check if the vault type is HashiCorp
@@ -175,7 +179,7 @@ spec:
 {{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
                 safeWriteSecret() {
                   echo "1 ----------------------------------------------------------------------------------"
-                  local key="$1"
+                  local key="bevel-aws-secret-$1"
                   local fpath="$2"
 
                   # Read data from files if secrets are not available in the vault
@@ -204,20 +208,37 @@ spec:
                   
                   echo "2 ----------------------------------------------------------------------------------"
 
-                  python3 /etc/config/cm-aws.py get_secret bevel-aws-secret-40 > /tmp/response.json
+                  python3 /etc/config/aws-secret-manager-script.py get_secret ${key} > /tmp/response.json
 
-                  echo "3 ----------------------------------------------------------------------------------"
+                  ######################################################################## REMOVE-S
+                  # echo "3 ---------------------------------------------------------------------------------- S"
+                  # cat /tmp/response.json
+                  # echo "3 ---------------------------------------------------------------------------------- E"
+                  ######################################################################## REMOVE-E
 
-                  # Check if the response.json file contains both "ResourceNotFoundException" and "error" strings
-                  # If both are found, it indicates that the secret does not exist
-                  if grep -q "ResourceNotFoundException" /tmp/response.json && grep -q "error" /tmp/response.json; then
-                      # Create a new secret with the specified payload
-                      python3 /etc/config/cm-aws.py create_secret ${key} nodePayload.json
-                      echo "4 ----------------------------------------------------------------------------------"
+                  ######################################################################## REMOVE-S
+                  # if grep -q "ResourceNotFoundException" /tmp/response.json; then
+                  #   # Create a new secret with the specified payload
+                  #   python3 /etc/config/aws-secret-manager-script.py create_secret ${key} nodePayload.json
+                  #   echo "4 ----------------------------------------------------------------------------------"
+                  # elif grep -q "ResourceExistException" /tmp/response.json; then 
+                  #   # If the secret exists, update the existing secret with the new payload
+                  #   python3 /etc/config/aws-secret-manager-script.py update_secret ${key} nodePayload.json
+                  #   echo "5 ----------------------------------------------------------------------------------"
+                  # else
+                  #   # Handle the case where neither exception is found
+                  #   echo "No relevant exceptions found. Please check the response."
+                  #   cat /tmp/response.json
+                  # fi
+                  ######################################################################## REMOVE-E
+
+                  if grep -q "ResourceNotFoundException" /tmp/response.json; then
+                    # Create a new secret with the specified payload
+                    python3 /etc/config/aws-secret-manager-script.py create_secret ${key} nodePayload.json
+                    echo "4 ----------------------------------------------------------------------------------"
                   else
-                      # If the secret exists, update the existing secret with the new payload
-                      python3 /etc/config/cm-aws.py update_secret ${key} nodePayload.json
-                      echo "5 ----------------------------------------------------------------------------------"
+                    python3 /etc/config/aws-secret-manager-script.py update_secret ${key} nodePayload.json
+                    echo "5 ----------------------------------------------------------------------------------"
                   fi
 
                   kubectl create secret generic ${key} \
@@ -290,6 +311,7 @@ spec:
                   fi
                 done
               {{- end }}
+              echo "Slepping..." && sleep 10m
               echo "Completed."
       volumes:
         - name: aws-secret-manager-volume
