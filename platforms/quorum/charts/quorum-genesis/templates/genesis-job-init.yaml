@@ -34,12 +34,16 @@ spec:
           securityContext:
             runAsUser: 0
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-{{- if eq .Values.global.vault.type "hashicorp" }}
           volumeMounts:
+{{- if eq .Values.global.vault.type "hashicorp" }}
             - name: scripts-volume
               mountPath: /scripts/bevel-vault.sh
               subPath: bevel-vault.sh
+{{- end }}
+            - name: aws-secret-manager-volume
+              mountPath: /etc/config
           env:
+{{- if eq .Values.global.vault.type "hashicorp" }}
             - name: VAULT_ADDR
               value: "{{ .Values.global.vault.address }}"
             - name: VAULT_SECRET_ENGINE
@@ -58,6 +62,11 @@ spec:
             - -c
           args:
             - |
+
+              apt-get update
+              apt-get install -y python3-pip
+              apt install -y python3-boto3
+              # apt-get install -y jq # Not required
 
               # Check if the vault type is HashiCorp
 {{- if eq .Values.global.vault.type "hashicorp" }}
@@ -163,6 +172,59 @@ spec:
                     rm genesisPayload.json
                   fi
                 }
+{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+                safeWriteSecret() {
+                  echo "1 ----------------------------------------------------------------------------------"
+                  local key="$1"
+                  local fpath="$2"
+
+                  # Read data from files if secrets are not available in the vault
+                  local node_address=$(cat "${fpath}/address")
+                  local node_key=$(cat "${fpath}/nodekey")
+                  local node_key_pub=$(cat "${fpath}/nodekey.pub")
+                  local account_private_key=$(cat "${fpath}/accountPrivateKey")
+                  local account_password=$(cat "${fpath}/accountPassword")
+                  local account_keystore_base64=$(cat "${fpath}/accountKeystore" | base64 -w 0)
+                  local account_address=$(cat "${fpath}/accountAddress")
+
+                  # Construct JSON payload
+                  echo "
+                    {
+                    \"data\":
+                      {
+                      \"nodeAddress\": \"${node_address}\",
+                      \"nodeKey\": \"${node_key}\",
+                      \"nodeKeyPub\": \"${node_key_pub}\",
+                      \"accountPrivateKey\": \"${account_private_key}\",
+                      \"accountPassword\": \"${account_password}\",
+                      \"accountKeystore_base64\": \"${account_keystore_base64}\",
+                      \"accountAddress\": \"${account_address}\"
+                      }
+                    }" > nodePayload.json
+                  
+                  echo "2 ----------------------------------------------------------------------------------"
+
+                  python3 /etc/config/cm-aws.py get_secret bevel-aws-secret-40 > /tmp/response.json
+
+                  echo "3 ----------------------------------------------------------------------------------"
+
+                  # Check if the response.json file contains both "ResourceNotFoundException" and "error" strings
+                  # If both are found, it indicates that the secret does not exist
+                  if grep -q "ResourceNotFoundException" /tmp/response.json && grep -q "error" /tmp/response.json; then
+                      # Create a new secret with the specified payload
+                      python3 /etc/config/cm-aws.py create_secret ${key} nodePayload.json
+                      echo "4 ----------------------------------------------------------------------------------"
+                  else
+                      # If the secret exists, update the existing secret with the new payload
+                      python3 /etc/config/cm-aws.py update_secret ${key} nodePayload.json
+                      echo "5 ----------------------------------------------------------------------------------"
+                  fi
+
+                  kubectl create secret generic ${key} \
+                    --from-file=secret-file=nodePayload.json \
+                    --dry-run=client -o yaml | kubectl apply -f -
+                  echo "6 ----------------------------------------------------------------------------------"
+                }
 {{- else }}
                 safeWriteSecret() {
                   # Placeholder:
@@ -212,7 +274,7 @@ spec:
                   {{- else }}
                     # Safely write keys and genesis to the Hashicorp Vault
                     safeWriteSecret "quorum-node-validator-${i}-keys" "${current_validator_dir}"
-                    safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
+                    # safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
                   {{- end }}
                   
                   # Check if Kubernetes secret exists, if not, create one
@@ -229,8 +291,11 @@ spec:
                 done
               {{- end }}
               echo "Completed."
-{{- if eq .Values.global.vault.type "hashicorp" }}
       volumes:
+        - name: aws-secret-manager-volume
+          configMap:
+            name: aws-secret-manager-script
+{{- if eq .Values.global.vault.type "hashicorp" }}
         - name: scripts-volume
           configMap:
             name: bevel-vault-script

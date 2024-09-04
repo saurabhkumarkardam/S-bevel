@@ -6,12 +6,12 @@ global:
     cloudNativeServices: false
     kubernetesUrl: https://25B52ACACF9BEB99DFD3C53B47616C90.gr7.eu-west-1.eks.amazonaws.com # https://kubernetes.url
   vault:
-    type: hashicorp
-    role: vault-role
-    network: quorum
-    address: http://vault.internal.dev.aws.blockchaincloudpoc-develop.com:20002 # http://vault.demo.com:8200
-    authPath: genesis # supplychain
-    secretEngine: secretsv2
-    secretPrefix: "data/genesis" # "data/supplychain"
+    type: aws-secrets-manager # hashicorp | aws-secrets-manager
+    # role: vault-role
+    # network: quorum
+    # address: http://vault.internal.dev.aws.blockchaincloudpoc-develop.com:20002 # http://vault.demo.com:8200
+    # authPath: genesis # supplychain
+    # secretEngine: secretsv2
+    # secretPrefix: "data/genesis" # "data/supplychain"
 settings:
   removeGenesisOnDelete: true
