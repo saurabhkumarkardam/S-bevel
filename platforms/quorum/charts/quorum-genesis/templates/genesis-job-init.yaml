@@ -210,28 +210,6 @@ spec:
 
                   python3 /etc/config/aws-secret-manager-script.py get_secret ${key} > /tmp/response.json
 
-                  ######################################################################## REMOVE-S
-                  # echo "3 ---------------------------------------------------------------------------------- S"
-                  # cat /tmp/response.json
-                  # echo "3 ---------------------------------------------------------------------------------- E"
-                  ######################################################################## REMOVE-E
-
-                  ######################################################################## REMOVE-S
-                  # if grep -q "ResourceNotFoundException" /tmp/response.json; then
-                  #   # Create a new secret with the specified payload
-                  #   python3 /etc/config/aws-secret-manager-script.py create_secret ${key} nodePayload.json
-                  #   echo "4 ----------------------------------------------------------------------------------"
-                  # elif grep -q "ResourceExistException" /tmp/response.json; then 
-                  #   # If the secret exists, update the existing secret with the new payload
-                  #   python3 /etc/config/aws-secret-manager-script.py update_secret ${key} nodePayload.json
-                  #   echo "5 ----------------------------------------------------------------------------------"
-                  # else
-                  #   # Handle the case where neither exception is found
-                  #   echo "No relevant exceptions found. Please check the response."
-                  #   cat /tmp/response.json
-                  # fi
-                  ######################################################################## REMOVE-E
-
                   if grep -q "ResourceNotFoundException" /tmp/response.json; then
                     # Create a new secret with the specified payload
                     python3 /etc/config/aws-secret-manager-script.py create_secret ${key} nodePayload.json
@@ -245,6 +223,35 @@ spec:
                     --from-file=secret-file=nodePayload.json \
                     --dry-run=client -o yaml | kubectl apply -f -
                   echo "6 ----------------------------------------------------------------------------------"
+                }
+                # Function to safely write genesis
+                safeWriteGenesis() {
+                  local key="bevel-aws-secret-$1"
+                  local fpath="$2"
+
+                  # Read genesis data from files if secrets are not available in the vault
+                  local genesis_base64=$(cat "${fpath}/genesis.json" | base64 -w 0)
+                  
+                  # Construct JSON payload
+                  echo "
+                    {
+                      \"data\":
+                      {
+                        \"genesis_base64\": \"${genesis_base64}\"
+                      }
+                    }" > encryptedGenesisPayload.json
+                    
+                  # Push data to AWS
+                  python3 /etc/config/aws-secret-manager-script.py get_secret ${key} > /tmp/genesis_response.json
+
+                  if grep -q "ResourceNotFoundException" /tmp/genesis_response.json; then
+                    # Create a new secret with the specified payload
+                    python3 /etc/config/aws-secret-manager-script.py create_secret ${key} encryptedGenesisPayload.json
+                    echo "4 ----------------------------------------------------------------------------------"
+                  else
+                    python3 /etc/config/aws-secret-manager-script.py update_secret ${key} encryptedGenesisPayload.json
+                    echo "5 ----------------------------------------------------------------------------------"
+                  fi
                 }
 {{- else }}
                 safeWriteSecret() {
@@ -271,9 +278,11 @@ spec:
                   --outputPath /generated-config | tail -1 | sed -e "s/^Artifacts in folder: //")
 
                 # Check if quorum-genesis configmap exists, if not, create one
-                if ! kubectl get configmap "quorum-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
-                  kubectl create configmap "quorum-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis.json="$FOLDER_PATH/goQuorum/genesis.json"
-                fi
+                # if ! kubectl get configmap "quorum-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                  kubectl create configmap "quorum-genesis" --namespace {{ .Release.Namespace }} \
+                                                            --from-file=genesis.json="$FOLDER_PATH/goQuorum/genesis.json" \
+                                                            --dry-run=client -o yaml | kubectl apply -f -
+                # fi
 
                 # Count the number of validators based on their directories
                 validator_count=$(ls -d $FOLDER_PATH/validator* | wc -l)
@@ -310,6 +319,7 @@ spec:
                       --from-literal=nodekey.pub=$(cat "${current_validator_dir}/nodekey.pub")
                   fi
                 done
+                safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
               {{- end }}
               echo "Slepping..." && sleep 10m
               echo "Completed."
