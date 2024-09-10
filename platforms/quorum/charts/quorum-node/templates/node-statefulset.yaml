@@ -151,7 +151,7 @@ spec:
               # Move files to their respective locations
               cp staticNode/static-nodes.json {{ .Release.Name }}/data/
               cp genesis/genesis.json {{ .Release.Name }}/data/
-              cp nodeSecrets/nodekey* {{ .Release.Name }}/nodeSecrets/address {{ .Release.Name }}/data/
+              cp nodeSecrets/nodekey* nodeSecrets/address {{ .Release.Name }}/data/
               cp nodeSecrets/account* {{ .Release.Name }}/data/keystore/
               cd {{ .Release.Name }}/
 
@@ -160,6 +160,8 @@ spec:
 
               # Extract the address from the account keystore file
               export ADDRESS=$(grep -o '"address": *"[^"]*"' ./data/keystore/accountKeystore | grep -o '"[^"]*"$' | sed 's/"//g')
+
+              echo "ADDRESS: $ADDRESS"
 
               # Start the node
               geth \
@@ -196,4 +198,5 @@ spec:
             name: quorum-genesis
         - name: node-keys
           secret:
-            secretName: {{ template "quorum-node.fullname" . }}-keys
+            # secretName: {{ template "quorum-node.fullname" . }}-keys
+            secretName: bevel-aws-secret-21-quorum-node-validator-3-keys

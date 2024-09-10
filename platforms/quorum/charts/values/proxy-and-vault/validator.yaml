@@ -7,7 +7,7 @@ global:
     provider: aws
     cloudNativeServices: false
   vault:
-    type: hashicorp
+    type: aws-secrets-manager # hashicorp | aws-secrets-manager | kubernetes
     role: vault-role
     network: quorum
     address: http://vault.internal.dev.aws.blockchaincloudpoc-develop.com:20002 # http://vault.demo.com:8200

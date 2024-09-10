@@ -7,13 +7,13 @@ global:
     provider: aws
     cloudNativeServices: false
   vault:
-    type: hashicorp
-    network: quorum
-    address: http://vault.demo.com:8200
-    authPath: supplychain
-    secretEngine: secretsv2
-    secretPrefix: "data/supplychain"
-    role: vault-role
+    type: aws-secrets-manager # hashicorp | aws-secrets-manager
+  #   network: quorum
+  #   address: http://vault.demo.com:8200
+  #   authPath: supplychain
+  #   secretEngine: secretsv2
+  #   secretPrefix: "data/supplychain"
+  #   role: vault-role
   proxy:
     provider: ambassador
     externalUrlSuffix: test.yourdomain.com
