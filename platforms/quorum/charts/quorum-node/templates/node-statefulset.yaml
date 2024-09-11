@@ -198,5 +198,5 @@ spec:
             name: quorum-genesis
         - name: node-keys
           secret:
-            # secretName: {{ template "quorum-node.fullname" . }}-keys
-            secretName: bevel-aws-secret-21-quorum-node-validator-3-keys
+            secretName: {{ template "quorum-node.fullname" . }}-keys
+            # secretName: bevel-aws-secret-21-quorum-node-validator-3-keys

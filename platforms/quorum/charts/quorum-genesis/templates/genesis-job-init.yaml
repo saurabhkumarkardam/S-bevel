@@ -34,16 +34,22 @@ spec:
           securityContext:
             runAsUser: 0
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
           volumeMounts:
 {{- if eq .Values.global.vault.type "hashicorp" }}
             - name: scripts-volume
               mountPath: /scripts/bevel-vault.sh
               subPath: bevel-vault.sh
-{{- end }}
+{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+            - name: package-manager
+              mountPath: /scripts/package-manager.sh
+              subPath: package-manager.sh
             - name: aws-secret-manager-volume
               mountPath: /etc/config
-          env:
+{{- end }}
+{{- end }}
 {{- if eq .Values.global.vault.type "hashicorp" }}
+          env:
             - name: VAULT_ADDR
               value: "{{ .Values.global.vault.address }}"
             - name: VAULT_SECRET_ENGINE
@@ -63,16 +69,14 @@ spec:
           args:
             - |
 
-              apt-get update
-              echo "-------------------------------------- 1"
-              apt-get install -y python3-pip
-              echo "-------------------------------------- 2"
-              # apt install -y python3-boto3
-              DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata python3-boto3
+{{- if eq .Values.global.vault.type "aws-secrets-manager" }}
+              . /scripts/package-manager.sh
+              
+              # Define the packages to install
+              packages_to_install="python3-pip python3-boto3"
+              install_packages "$packages_to_install"
+{{- end }}
               echo "-------------------------------------- 3"
-              # apt-get install -y jq # Not required
-
-              # # functions
 
               # reads all the required data from the file path
               readSecretData() {
@@ -130,18 +134,6 @@ spec:
                 fi
               }
 
-
-              # creates a Kubernetes secret from the JSON payload
-              # createKubernetesSecret() {
-              #   local key="$1"
-              #   local payload_file="$2"
-                
-              #   kubectl create secret generic ${key} \
-              #     --namespace {{ .Release.Namespace }} \
-              #     --from-file=secret-file=${payload_file} \
-              #     --dry-run=client -o yaml | kubectl apply -f -
-              # }
-
               # Function to create a Kubernetes secret
               createKubernetesSecret() {
                 local key="$1"
@@ -154,7 +146,6 @@ spec:
                 local account_address="$8"
                 
                 # Create the Kubernetes secret
-                # kubectl create secret generic quorum-node-validator-${key}-keys --namespace "{{ .Release.Namespace }}" \
                 kubectl create secret generic ${key} --namespace "{{ .Release.Namespace }}" \
                   --from-literal=address="${node_address}" \
                   --from-literal=nodekey="${node_key}" \
@@ -183,12 +174,6 @@ spec:
                     }
                   }" > encryptedGenesisPayload.json
               }
-
-
-
-
-
-
 
               # Check if the vault type is HashiCorp
 {{- if eq .Values.global.vault.type "hashicorp" }}
@@ -248,30 +233,16 @@ spec:
                   else
                     # Read genesis data from files if secrets are not available in the vault
                     local genesis_base64=$(cat "${fpath}/genesis.json" | base64 -w 0)
-                    
-                    ######################################################### NR-s
-                    # # Construct JSON payload
-                    # echo "
-                    #   {
-                    #     \"data\":
-                    #     {
-                    #       \"genesis_base64\": \"${genesis_base64}\"
-                    #     }
-                    #   }" > genesisPayload.json
-                    ######################################################### NR-E
-                    
                     # Create genesis JSON payload
                     createGenesisJsonPayload "$genesis_base64"
-                    
                     # Push data to vault
                     vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}" 'encryptedGenesisPayload.json'
-                    
-                    rm genesisPayload.json
                   fi
                 }
 {{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
                 safeWriteSecret() {
-                  local key="bevel-aws-secret-21-$1"
+                  # local key="bevel-aws-secret-21-$1"
+                  local key="$1"
                   local fpath="$2"
                   
                   # Read secret data
@@ -301,7 +272,7 @@ spec:
                   # Placeholder:
                   # - Implement code to fetch the keys if using any cloud-native service or platform different from HashiCorp to store the keys
                   # - After fetching the keys, create Kubernetes secrets from them
-                  # - For guidance, refer to the code written for HashiCorp Vault for the same purpose
+                  # - For guidance, refer to the code written for HashiCorp Vault and AWS Secret Manager for the same purpose
                   return 0
                 }
 {{- end }}
@@ -309,7 +280,7 @@ spec:
               {{- if .Values.settings.secondaryGenesis }}
                 echo "Secondary Genesis,  configmaps are created from local files."
               {{- else }}
-              #   # Use quorum-genesis-tool to generate genesis, keys and other required files
+              # # Use quorum-genesis-tool to generate genesis, keys and other required files
                 FOLDER_PATH=$(quorum-genesis-tool --consensus {{ .Values.rawGenesisConfig.genesis.config.algorithm.consensus }} \
                   {{ if .Values.rawGenesisConfig.blockchain.nodes.generate }} --validators {{ .Values.rawGenesisConfig.blockchain.nodes.count }} {{ else }} --validators 0 {{ end }} \
                   --members 0 --bootnodes 0 --chainID {{ .Values.rawGenesisConfig.genesis.config.chainId }} --blockperiod {{ .Values.rawGenesisConfig.genesis.config.algorithm.blockperiodseconds }} \
@@ -320,10 +291,8 @@ spec:
                   --quickstartDevAccounts {{ .Values.rawGenesisConfig.genesis.includeQuickStartAccounts }} \
                   --outputPath /generated-config | tail -1 | sed -e "s/^Artifacts in folder: //")
                   
-                # Check if quorum-genesis configmap exists, if not, create one
-                # if ! kubectl get configmap "quorum-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                # Check if the quorum-genesis ConfigMap exists, if not, create or update it
                 kubectl create configmap "quorum-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis.json="$FOLDER_PATH/goQuorum/genesis.json" --dry-run=client -o yaml | kubectl apply -f -
-                # fi
                 
                 # Count the number of validators based on their directories
                 validator_count=$(ls -d $FOLDER_PATH/validator* | wc -l)
@@ -332,16 +301,14 @@ spec:
                   current_validator_dir="$FOLDER_PATH/validator${i}"
                   
                   {{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
-                    # Safely write keys for cloud-native services 
+                    # Implement logic to safely write keys for cloud-native services
                   {{- else }}
-                    # Safely write keys and genesis to the Hashicorp Vault
+                    # Safely write keys and genesis to the Hashicorp Vault or AWs-Secret-Manager
                     safeWriteSecret "quorum-node-validator-${i}-keys" "${current_validator_dir}"
-                    # safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum" # Not reqd here, atleast for AWs Secret Manager not reqd
                   {{- end }}
                   
                   # Check if Kubernetes secret exists, if not, create one
-                  # if ! kubectl get secret quorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
-                  if ! kubectl get secret bevel-aws-secret-21-quorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
+                  if ! kubectl get secret quorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
                     # Read secret data
                     read -r node_address node_key node_key_pub account_private_key account_password account_keystore account_keystore_base64 account_address <<< $(readSecretData "$current_validator_dir")
                     # Create Kubernetes Secret
@@ -350,15 +317,21 @@ spec:
                 done
                 safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
               {{- end }}
-              echo "Slepping..." && sleep 10m
+              echo "Slepping..." && sleep 10m # REMOVE
               echo "Completed."
+{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
       volumes:
-        - name: aws-secret-manager-volume
-          configMap:
-            name: aws-secret-manager-script
 {{- if eq .Values.global.vault.type "hashicorp" }}
         - name: scripts-volume
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
+{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+        - name: package-manager
+          configMap:
+            name: package-manager
+        - name: aws-secret-manager-volume
+          configMap:
+            name: aws-secret-manager-script
+{{- end }}
 {{- end }}
