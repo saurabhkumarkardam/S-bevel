@@ -317,7 +317,7 @@ spec:
                 done
                 safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
               {{- end }}
-              echo "Slepping..." && sleep 10m # REMOVE
+              # echo "Slepping..." && sleep 10m # REMOVE
               echo "Completed."
 {{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
       volumes:

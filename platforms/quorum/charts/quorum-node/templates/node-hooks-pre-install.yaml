@@ -140,7 +140,7 @@ spec:
                   local account_address="$8"
                   
                   # Create the Kubernetes secret
-                  kubectl create secret generic quorum-node-validator-${key}-keys --namespace "{{ .Release.Namespace }}" \
+                  kubectl create secret generic ${key} --namespace "{{ .Release.Namespace }}" \
                     --from-literal=nodeAddress="${node_address}" \
                     --from-literal=nodeKey="${node_key}" \
                     --from-literal=nodeKeyPub="${node_key_pub}" \
@@ -233,6 +233,7 @@ spec:
                   # Implement logic to safely write keys for cloud-native services
 {{- else }}
                   # Safely write keys to the Hashicorp Vault or AWs-Secret-Manager
+                  echo "Safely write keys to the Hashicorp Vault or AWs-Secret-Manager"
                   safeWriteSecret "{{ template "quorum-node.fullname" . }}-keys" "${dir}"
 {{- end }}
                   # Check if Kubernetes secret exists, if not, create one
@@ -240,7 +241,7 @@ spec:
                     # Read secret data
                     read -r node_address node_key node_key_pub account_private_key account_password account_keystore account_keystore_base64 account_address <<< $(readSecretData "$current_validator_dir")
                     # Create Kubernetes Secret
-                    createKubernetesSecret "quorum-node-validator-${i}-keys" "$node_address" "$node_key" "$node_key_pub" "$account_private_key" "$account_password" "$account_keystore" "$account_address"
+                    createKubernetesSecret "{{ template "quorum-node.fullname" . }}-keys" "$node_address" "$node_key" "$node_key_pub" "$account_private_key" "$account_password" "$account_keystore" "$account_address"
                   fi
                 else
                   echo "Secret exists. Extract modekey.pub key"
