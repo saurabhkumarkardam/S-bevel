@@ -57,6 +57,13 @@ spec:
           args:
             - |
 
+{{- if eq .Values.global.vault.type "aws-secrets-manager" }}
+              . /scripts/package-manager.sh
+
+              # Define the packages to install
+              packages_to_install="python3-pip python3-boto3"
+              install_packages "$packages_to_install"
+{{- end }}
               function update_tessera_peers_configmap {
                 kubectl -n {{ .Release.Namespace }} get configmap tessera-peers -o json
                 # first time a tx node is deployed and there is no configmap
@@ -74,7 +81,65 @@ spec:
                   kubectl -n {{ .Release.Namespace }} create configmap tessera-peers --from-file=tesseraPeers=/tmp/tessera-peers -o yaml --dry-run=client | kubectl replace -f -
                 fi
               }
+              
+              # reads all the required data from the file path
+              readSecretData() {
+                local fpath="$1"
+              
+                local privateKey=$(cat ${fpath}/tessera.key | base64 -w 0)
+                local publicKey=$(cat ${fpath}/tessera.pub)
+                local password=$(cat ${fpath}/passwordFile.txt)
+                
+                echo "${privateKey}" "${publicKey}" "${password}"
+              }
+              
+              # constructs the JSON payload using the extracted secret values
+              createJsonPayload() {
+                local privateKey="$1"
+                local publicKey="$2"
+                local password="$3"
 
+                echo "
+                  {
+                    \"data\":
+                      {
+                        \"privateKey_base64\": \"${privateKey}\",
+                        \"publicKey\": \"${publicKey}\",
+                        \"password\": \"${password}\"
+                      }
+                  }" > tesseraPayload.json
+              }
+              
+              # checks if a secret exists in AWS Secret Manager, and either creates or updates it
+              manageAwsSecret() {
+                local key="$1"
+                local payload_file="$2"
+                
+                # Check if the secret exists in AWS Secret Manager
+                python3 /etc/config/aws-secret-manager-script.py get_secret "${key}" > /tmp/response.json
+                # If the secret does not exist, create it, otherwise update it
+                if grep -q "ResourceNotFoundException" /tmp/response.json; then
+                  python3 /etc/config/aws-secret-manager-script.py create_secret "${key}" "${payload_file}"
+                else
+                  python3 /etc/config/aws-secret-manager-script.py update_secret "${key}" "${payload_file}"
+                fi
+              }
+              
+              # Function to create a Kubernetes secret
+              createKubernetesSecret() {
+                local key="$1"
+                local privateKey="$2"
+                local publicKey="$3"
+                local password="$4"
+                
+                # Create the Kubernetes secret
+                kubectl create secret generic ${key} --namespace "{{ .Release.Namespace }}" \
+                  --from-literal=tm.key="${privateKey}" \
+                  --from-literal=tm.pub="${publicKey}" \
+                  --from-literal=tm.password="${password}" \
+                  --dry-run=client -o yaml | kubectl apply -f -
+              }
+              
 {{- if (eq .Values.global.vault.type "hashicorp") }}
               . /scripts/bevel-vault.sh
               echo "Getting vault Token..."
@@ -116,6 +181,18 @@ spec:
                   rm tessera.json
                 fi
               }
+{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+                local key=$1
+                local fpath=$2
+                
+                # Read secret data
+                read -r privateKey publicKey password <<< $(readSecretData "$fpath")
+                # Create JSON payload
+                createJsonPayload "$privateKey" "$publicKey" "$password"
+                # Manage AWS Secret
+                manageAwsSecret "${key}" "tesseraPayload .json"
+                # Create Kubernetes Secret
+                createKubernetesSecret "$key" "$privateKey" "$publicKey" "$password"
 {{- else }}
               function safeWriteSecret {
                 # Placeholder:

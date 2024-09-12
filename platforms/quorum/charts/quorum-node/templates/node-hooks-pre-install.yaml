@@ -141,9 +141,9 @@ spec:
                   
                   # Create the Kubernetes secret
                   kubectl create secret generic ${key} --namespace "{{ .Release.Namespace }}" \
-                    --from-literal=nodeAddress="${node_address}" \
-                    --from-literal=nodeKey="${node_key}" \
-                    --from-literal=nodeKeyPub="${node_key_pub}" \
+                    --from-literal=address="${node_address}" \
+                    --from-literal=nodekey="${node_key}" \
+                    --from-literal=nodekey.pub="${node_key_pub}" \
                     --from-literal=accountPrivateKey="${account_private_key}" \
                     --from-literal=accountPassword="${account_password}" \
                     --from-literal=accountKeystore="${account_keystore}" \
