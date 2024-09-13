@@ -6,7 +6,7 @@ global:
     provider: aws
     cloudNativeServices: false
   vault:
-    type: "aws-secrets-manager" # kubernetes
+    type: kubernetes # kubernetes | aws-secrets-manager
   proxy:
     provider: none
     externalUrlSuffix: svc.cluster.local

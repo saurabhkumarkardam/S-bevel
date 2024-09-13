@@ -31,6 +31,7 @@ spec:
           image: {{ .Values.image.hooks.repository }}:{{ .Values.image.hooks.tag }}
           securityContext:
             runAsUser: 0
+{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
           volumeMounts:
 {{- if eq .Values.global.vault.type "hashicorp" }}
             - name: scripts-volume
@@ -43,8 +44,9 @@ spec:
             - name: aws-secret-manager-volume
               mountPath: /etc/config
 {{- end }}
-          env:
+{{- end }}
 {{- if eq .Values.global.vault.type "hashicorp" }}
+          env:
           - name: VAULT_ADDR
             value: "{{ .Values.global.vault.address }}"
           - name: VAULT_SECRET_ENGINE

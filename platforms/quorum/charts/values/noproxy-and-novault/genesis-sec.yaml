@@ -5,7 +5,7 @@ global:
     provider: aws
     cloudNativeServices: false
   vault:
-    type: "aws-secrets-manager" # "kubernetes"
+    type: kubernetes # kubernetes | aws-secrets-manager
 
 settings:
   removeGenesisOnDelete: true
