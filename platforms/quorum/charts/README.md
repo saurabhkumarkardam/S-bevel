@@ -108,12 +108,12 @@ helm install validator-2 ./quorum-node --namespace supplychain-quo --values ./va
 helm install validator-3 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager"
 ```
 
-# 4. Install member node:
+### 4. Install member node:
 ```bash
 helm install member-0 ./quorum-node --namespace aws --values .//values/noproxy-and-novault/txnode.yaml --set global.vault.type="aws-secrets-manager",tessera.enabled=false
 ```
 
-# 5. Setting Up Another Member in a Different Namespace
+### 5. Setting Up Another Member in a Different Namespace
 
 ```bash
 # 5.1. Get the genesis and static nodes from existing member and place them in the directory 'besu-genesis/files'
