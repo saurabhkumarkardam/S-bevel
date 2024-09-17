@@ -4,6 +4,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 ##############################################################################################
 ---
+{{- if eq .Values.global.vault.type "hashicorp" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +12,15 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
 {{ (.Files.Glob "scripts/bevel-vault.sh").AsConfig | indent 2 }}
+{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-secret-manager-script
+  namespace: {{ .Release.Namespace }}
+data:
+{{ (.Files.Glob "scripts/aws-secret-manager-script.py").AsConfig | indent 2 }}
+{{- end }}
 
 ---
 apiVersion: v1
@@ -20,3 +30,4 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
 {{ (.Files.Glob "scripts/package-manager.sh").AsConfig | indent 2 }}
+

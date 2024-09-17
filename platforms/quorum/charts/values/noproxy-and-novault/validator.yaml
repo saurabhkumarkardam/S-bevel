@@ -7,7 +7,8 @@ global:
     provider: aws
     cloudNativeServices: false # set to true to use Cloud Native Services (SecretsManager and IAM for AWS; KeyVault & Managed Identities for Azure)
   vault:
-    type: kubernetes
+    type: kubernetes # kubernetes | aws-secrets-manager
+    secretManagerRegion: 
 
   proxy:
     provider: none
