@@ -125,13 +125,14 @@ spec:
         - |-
           #!/bin/bash
 
+{{- if (eq .Values.global.vault.type "hashicorp") }}
           # Source the bevel-vault.sh script to perform the Vault-CURD operations
           . /scripts/bevel-vault.sh
           
           # Get the Vault token
           echo "Getting the vault Token..."
           vaultBevelFunc 'init'
-
+          
           # Check if the value of 'tessera.tlsMode' is 'STRICT'
           if [ {{ $.Values.tessera.tlsMode }} == "STRICT" ]
           then
@@ -146,7 +147,7 @@ spec:
             tessera_known_server=$(echo ${VAULT_SECRET} | jq -r '.["knownServer"]'| base64 -d)
             keystore=$(echo ${VAULT_SECRET} | jq -r '.["keystore"]')
             keystore_password=$(echo ${VAULT_SECRET} | jq -r '.["password"]' | base64 -d)
-
+            
             # Write the decoded TLS-related data to files
             echo "${tessera_ca}" > ${MOUNT_PATH}/tessera_ca.pem
             echo "${tessera_cer_pem}" > ${MOUNT_PATH}/tessera_cer.pem
@@ -157,7 +158,7 @@ spec:
             base64 -d ${MOUNT_PATH}/keystore > ${MOUNT_PATH}/keystore.pkcs12
             echo "${keystore_password}" > ${MOUNT_PATH}/keystore_password
           fi
-
+{{- end }}
           # Copy MySQL jar files to the '/mysql-jar' directory
           cp /mysql/* /mysql-jar
         volumeMounts:
@@ -183,6 +184,7 @@ spec:
 
           # Read the password from the specified file and store it in 'pass'
           pass=$(cat /keys/tm.password)
+          echo "pass: $pass"
 
           # create an SQL script file
           # This SQL script updates user passwords and creates database tables
