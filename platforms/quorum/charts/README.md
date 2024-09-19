@@ -96,20 +96,20 @@ helm install member-1 ./quorum-node --namespace carrier-quo --values ./values/no
 
 ### 2. Install genesis node:
 ```bash
-helm install genesis ./quorum-genesis --namespace supplychain-quo --create-namespace --values ./values/noproxy-and-novault/genesis.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerArn="<YOUR_AWS_SECRET_MANAGER_ROLE_ARN>",global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
+helm install genesis ./quorum-genesis --namespace supplychain-quo --create-namespace --values ./values/noproxy-and-novault/genesis.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerArn="arn:aws:iam::895052373684:role/BevelCliEKSSecretsRole",global.vault.secretManagerRegion="eu-central-1"
 ```
 
 ### 3. Install validator nodes:
 ```bash
-helm install validator-0 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
-helm install validator-1 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
-helm install validator-2 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
-helm install validator-3 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
+helm install validator-0 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="eu-central-1"
+helm install validator-1 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="eu-central-1"
+helm install validator-2 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="eu-central-1"
+helm install validator-3 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/validator.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerRegion="eu-central-1"
 ```
 
 ### 4. Install member node:
 ```bash
-helm install member-0 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/txnode.yaml --set global.vault.type="aws-secrets-manager",tessera.enabled=false,global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
+helm install member-0 ./quorum-node --namespace supplychain-quo --values ./values/noproxy-and-novault/txnode.yaml --set global.vault.type="aws-secrets-manager",tessera.enabled=false,global.vault.secretManagerRegion="eu-central-1"
 ```
 
 ### 5. Setting Up Another Member in a Different Namespace
@@ -123,10 +123,10 @@ kubectl --namespace supplychain-quo get configmap quorum-peers -o jsonpath='{.da
 kubectl --namespace supplychain-quo get configmap quorum-genesis  -o jsonpath='{.data.genesis\.json}' > genesis.json
 
 # 5.2. Install secondary genesis node
-helm install genesis ./quorum-genesis --namespace carrier-quo --create-namespace --values ./values/noproxy-and-novault/genesis-sec.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerArn="<YOUR_AWS_SECRET_MANAGER_ROLE_ARN>"
+helm install genesis ./quorum-genesis --namespace carrier-quo --create-namespace --values ./values/noproxy-and-novault/genesis-sec.yaml --set global.vault.type="aws-secrets-manager",global.vault.secretManagerArn="arn:aws:iam::895052373684:role/BevelCliEKSSecretsRole"
 
 # 5.3. Install secondary member node
-helm install member-1 ./quorum-node --namespace carrier-quo --values ./values/noproxy-and-novault/txnode-sec.yaml --set global.vault.type="aws-secrets-manager",tessera.enabled=false,global.vault.secretManagerRegion="<YOUR_AWS_REGION>"
+helm install member-1 ./quorum-node --namespace carrier-quo --values ./values/noproxy-and-novault/txnode-sec.yaml --set global.vault.type="aws-secrets-manager",tessera.enabled=false,global.vault.secretManagerRegion="eu-central-1"
 ```
 
 <hr style="border: 10px solid green;">

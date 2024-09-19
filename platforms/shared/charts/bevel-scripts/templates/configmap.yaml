@@ -12,7 +12,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
 {{ (.Files.Glob "scripts/bevel-vault.sh").AsConfig | indent 2 }}
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

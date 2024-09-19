@@ -34,13 +34,13 @@ spec:
           securityContext:
             runAsUser: 0
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
           volumeMounts:
 {{- if eq .Values.global.vault.type "hashicorp" }}
             - name: scripts-volume
               mountPath: /scripts/bevel-vault.sh
               subPath: bevel-vault.sh
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
             - name: package-manager
               mountPath: /scripts/package-manager.sh
               subPath: package-manager.sh
@@ -48,7 +48,7 @@ spec:
               mountPath: /etc/config
 {{- end }}
 {{- end }}
-{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
           env:
 {{- if eq .Values.global.vault.type "hashicorp" }}
             - name: VAULT_ADDR
@@ -63,7 +63,7 @@ spec:
               value: "{{ .Values.global.vault.role }}"
             - name: VAULT_TYPE
               value: "{{ .Values.global.vault.type }}"
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
             - name: AWS_SECRECT_MANAGER_REGION
               value: "{{ .Values.global.vault.secretManagerRegion }}"
 {{- end }}
@@ -73,14 +73,6 @@ spec:
             - -c
           args:
             - |
-
-{{- if and (eq .Values.global.vault.type "aws-secrets-manager") (not .Values.settings.secondaryGenesis) }}
-              . /scripts/package-manager.sh
-              
-              # Define the packages to install
-              packages_to_install="python3-pip python3-boto3"
-              install_packages "$packages_to_install"
-{{- end }}
 
               # reads all the required data from the file path
               readSecretData() {
@@ -243,7 +235,12 @@ spec:
                     vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}" 'encryptedGenesisPayload.json'
                   fi
                 }
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+                . /scripts/package-manager.sh
+                # Define the packages to install
+                packages_to_install="python3-pip python3-boto3"
+                install_packages "$packages_to_install"
+
                 safeWriteSecret() {
                   local key="$1"
                   local fpath="$2"
@@ -283,7 +280,7 @@ spec:
               {{- if .Values.settings.secondaryGenesis }}
                 echo "Secondary Genesis,  configmaps are created from local files."
               {{- else }}
-              # # Use quorum-genesis-tool to generate genesis, keys and other required files
+              # Use quorum-genesis-tool to generate genesis, keys and other required files
                 FOLDER_PATH=$(quorum-genesis-tool --consensus {{ .Values.rawGenesisConfig.genesis.config.algorithm.consensus }} \
                   {{ if .Values.rawGenesisConfig.blockchain.nodes.generate }} --validators {{ .Values.rawGenesisConfig.blockchain.nodes.count }} {{ else }} --validators 0 {{ end }} \
                   --members 0 --bootnodes 0 --chainID {{ .Values.rawGenesisConfig.genesis.config.chainId }} --blockperiod {{ .Values.rawGenesisConfig.genesis.config.algorithm.blockperiodseconds }} \
@@ -302,33 +299,37 @@ spec:
                 # Iterate through the validators using a for loop
                 for ((i = 0; i < validator_count; i++)); do
                   current_validator_dir="$FOLDER_PATH/validator${i}"
+                  secret_name="quorum-node-validator-${i}-{{ .Release.Namespace }}-keys"
                   
                   {{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
                     # Implement logic to safely write keys for cloud-native services
+                    # If cloud provider is aws, secret-manager will be used to store keys securely
+                    safeWriteSecret "$secret_name" "${current_validator_dir}"
                   {{- else }}
-                    # Safely write keys and genesis to the Hashicorp Vault or AWs-Secret-Manager
-                    safeWriteSecret "quorum-node-validator-${i}-keys" "${current_validator_dir}"
+                    # Safely write keys and genesis to the Hashicorp Vault
+                    # safeWriteSecret "$secret_name" "${current_validator_dir}" # Un-comment
+                    echo "FAILED------------------------------------------------------------------" # Remove
                   {{- end }}
                   
                   # Check if Kubernetes secret exists, if not, create one
-                  if ! kubectl get secret quorum-node-validator-${i}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
+                  if ! kubectl get secret "$secret_name" --namespace {{ .Release.Namespace }} &> /dev/null; then
                     # Read secret data
                     read -r node_address node_key node_key_pub account_private_key account_password account_keystore account_keystore_base64 account_address <<< $(readSecretData "$current_validator_dir")
                     # Create Kubernetes Secret
-                    createKubernetesSecret "quorum-node-validator-${i}-keys" "$node_address" "$node_key" "$node_key_pub" "$account_private_key" "$account_password" "$account_keystore" "$account_address"
+                    createKubernetesSecret "$secret_name" "$node_address" "$node_key" "$node_key_pub" "$account_private_key" "$account_password" "$account_keystore" "$account_address"
                   fi
                 done
                 safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
               {{- end }}
               echo "Completed."
-{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
       volumes:
 {{- if eq .Values.global.vault.type "hashicorp" }}
         - name: scripts-volume
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
         - name: package-manager
           configMap:
             name: package-manager

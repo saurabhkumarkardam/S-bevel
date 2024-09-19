@@ -2,12 +2,11 @@
 global:
   serviceAccountName: vault-auth
   cluster:
+    cloudNativeServices: false # true | false
     provider: aws
-    cloudNativeServices: false
+    secretManagerArn: 
   vault:
-    type: kubernetes # kubernetes | aws-secrets-manager
-    secretManagerRegion: 
-
+    type: kubernetes # kubernetes
 settings:
   removeGenesisOnDelete: true
   secondaryGenesis: true

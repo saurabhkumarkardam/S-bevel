@@ -196,4 +196,4 @@ spec:
             name: quorum-genesis
         - name: node-keys
           secret:
-            secretName: {{ template "quorum-node.fullname" . }}-keys
+            secretName: {{ template "quorum-node.fullname" . }}-{{ .Release.Namespace }}-keys

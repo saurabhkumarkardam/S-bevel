@@ -31,13 +31,13 @@ spec:
           image: {{ .Values.image.hooks.repository }}:{{ .Values.image.hooks.tag }}
           securityContext:
             runAsUser: 0
-{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
           volumeMounts:
 {{- if eq .Values.global.vault.type "hashicorp" }}
             - name: scripts-volume
               mountPath: /scripts/bevel-vault.sh
               subPath: bevel-vault.sh
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
             - name: package-manager
               mountPath: /scripts/package-manager.sh
               subPath: package-manager.sh
@@ -45,7 +45,7 @@ spec:
               mountPath: /etc/config
 {{- end }}
 {{- end }}
-{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
           env:
 {{- if eq .Values.global.vault.type "hashicorp" }}
           - name: VAULT_ADDR
@@ -60,7 +60,7 @@ spec:
             value: "{{ .Values.global.vault.role }}"
           - name: VAULT_TYPE
             value: "{{ .Values.global.vault.type }}"
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
           - name: AWS_SECRECT_MANAGER_REGION
             value: "{{ .Values.global.vault.secretManagerRegion }}"
 {{- end }}
@@ -70,14 +70,6 @@ spec:
             - -c
           args:
             - |
-
-{{- if eq .Values.global.vault.type "aws-secrets-manager" }}
-              . /scripts/package-manager.sh
-              
-              # Define the packages to install
-              packages_to_install="python3-pip python3-boto3"
-              install_packages "$packages_to_install"
-{{- end }}
 
                 # reads all the required data from the file path
                 readSecretData() {
@@ -94,7 +86,7 @@ spec:
                   
                   echo "${node_address}" "${node_key}" "${node_key_pub}" "${account_private_key}" "${account_password}" "${account_keystore}" "${account_keystore_base64}" "${account_address}"
                 }
-
+                
                 # constructs the JSON payload using the extracted secret values
                 createJsonPayload() {
                   local node_address="$1"
@@ -119,7 +111,7 @@ spec:
                         }
                     }" > nodePayload.json
                 }
-
+                
                 # checks if a secret exists in AWS Secret Manager, and either creates or updates it
                 manageAwsSecret() {
                   local key="$1"
@@ -134,7 +126,7 @@ spec:
                     python3 /etc/config/aws-secret-manager-script.py "${AWS_SECRECT_MANAGER_REGION}" update_secret "${key}" "${payload_file}"
                   fi
                 }
-
+                
                 # Function to create a Kubernetes secret
                 createKubernetesSecret() {
                   local key="$1"
@@ -157,7 +149,7 @@ spec:
                     --from-literal=accountAddress="${account_address}" \
                     --dry-run=client -o yaml | kubectl apply -f -
                 }
-
+                
                 # Check if the vault type is HashiCorp
 {{- if eq .Values.global.vault.type "hashicorp" }}
                   # Source the script containing vault-related functions
@@ -199,7 +191,13 @@ spec:
                       rm nodePayload.json
                     fi
                   }
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+                . /scripts/package-manager.sh
+                
+                # Define the packages to install
+                packages_to_install="python3-pip python3-boto3"
+                install_packages "$packages_to_install"
+                
                 safeWriteSecret() {
                   local key="$1"
                   local fpath="$2"
@@ -224,10 +222,10 @@ spec:
                   return 0
                   }
 {{- end }}
-                
+                secret_name="{{ template "quorum-node.fullname" . }}-{{ .Release.Namespace }}-keys"
                 # Check if the secret exists in Kubernetes
-                if ! kubectl get secret {{ template "quorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
-                  echo "Secret does not exist. Creating secret."
+                if ! kubectl get secret "$secret_name" --namespace {{ .Release.Namespace }} &> /dev/null; then
+                  echo "Secret $secret_name does not exist. Creating secret."
                   
                   # Use quorum-genesis-tool to generate genesis, keys and other required files
                   FOLDER_PATH=$(quorum-genesis-tool --validators 0 --members 1 --bootnodes 0 \
@@ -237,23 +235,24 @@ spec:
 
 {{- if and (ne .Values.global.cluster.provider "minikube") (.Values.global.cluster.cloudNativeServices) }}
                   # Implement logic to safely write keys for cloud-native services
+                  # If cloud provider is aws, secret-manager will be used to store keys securely
+                  safeWriteSecret "$secret_name" "${dir}"
 {{- else }}
-                  # Safely write keys to the Hashicorp Vault or AWs-Secret-Manager
-                  echo "Safely write keys to the Hashicorp Vault or AWs-Secret-Manager"
-                  safeWriteSecret "{{ template "quorum-node.fullname" . }}-keys" "${dir}"
+                  # Safely write keys to the Hashicorp Vault
+                  safeWriteSecret "$secret_name" "${dir}"
 {{- end }}
                   # Check if Kubernetes secret exists, if not, create one
-                  if ! kubectl get secret {{ template "quorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }} &> /dev/null; then
+                  if ! kubectl get secret "$secret_name" --namespace {{ .Release.Namespace }} &> /dev/null; then
                     # Read secret data
                     read -r node_address node_key node_key_pub account_private_key account_password account_keystore account_keystore_base64 account_address <<< $(readSecretData "$current_validator_dir")
                     # Create Kubernetes Secret
-                    createKubernetesSecret "{{ template "quorum-node.fullname" . }}-keys" "$node_address" "$node_key" "$node_key_pub" "$account_private_key" "$account_password" "$account_keystore" "$account_address"
+                    createKubernetesSecret "$secret_name" "$node_address" "$node_key" "$node_key_pub" "$account_private_key" "$account_password" "$account_keystore" "$account_address"
                   fi
                 else
-                  echo "Secret exists. Extract modekey.pub key"
-                  node_key_pub=$(kubectl get secret {{ template "quorum-node.fullname" . }}-keys --namespace {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
+                  echo "Secret $secret_name exists. Extract modekey.pub key"
+                  node_key_pub=$(kubectl get secret "$secret_name" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["nodekey.pub"]' | base64 -d)
                 fi
-
+                
                 quorum_peers_configmap="quorum-peers"
                 # Check if the ConfigMap exists
                 if kubectl get configmap "$quorum_peers_configmap" --namespace {{ .Release.Namespace }} &> /dev/null; then
@@ -261,9 +260,9 @@ spec:
                     kubectl get configmap "$quorum_peers_configmap" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["static-nodes.json"]' > ./static-nodes.json
                     echo "Content of the ConfigMap has been saved to static-nodes.json"
                     existingStaticNodes=$(cat ./static-nodes.json)
-
+                    
                     newStaticNode="enode://$node_key_pub@{{ include "quorum-node.enodeURL" . }}?discport=0"
-
+                    
                     # Check if newStaticNode already exists in existingStaticNodes
                     if ! echo "$existingStaticNodes" | jq 'contains(["'"$newStaticNode"'"])' | grep -q true; then
                         existingStaticNodes=$(jq ". + [\"$newStaticNode\"]" <<< "$existingStaticNodes")
@@ -285,14 +284,14 @@ spec:
                 fi
                 
                 echo "COMPLETED PRE-HOOK"
-{{- if or (eq .Values.global.vault.type "hashicorp") (eq .Values.global.vault.type "aws-secrets-manager") }}
+{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
       volumes:
 {{- if eq .Values.global.vault.type "hashicorp" }}
         - name: scripts-volume
           configMap:
             name: bevel-vault-script
             defaultMode: 0777
-{{- else if eq .Values.global.vault.type "aws-secrets-manager" }}
+{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
         - name: package-manager
           configMap:
             name: package-manager
