@@ -37,7 +37,6 @@ Three new sections are added to the network.yaml
 | besu_nodes | Existing network's besu nodes' public addresses with rpc port.|
 | genesis | Path to existing network's genesis.json in base64.|
 
-
 1. **Update configuration file**
 
     Refer [this guide](../networkyaml-besu.md) for details on editing the configuration file.

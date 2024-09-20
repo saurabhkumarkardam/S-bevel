@@ -182,7 +182,6 @@ spec:
           COUNTER=1
           while [ "$COUNTER" -le {{ .Values.healthCheck.retries }} ]
           do
-
             OUTPUT_PATH="${MOUNT_PATH}/admin/msp"
             OUTPUT_TLS_PATH="${MOUNT_PATH}/tls"
             mkdir -p ${OUTPUT_TLS_PATH}
