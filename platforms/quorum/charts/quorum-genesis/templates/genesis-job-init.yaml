@@ -33,24 +33,65 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           securityContext:
             runAsUser: 0
+# {{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
+#           volumeMounts:
+# {{- if eq .Values.global.vault.type "hashicorp" }}
+#             - name: scripts-volume
+#               mountPath: /scripts/bevel-vault.sh
+#               subPath: bevel-vault.sh
+# {{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+#             - name: package-manager
+#               mountPath: /scripts/package-manager.sh
+#               subPath: package-manager.sh
+#             - name: aws-secret-manager-volume
+#               mountPath: /etc/config
+# {{- end }}
+# {{- end }}
+# {{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
+#           env:
+# {{- if eq .Values.global.vault.type "hashicorp" }}
+#             - name: VAULT_ADDR
+#               value: "{{ .Values.global.vault.address }}"
+#             - name: VAULT_SECRET_ENGINE
+#               value: "{{ .Values.global.vault.secretEngine }}"
+#             - name: VAULT_SECRET_PREFIX
+#               value: "{{ .Values.global.vault.secretPrefix }}"
+#             - name: KUBERNETES_AUTH_PATH
+#               value: "{{ .Values.global.vault.authPath }}"
+#             - name: VAULT_APP_ROLE
+#               value: "{{ .Values.global.vault.role }}"
+#             - name: VAULT_TYPE
+#               value: "{{ .Values.global.vault.type }}"
+# {{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+#             - name: AWS_SECRECT_MANAGER_REGION
+#               value: "{{ .Values.global.cluster.secretManagerRegion }}"
+# {{- end }}
+# {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
           volumeMounts:
-{{- if eq .Values.global.vault.type "hashicorp" }}
-            - name: scripts-volume
-              mountPath: /scripts/bevel-vault.sh
-              subPath: bevel-vault.sh
-{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+{{- if .Values.global.cluster.cloudNativeServices }}
+  {{- if eq .Values.global.cluster.provider "aws" }}
             - name: package-manager
               mountPath: /scripts/package-manager.sh
               subPath: package-manager.sh
             - name: aws-secret-manager-volume
               mountPath: /etc/config
+  {{- end }}
+{{- else }}
+  {{- if eq .Values.global.vault.type "hashicorp" }}
+            - name: scripts-volume
+              mountPath: /scripts/bevel-vault.sh
+              subPath: bevel-vault.sh
+  {{- end }}
 {{- end }}
-{{- end }}
-{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
           env:
-{{- if eq .Values.global.vault.type "hashicorp" }}
+{{- if .Values.global.cluster.cloudNativeServices }}
+  {{- if eq .Values.global.cluster.provider "aws" }}
+            - name: AWS_SECRECT_MANAGER_REGION
+              value: "{{ .Values.global.cluster.secretManagerRegion }}"
+  {{- end }}
+{{- else }}
+  {{- if eq .Values.global.vault.type "hashicorp" }}
             - name: VAULT_ADDR
               value: "{{ .Values.global.vault.address }}"
             - name: VAULT_SECRET_ENGINE
@@ -63,10 +104,7 @@ spec:
               value: "{{ .Values.global.vault.role }}"
             - name: VAULT_TYPE
               value: "{{ .Values.global.vault.type }}"
-{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
-            - name: AWS_SECRECT_MANAGER_REGION
-              value: "{{ .Values.global.cluster.secretManagerRegion }}"
-{{- end }}
+  {{- end }}
 {{- end }}
           command:
             - /bin/bash
@@ -235,12 +273,13 @@ spec:
                     vaultBevelFunc 'write' "${VAULT_SECRET_ENGINE}/${VAULT_SECRET_PREFIX}/${key}" 'encryptedGenesisPayload.json'
                   fi
                 }
-{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+{{- else .Values.global.cluster.cloudNativeServices }}
+  {{- if eq .Values.global.cluster.provider "aws" }}
                 . /scripts/package-manager.sh
                 # Define the packages to install
                 packages_to_install="python3-pip python3-boto3"
                 install_packages "$packages_to_install"
-
+                
                 safeWriteSecret() {
                   local key="$1"
                   local fpath="$2"
@@ -267,6 +306,7 @@ spec:
                   # Manage AWS Secret for Genesis
                   manageAwsSecret "${key}" "encryptedGenesisPayload.json"
                 }
+  {{- end }}
 {{- else }}
                 safeWriteSecret() {
                   # Placeholder:
@@ -321,19 +361,37 @@ spec:
                 safeWriteGenesis "quorum-genesis" "$FOLDER_PATH/goQuorum"
               {{- end }}
               echo "Completed."
-{{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
       volumes:
-{{- if eq .Values.global.vault.type "hashicorp" }}
-        - name: scripts-volume
-          configMap:
-            name: bevel-vault-script
-            defaultMode: 0777
-{{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+{{- if .Values.global.cluster.cloudNativeServices }}
+  {{- if eq .Values.global.cluster.provider "aws" }}
         - name: package-manager
           configMap:
             name: package-manager
         - name: aws-secret-manager-volume
           configMap:
             name: aws-secret-manager-script
+  {{- end }}
+{{- else }}
+  {{- if eq .Values.global.vault.type "hashicorp" }}
+        - name: scripts-volume
+          configMap:
+            name: bevel-vault-script
+            defaultMode: 0777
+  {{- end }}
 {{- end }}
-{{- end }}
+# {{- if or (eq .Values.global.vault.type "hashicorp") (and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws")) }}
+#       volumes:
+# {{- if eq .Values.global.vault.type "hashicorp" }}
+#         - name: scripts-volume
+#           configMap:
+#             name: bevel-vault-script
+#             defaultMode: 0777
+# {{- else if and (.Values.global.cluster.cloudNativeServices) (eq .Values.global.cluster.provider "aws") }}
+#         - name: package-manager
+#           configMap:
+#             name: package-manager
+#         - name: aws-secret-manager-volume
+#           configMap:
+#             name: aws-secret-manager-script
+# {{- end }}
+# {{- end }}
