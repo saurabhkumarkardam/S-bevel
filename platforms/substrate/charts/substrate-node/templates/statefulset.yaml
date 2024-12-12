@@ -243,7 +243,7 @@ spec:
               {{- if and (.Values.node.perNodeServices.createP2pService) (eq .Values.node.perNodeServices.p2pServiceType "NodePort") }}
                 RELAY_CHAIN_P2P_PORT=$(kubectl --namespace {{ .Release.Namespace }} get service {{ $fullname}}-${POD_INDEX}-rc-p2p -o jsonpath='{.spec.ports[*].nodePort}')
               {{- else if or (eq .Values.node.perNodeServices.p2pServiceType "LoadBalancer") (eq .Values.node.perNodeServices.p2pServiceType "ClusterIP") }}
-                RELAY_CHAIN_P2P_PORT=8080 # Default port
+                RELAY_CHAIN_P2P_PORT=30333 # 8080 # Default port
               {{- end }}
               
               {{- if and (.Values.node.perNodeServices.createP2pService) (.Values.node.collator.isParachain) (eq .Values.node.perNodeServices.p2pServiceType "Nodeport") }}
@@ -259,7 +259,7 @@ spec:
               {{- else if eq .Values.proxy.provider "ambassador" }}
                 EXTERNAL_ADDRESS="{{ $fullname }}-${POD_INDEX}.{{ .Values.proxy.external_url }}"
                 # EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
-                EXTERNAL_P2P_PORT="{{ .Values.global.proxy.p2p }}"
+                EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
               {{- else if eq .Values.node.perNodeServices.p2pServiceType "ClusterIP" }}
                 EXTERNAL_ADDRESS={{ $fullname }}-${POD_INDEX}-rc-p2p.{{ .Release.Namespace }}.svc.cluster.local
                 EXTERNAL_P2P_PORT="{{ .Values.node.ports.p2p }}"
@@ -340,7 +340,7 @@ spec:
             - containerPort: 9615
               name: prometheus
               protocol: TCP
-            - containerPort: 8080 # 30333
+            - containerPort: 30333
               name: p2p
               protocol: TCP
           {{- if .Values.node.collator.isParachain }}

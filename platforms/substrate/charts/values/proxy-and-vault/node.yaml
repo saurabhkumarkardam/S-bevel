@@ -30,12 +30,12 @@ node:
   isBootnode:
     enabled: true # false | true
     bootnodeName: oem-validator-1
-    bootnodeAddr: oem-validator-1.stage.intelipoc.com #if using proxy set it to this validator-1.<yourDomain.com>
-    bootnodePort: 15051 # 30333
+    bootnodeAddr: validator-1-substrate-node-0-rc-p2p.oem #if using proxy set it to this validator-1.<yourDomain.com>
+    bootnodePort: 15031 # 30333
     keys_k8s: oem-validator-1-keys
 
 genesis_ns: oem
-node_keys_k8s: oem-validator-1-keys
+# node_keys_k8s: oem-validator-1-keys
 # node_keys_k8s: oem-member-1-keys
 # node_keys_k8s: one-validator-2-keys
 # node_keys_k8s: one-member-2-keys
