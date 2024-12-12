@@ -93,7 +93,7 @@ helm install genesis ./substrate-genesis --namespace supplychain-subs --values .
 ```
 ### 2. Install Nodes
 ```bash
-helm install validator-1 ./substrate-node --namespace supplychain-subs --values ./values/proxy-and-vault/validator.yaml --set global.proxy.p2p=15051
+helm install validator-1 ./substrate-node --namespace supplychain-subs --values ./values/proxy-and-vault/validator.yaml --set global.proxy.p2p=15051 --set node.isBootnode.enabled=false
 
 helm install validator-2 ./substrate-node --namespace supplychain-subs --values ./values/proxy-and-vault/validator.yaml --set global.proxy.p2p=15052
 

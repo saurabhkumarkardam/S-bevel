@@ -14,7 +14,7 @@
 # The following are for overriding global values
 global:
   # Provide the service account name which will be created.
-  serviceAccountName: global-vault-sa # vault-auth
+  serviceAccountName: vault-auth # global-vault-sa # vault-auth
   cluster:
     provider: azure  # choose from: minikube | aws
     cloudNativeServices: false # 'false' is implemented
@@ -25,7 +25,7 @@ global:
     # Provide the type of vault
     type: kubernetes # hashicorp | kubernetes
     # Provide the vault role used.
-    role: global-vault-role
+    role: vault-role
     # Provide the network type
     network: substrate
     # Provide the vault server address
@@ -51,28 +51,10 @@ chain: inteli
 node:
   # Pull substrate Docker image
   image: ghcr.io/inteli-poc/dscp-node
-  # Substrate image tag
-  imageTag: v4.3.1
-  # Pull policy to be used for the Docker image
-  # Eg. pullPolicy: IfNotPresent
-  pullPolicy: IfNotPresent
-  # Command to be invoked to perform operations on the node
-  # Eg. command: substrate
   command: ./dscp-node
-  validator:
-    count: 4
-  member:
-    count: 1
-    balance: 1152921504606846976
+  isValidator: false # true | false
+  isMember: false   # true | false
 
-org_namespaces:
-  - oem:
-      validator:
-        - oem-validator-1
-      member:
-        - oem-member-1
-  - one:
-      validator:
-        - one-validator-2
-      member:
-        - one-member-2
+tags:
+  bevel-vault-mgmt: false # true | false
+  bevel-scripts: false # true | false

@@ -126,27 +126,96 @@ spec:
 
           echo "Step 5: Insert AURA & GRANDPA keys into genesis for validators."
           echo "Inserting keys into genesis for validators"
-          for ((i=1; i<={{ $.Values.node.validator.count }}; i++)); do
-            secret_data=$(kubectl get secret "substrate-node-validator-${i}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d)
+          kubectl get secret saurabh-1-keys -n oem
+          kubectl get secret saurabh-3-keys -n one
+          echo "++++++++++++++++++++++++++"
+          # Iterate over each organization namespace
+          {{- range .Values.org_namespaces }}
+            # Extract the org name (first key in the current item)
+            {{- $org_name := . | keys | first }}
             
-            # Check if secret_data is empty or not
-            if [ -n "$secret_data" ]; then
-              # Extract aura_addr and grandpa_addr
-              aura_addr=$(echo "$secret_data" | jq -r '.data.aura_addr')
-              grandpa_addr=$(echo "$secret_data" | jq -r '.data.grandpa_addr')
-              
-              # Check if extraction successful
-              if [ -n "$aura_addr" ] && [ -n "$grandpa_addr" ]; then
-                # Insert aura_addr keys into GENESIS JSON
-                GENESIS=$(echo "$GENESIS" | jq --arg aura "$aura_addr" '.genesis.runtime.aura.authorities += [$aura]')
-                GENESIS=$(echo "$GENESIS" | jq --arg grandpa "$grandpa_addr" '.genesis.runtime.grandpa.authorities += [[$grandpa, 1]]')
+            echo "--------------------------------------------------------------------------"
+            echo "Current org_ns: {{ $org_name }}"
+
+            # Access the 'validator' list using the index function and print each validator
+            {{- $validators := index . $org_name "validator" }}
+            {{- range $validators }}
+              echo "  Validator: {{ . }}"
+              secret_data=$(kubectl get secret "{{ . }}-keys" --namespace {{ $org_name }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d)
+              echo "secret_data: ${secret_data}"
+              # Check if secret_data is empty or not
+              if [ -n "$secret_data" ]; then
+                # Extract aura_addr and grandpa_addr
+                echo "Extract aura_addr and grandpa_addr for org_validator: {{ $org_name }} => {{ . }}"
+                aura_addr=$(echo "$secret_data" | jq -r '.data.aura_addr')
+                grandpa_addr=$(echo "$secret_data" | jq -r '.data.grandpa_addr')
+
+                echo "aura_addr: ${aura_addr}"
+                echo "grandpa_addr: ${grandpa_addr}"
+                
+                # Check if extraction successful
+                if [ -n "$aura_addr" ] && [ -n "$grandpa_addr" ]; then
+                  # Insert aura_addr keys into GENESIS JSON
+                  echo "Insert aura_addr keys into GENESIS JSON for org_validator: {{ $org_name }} => {{ . }}"
+                  GENESIS=$(echo "$GENESIS" | jq --arg aura "$aura_addr" '.genesis.runtime.aura.authorities += [$aura]')
+                  GENESIS=$(echo "$GENESIS" | jq --arg grandpa "$grandpa_addr" '.genesis.runtime.grandpa.authorities += [[$grandpa, 1]]')
+                else
+                  echo "Error: Unable to retrieve aura_addr or grandpa_addr key for validator $validator"
+                fi
               else
-                echo "Error: Unable to retrieve aura_addr or grandpa_addr key"
+                echo "Error: Unable to retrieve data for validator $validator."
               fi
-            else
-              echo "Error: Unable to retrieve data."
-            fi
-          done
+            {{- end }}
+          {{- end }}
+
+          echo "Key insertion process completed."
+
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+          {{- range .Values.org_namespaces }}
+            # Extract the org name (first key in the current item)
+            {{- $org_name := . | keys | first }}
+            echo "Organization: {{ $org_name }}"
+
+            # Access the 'member' list and print each member
+            {{- $members := index . $org_name "member" }}
+            {{- range $members }}
+              echo "    Member: {{ . }}"
+            {{- end }}
+          {{- end }}
+
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+          {{- range .Values.org_namespaces }}
+            echo "----------------------------------------------------"
+            # Extract the org name (first key in the current item)
+            {{- $org_name := . | keys | first }}
+            echo "Organization: {{ $org_name }}"
+
+            # Access the 'member' list and print each member
+            {{- $members := index . $org_name "member" }}
+            # Access the 'validator' list and print each validator
+            {{- $validators := index . $org_name "validator" }}
+
+            {{- range $members }}
+              echo "  Member: {{ . }}"
+              {{- range $validators }}
+                echo "    Validator: {{ . }}"
+              {{- end }}
+              {{- range $members }}
+                echo "    Member: {{ . }}"
+              {{- end }}
+            {{- end }}
+          {{- end }}
+
+
+          
 
           # Initialize an array to store each nodes' Kubernetes secret name
           secret_names=$(kubectl get secret -n {{ .Release.Namespace }} | grep substrate-node | awk '{print $1}')
@@ -155,37 +224,102 @@ spec:
             nodes+=("$line")
           done <<< "$secret_names"
 
+
+          {{- range .Values.org_namespaces }}
+            echo "----------------------------------------------------"
+            # Extract the org name (first key in the current item)
+            {{- $org_name := . | keys | first }}
+            echo "Organization: {{ $org_name }}"
+
+            # Access the 'member' list and print each member
+            {{- $members := index . $org_name "member" }}
+            # Access the 'validator' list and print each validator
+            {{- $validators := index . $org_name "validator" }}
+
+            # Iterate through org_namespaces
+            {{- range $members }}
+              echo "  Member: {{ . }}"
+
+              account_addr=$(kubectl get secret "{{ . }}-keys" --namespace "{{ $org_name }}" -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
+              echo "    account_addr: ${account_addr}"
+
+              GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" --arg balance {{ $.Values.node.member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
+              GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" '.genesis.runtime.membership.members += [$account_id]')
+
+              {{- range $validators }}
+                echo "    Validator: {{ . }}"
+                node_id=$(kubectl get secret "{{ . }}-keys" --namespace "{{ $org_name }}" -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+                arr_node_id=($(echo $base58 | fold -w2))
+                GENESIS=$(echo $GENESIS | jq --arg owner "$account_addr" '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+                for byte in "${arr_node_id[@]}"
+                do
+                  # Add each byte of the node ID to the authorization
+                  GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
+                done
+              {{- end }}
+              {{- range $members }}
+                echo "    Member: {{ . }}"
+                node_id=$(kubectl get secret "{{ . }}-keys" --namespace "{{ $org_name }}" -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+                arr_node_id=($(echo $base58 | fold -w2))
+                GENESIS=$(echo $GENESIS | jq --arg owner "$account_addr" '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+                for byte in "${arr_node_id[@]}"
+                do
+                  # Add each byte of the node ID to the authorization
+                  GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
+                done
+              {{- end }}
+            {{- end }}
+          {{- end }}
+
+
           echo "Step 6: Adding member accounts and their balances to genesis."
-          for ((i=1; i<={{ $.Values.node.member.count }}; i++)); do
-            account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
-            # Add account address and balance into genesis block
-            GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" --arg balance {{ $.Values.node.member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
-            GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" '.genesis.runtime.membership.members += [$account_id]')
+
+          # sleep 20m
+          # for ((i=1; i<={{ $.Values.node.member.count }}; i++)); do
+          #   account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
+          #   # Add account address and balance into genesis block
+          #   GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" --arg balance {{ $.Values.node.member.balance }} '.genesis.runtime.balances.balances += [[$account_id, ($balance | tonumber)]]')
+          #   GENESIS=$(echo "$GENESIS" | jq --arg account_id "$account_addr" '.genesis.runtime.membership.members += [$account_id]')
             
-            # Loop through each node to add authorization for the current member
-            for node in "${nodes[@]}"; do
-              # Retrieve node ID for the current node
-              node_id=$(kubectl get secret "$node" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+          #   # Loop through each node to add authorization for the current member
+          #   for node in "${nodes[@]}"; do
+          #     # Retrieve node ID for the current node
+          #     node_id=$(kubectl get secret "$node" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
               
-              # Convert node ID to base58 format
-              base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+          #     # Convert node ID to base58 format
+          #     base58=$(echo -n "$node_id" | base58 -d | xxd -p | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
               
-              # Split the base58 string into an array of bytes
-              arr_node_id=($(echo $base58 | fold -w2))
+          #     # Split the base58 string into an array of bytes
+          #     arr_node_id=($(echo $base58 | fold -w2))
               
-              # Add authorization for the current member to the node
-              GENESIS=$(echo $GENESIS | jq --arg owner "$account_addr" '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
-              for byte in "${arr_node_id[@]}"
-              do
-                # Add each byte of the node ID to the authorization
-                GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
-              done
-            done
-          done
+          #     # Add authorization for the current member to the node
+          #     GENESIS=$(echo $GENESIS | jq --arg owner "$account_addr" '.genesis.runtime.nodeAuthorization.nodes += [[[], $owner]]')
+          #     for byte in "${arr_node_id[@]}"
+          #     do
+          #       # Add each byte of the node ID to the authorization
+          #       GENESIS=$(echo $GENESIS | jq --arg byte $(echo "obase=10; ibase=16; $byte" | bc) '.genesis.runtime.nodeAuthorization.nodes[-1][0] += [($byte | tonumber)]')
+          #     done
+          #   done
+          # done
           
           echo "Step 7: Update the format of the modified genesis JSON and create a config map if it doesn't exist."
           # Write the modified genesis JSON to a file
           echo "$GENESIS" > certcheck/genesis.json
+
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+          cat certcheck/genesis.json
+
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          
           # Convert the genesis JSON to raw format
           echo "Converting genesis to raw format"
           GENESIS=$($command build-spec --disable-default-bootnode --raw --chain certcheck/genesis.json)
@@ -193,10 +327,21 @@ spec:
           # Encode the raw genesis JSON to base64
           cat certcheck/genesis_raw.json | base64 -w0 > certcheck/genesis_base64 # No need to encode it if you wanna store genesis as a K8s secret
 
-          # # Create the config map "substrate-genesis" using the base64 encoded genesis JSON and sudoKeygenOutput.json if it doesn't exist
-          if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
-            kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
-          fi
+          {{- range .Values.org_namespaces }}
+            # Extract the org name (first key in the current item)
+            {{- $org_name := . | keys | first }}
+            echo "Organization: {{ $org_name }}"
+
+            # Create the config map "substrate-genesis" using the base64 encoded genesis JSON and sudoKeygenOutput.json if it doesn't exist
+            if ! kubectl get configmap "substrate-genesis" --namespace {{ $org_name }} &> /dev/null; then
+              kubectl create configmap "substrate-genesis" --namespace {{ $org_name }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
+            fi
+          {{- end }}
+
+          # # # Create the config map "substrate-genesis" using the base64 encoded genesis JSON and sudoKeygenOutput.json if it doesn't exist
+          # if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
+          #   kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
+          # fi
           echo "COMPLETED!"
 {{- if eq .Values.global.vault.type "hashicorp" }}
           # Initialize the token

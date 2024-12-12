@@ -70,7 +70,7 @@ spec:
   ports:
     - name: p2p
       port: {{ $.Values.node.ports.p2p }}
-      targetPort: 30333
+      targetPort: 8080 # 30333
   {{- if and $.Values.node.collator.isParachain (or (eq $.Values.node.perNodeServices.p2pServiceType "LoadBalancer") (eq $.Values.node.perNodeServices.p2pServiceType "ClusterIP")) }}
     - name: pc-p2p
       port: 30334
@@ -109,7 +109,7 @@ metadata:
   name: "{{ $fullname }}-listener"
   namespace: {{ $.Release.Namespace }}
 spec:
-  port: {{ $.Values.proxy.p2p }}
+  port: {{ $.Values.global.proxy.p2p }}
   protocol: TCP
   securityModel: XFP
   hostBinding:
@@ -123,7 +123,17 @@ metadata:
   name: "{{ $fullname }}-tcpmapping"
   namespace: {{ $.Release.Namespace }}
 spec:
-  port: {{ $.Values.proxy.p2p }}
+  port: {{ $.Values.global.proxy.p2p }}
   service: "{{ $fullname }}-{{ $i }}-rc-p2p.{{ $.Release.Namespace }}:{{ $.Values.node.ports.p2p }}"
 {{- end }}
 {{- end }}
+
+# apiVersion: getambassador.io/v3alpha1
+# kind: Mapping
+# metadata:
+#   name: "substrate-node-mapping"
+#   namespace: "oem"
+# spec:
+#   hostname: "inteli-vault.sub.blockchaincloudpoc-develop.com"
+#   prefix: /
+#   service: "vault.vault:8200"
