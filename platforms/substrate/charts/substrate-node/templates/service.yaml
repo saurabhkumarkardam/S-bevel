@@ -127,13 +127,3 @@ spec:
   service: "{{ $fullname }}-{{ $i }}-rc-p2p.{{ $.Release.Namespace }}:{{ $.Values.node.ports.p2p }}"
 {{- end }}
 {{- end }}
-
-# apiVersion: getambassador.io/v3alpha1
-# kind: Mapping
-# metadata:
-#   name: "substrate-node-mapping"
-#   namespace: "oem"
-# spec:
-#   hostname: "inteli-vault.sub.blockchaincloudpoc-develop.com"
-#   prefix: /
-#   service: "vault.vault:8200"

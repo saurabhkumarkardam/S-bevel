@@ -210,8 +210,8 @@ spec:
               kubectl version --client
 
               echo "Step 3: Extract chain specification (genesis) from Kubernetes ConfigMap and store it"
-              # chain_spec=$(kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]') # ORGINAL
-              chain_spec=$(kubectl get configmap "substrate-genesis" --namespace "{{ .Values.genesis_ns }}" -o json | jq -r '.data["genesis"]')
+              # chain_spec=$(kubectl get configmap "substrate-genesis" --namespace "{{ .Values.genesis_ns }}" -o json | jq -r '.data["genesis"]')
+              chain_spec=$(kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["genesis"]') # ORGINAL
               echo "${chain_spec}" | base64 -d > {{ .Values.node.customChainspecPath }}
 
               echo "Step 4: Retrieve secret keys from Kubernetes Secrets if available"
@@ -229,7 +229,8 @@ spec:
               {{- if .Values.node.isBootnode.enabled }}
                 # Retrieve BOOTNODE_ID from Kubernetes Secret
                 # BOOTNODE_ID=$(kubectl get secret "substrate-node-{{ .Values.node.isBootnode.bootnodeName }}-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
-                BOOTNODE_ID=$(kubectl get secret "{{ .Values.node.isBootnode.keys_k8s }}" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                # BOOTNODE_ID=$(kubectl get secret "{{ .Values.node.isBootnode.keys_k8s }}" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.node_id')
+                BOOTNODE_ID="{{ .Values.node.isBootnode.boot_node_id }}"
               {{- end }}
 
               echo "Step 5: Insert keys into Keystore using dscp-node command-line tool"
@@ -258,7 +259,6 @@ spec:
                 EXTERNAL_ADDRESS=$(kubectl --namespace {{ .Release.Namespace }} get service {{ $fullname }}-${POD_INDEX}-rc-p2p -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
               {{- else if eq .Values.proxy.provider "ambassador" }}
                 EXTERNAL_ADDRESS="{{ $fullname }}-${POD_INDEX}.{{ .Values.proxy.external_url }}"
-                # EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
                 EXTERNAL_P2P_PORT="{{ .Values.proxy.p2p }}"
               {{- else if eq .Values.node.perNodeServices.p2pServiceType "ClusterIP" }}
                 EXTERNAL_ADDRESS={{ $fullname }}-${POD_INDEX}-rc-p2p.{{ .Release.Namespace }}.svc.cluster.local
@@ -280,6 +280,7 @@ spec:
               echo "PARA_CHAIN_P2P_PORT: ${PARA_CHAIN_P2P_PORT}"
               echo "EXTERNAL_ADDRESS: ${EXTERNAL_ADDRESS}"
               echo "EXTERNAL_P2P_PORT: ${EXTERNAL_P2P_PORT}"
+              echo "BOOTNODES: --bootnodes "/dns4/{{ .Values.node.isBootnode.bootnodeAddr }}/tcp/{{ .Values.node.isBootnode.bootnodePort }}/p2p/${BOOTNODE_ID}""
 
               echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
               echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"

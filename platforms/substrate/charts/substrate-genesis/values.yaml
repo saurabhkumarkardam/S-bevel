@@ -69,10 +69,13 @@ org_namespaces:
   - oem:
       validator:
         - oem-validator-1
+        - oem-validator-2
+        - oem-validator-3
+        - oem-validator-4
       member:
         - oem-member-1
   - one:
       validator:
-        - one-validator-2
+        - one-validator-5
       member:
         - one-member-2
