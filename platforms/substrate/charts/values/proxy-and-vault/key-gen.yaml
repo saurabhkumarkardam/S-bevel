@@ -7,12 +7,15 @@
 global:
   serviceAccountName: vault-auth
   vault:
-    type: "" # hashicorp
+    type: "hashicorp"
     network: substrate
-    address: http://vault.demo.com:8200
-    authPath: supplychain
-    secretEngine: secretsv2
-    secretPrefix: "data/supplychain" 
+    address: "http://inteli-vault.stage.intelipoc.com"
+    authPath: oem
+    secretEngine: secretsv3 # secretsv2
+    certPrefix: "subs"
+    secretPrefix: "data/oem"
     role: vault-role
-proxy:
-  provider: ambassador 
+  cluster:
+    provider: azure
+    cloudNativeServices: false
+    kubernetesUrl: https://inteli-stage-dns-2l39y5xx.hcp.eastus.azmk8s.io:443

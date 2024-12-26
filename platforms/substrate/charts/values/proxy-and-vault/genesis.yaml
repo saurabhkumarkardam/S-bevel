@@ -5,25 +5,19 @@
 ##############################################################################################
 ---
 global:
-  serviceAccountName: vault-auth
+  serviceAccountName: global-vault-sa # vault-auth
   vault:
-    type: hashicorp
+    # Can't push Genesis to Vault because it uses the service account 'global-vault-sa', which Vault doesn't recognize
+    type: kubernetes # hashicorp
     network: substrate
-    address: http://vault.demo.com:8200
-    authPath: supplychain
-    secretEngine: secretsv2
+    address: "http://inteli-vault.stage.intelipoc.com" # http://vault.demo.com:8200
+    authPath: oem
+    secretEngine: secretsv3 # secretsv2
     certPrefix: "subs"
-    secretPrefix: "data/supplychain"
-    role: vault-role
+    secretPrefix: "data/oem"
+    role: vault-role 
   cluster:
     provider: azure
     cloudNativeServices: false
-    kubernetesUrl: https://kubernetes.url
-
-node:
-  validator:
-      count: 4
-  member:
-    count: 1
-    balance: 1152921504606846976
-
+    kubernetesUrl: https://inteli-stage-dns-2l39y5xx.hcp.eastus.azmk8s.io:443 # https://kubernetes.url 
+ 

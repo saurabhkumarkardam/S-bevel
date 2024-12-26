@@ -14,7 +14,7 @@
 # The following are for overriding global values
 global:
   # Provide the service account name which will be created.
-  serviceAccountName: vault-auth # global-vault-sa # vault-auth
+  serviceAccountName: vault-auth
   cluster:
     provider: azure  # choose from: minikube | aws
     cloudNativeServices: false # 'false' is implemented
@@ -23,19 +23,19 @@ global:
     kubernetesUrl:
   vault:
     # Provide the type of vault
-    type: kubernetes # hashicorp | kubernetes
+    type: "hashicorp" # hashicorp | kubernetes
     # Provide the vault role used.
     role: vault-role
     # Provide the network type
     network: substrate
     # Provide the vault server address
-    address: # "http://vault_url"
+    address: "http://inteli-vault.stage.intelipoc.com" # "http://vault_url"
     # Provide the vault authPath configured to be used.
-    authPath: supplychain
+    authPath: oem
     # Provide the secret engine.
-    secretEngine: secretsv2
+    secretEngine: secretsv3 # secretsv2
     # Provide the vault path where the secrets will be stored
-    secretPrefix: "data/supplychain"
+    secretPrefix: "data/oem"
 
 removeGenesisOnDelete:
   enabled: true

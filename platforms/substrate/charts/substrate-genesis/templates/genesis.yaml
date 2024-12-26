@@ -170,10 +170,7 @@ spec:
 
           echo "Key insertion process completed."
 
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
 
           {{- range .Values.org_namespaces }}
             # Extract the org name (first key in the current item)
@@ -187,11 +184,9 @@ spec:
             {{- end }}
           {{- end }}
 
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
 
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           {{- range .Values.org_namespaces }}
             echo "----------------------------------------------------"
             # Extract the org name (first key in the current item)
@@ -213,16 +208,17 @@ spec:
               {{- end }}
             {{- end }}
           {{- end }}
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
 
 
-          
-
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           # Initialize an array to store each nodes' Kubernetes secret name
           secret_names=$(kubectl get secret -n {{ .Release.Namespace }} | grep substrate-node | awk '{print $1}')
           declare -a nodes
           while IFS= read -r line; do
             nodes+=("$line")
           done <<< "$secret_names"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
 
 
           {{- range .Values.org_namespaces }}
@@ -275,7 +271,7 @@ spec:
 
 
           echo "Step 6: Adding member accounts and their balances to genesis."
-
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           # sleep 20m
           # for ((i=1; i<={{ $.Values.node.member.count }}; i++)); do
           #   account_addr=$(kubectl get secret "substrate-node-member-$i-keys" --namespace {{ .Release.Namespace }} -o json | jq -r '.data["substrate-node-keys"]' | base64 -d | jq -r '.data.account_addr')
@@ -303,22 +299,15 @@ spec:
           #     done
           #   done
           # done
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           
           echo "Step 7: Update the format of the modified genesis JSON and create a config map if it doesn't exist."
           # Write the modified genesis JSON to a file
           echo "$GENESIS" > certcheck/genesis.json
 
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           cat certcheck/genesis.json
-
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           
           # Convert the genesis JSON to raw format
           echo "Converting genesis to raw format"
@@ -338,10 +327,13 @@ spec:
             fi
           {{- end }}
 
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
           # # # Create the config map "substrate-genesis" using the base64 encoded genesis JSON and sudoKeygenOutput.json if it doesn't exist
           # if ! kubectl get configmap "substrate-genesis" --namespace {{ .Release.Namespace }} &> /dev/null; then
           #   kubectl create configmap "substrate-genesis" --namespace {{ .Release.Namespace }} --from-file=genesis="${MOUNT_PATH}/genesis_base64" --from-file=sudoKeygenOutput="${MOUNT_PATH}/sudoKeygenOutput.json"
           # fi
+          echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX REMOVE"
+          
           echo "COMPLETED!"
 {{- if eq .Values.global.vault.type "hashicorp" }}
           # Initialize the token

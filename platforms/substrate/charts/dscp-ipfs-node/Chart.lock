@@ -1,0 +1,9 @@
+dependencies:
+- name: dscp-node
+  repository: https://digicatapult.github.io/helm-charts/
+  version: 4.5.6
+- name: bevel-storageclass
+  repository: file://../../../shared/charts/bevel-storageclass
+  version: 1.0.0
+digest: sha256:b01e1242245fbb8125e3a21249088439956e82b99f9be5778d90495e4cb4742f
+generated: "2024-12-13T11:08:14.967598889Z"

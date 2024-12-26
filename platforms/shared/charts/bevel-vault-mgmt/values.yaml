@@ -19,7 +19,7 @@ global:
     role: vault-role
     #Provide the vault server address
     #Eg. address: http://vault-884963190.eu-west-1.elb.amazonaws.com:8200
-    address:
+    address: 
     #Provide the kubernetes auth backed configured in vault for an organization
     #Eg. authPath: supplychain
     authPath: supplychain
@@ -28,7 +28,7 @@ global:
     network: besu # choose from: besu | corda | fabric | corda-ent | quorum
     #Provide the vault secret engine name
     #Eg. secretEngine: secretsv2
-    secretEngine: secretsv2
+    secretEngine: secretsv3 # secretsv2
     #Provide the value for vault secret prefix. MUST use data
     #Eg. secretPrefix: data/org1
     secretPrefix: "data/supplychain"
