@@ -21,19 +21,19 @@ global:
     kubernetesUrl: https://inteli-stage-dns-2l39y5xx.hcp.eastus.azmk8s.io:443 # https://kubernetes.url 
  
 org_namespaces:
-  - oem1-subs:
+  - oem-subs:
       validator:
         - oem-validator-1
         - oem-validator-2
       member:
         - oem-member-1
-  - tierone1-subs:
+  - tierone-subs:
       validator:
         - tierone-validator-3
         - tierone-validator-4
       member:
         - tierone-member-2
-  - tiertwo1-subs:
+  - tiertwo-subs:
       validator:
       member:
         - tiertwo-member-3

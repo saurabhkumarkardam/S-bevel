@@ -21,7 +21,7 @@ metadata:
   name: global-crb
 subjects:
   - kind: ServiceAccount
-    namespace: oem1-subs
+    namespace: oem-subs
     name: global-vault-sa
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: global-vault-sa
-  namespace: oem1-subs
+  namespace: oem-subs
   # labels:
   #   app.kubernetes.io/managed-by: Helm
   # annotations:
