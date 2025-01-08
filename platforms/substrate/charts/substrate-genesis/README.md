@@ -5,7 +5,7 @@
 
 # substrate-genesis
 
-This Helm chart generates keys for a specified number of nodes using the dscp-node CLI tool, storing them as Kubernetes secrets and, if enabled, saving them to HashiCorp Vault, while also generating a customized Genesis based on user-provided information.
+This Helm chart generates a customized Genesis based on user-provided information.
 
 ## TL;DR
 
