@@ -1,0 +1,77 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: stage@intelipoc.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+      selector: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: oem-web-cert
+  namespace: oem-subs
+spec:
+  secretName: oem-web-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - oem-web.stage.intelipoc.com
+
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: acme-oem
+  namespace: oem-subs
+spec:
+  hostname: oem-web.stage.intelipoc.com # "*"
+  prefix: /.well-known/acme-challenge/
+  rewrite: ""
+  service: acme-oem-svc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acme-oem-svc
+  namespace: oem-subs
+spec:
+  ports:
+  - port: 80
+    targetPort: 8089
+  selector:
+    acme.cert-manager.io/http01-solver: "true"
+
+---
+apiVersion: getambassador.io/v2
+kind: Host
+metadata:
+  name: oem-web-host
+  namespace: ambassador
+spec:
+  acmeProvider:
+    authority: none
+  hostname: oem-web.stage.intelipoc.com
+  requestPolicy:
+    insecure:
+      action: Route
+  tls:
+    min_tls_version: v1.2
+  tlsSecret:
+    name: oem-web-cert
+    namespace: oem-subs
+
+# kubectl apply -f examples/dscp-app/inteli-helm/cert-process/oem-web.yml
+# kubectl delete -f examples/dscp-app/inteli-helm/cert-process/oem-web.yml

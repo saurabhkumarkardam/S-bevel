@@ -1,0 +1,53 @@
+fullnameOverride: tiertwo-inteli-api
+config:
+  port: 3000
+  externalPostgresql: tiertwo-postgresql.tiertwo-subs
+  dbName: inteli-api
+  dbPort: 5432
+  dscpApiHost: tiertwo-api.tiertwo-subs
+  dscpApiPort: 80
+  logLevel: info
+  identityServiceHost: tiertwo-dscp-identity-service.tiertwo-subs
+  identityServicePort: 3001
+  externalAddress: https://tiertwo-inteli-api.stage.intelipoc.com
+  auth:
+    type: NONE
+    jwksUri: https://intelipoc.eu.auth0.com/.well-known/jwks.json
+    audience: https://intelipoc.com/api
+    issuer: https://intelipoc.eu.auth0.com/
+    tokenUrl: https://intelipoc.eu.auth0.com/oauth/token
+deployment:
+  annotations: {}
+  livenessProbe:
+    enabled: true
+  replicaCount: 1
+ingress:
+  enabled: false
+  annotations: {}
+  # className: ""
+  paths:
+    - /v1/attachment
+    - /v1/build
+    - /v1/order
+    - /v1/part
+    - /v1/recipe
+service:
+  annotations: {}
+  enabled: false
+  port: 
+image:
+  repository: ghcr.io/inteli-poc/inteli-api # {"$imagepolicy": "flux-dscp:inteli-api:name"}
+  pullPolicy: IfNotPresent
+  tag: 'v1.31.0-7426113-1684513443' # 'v1.0.0' # {"$imagepolicy": "flux-dscp:inteli-api:tag"}
+  pullSecrets: 
+postgresql:
+  enabled: false
+  postgresqlDatabase: inteli-api
+  postgresqlUsername: postgres
+  postgresqlPassword: postgres123
+proxy:
+  provider: ambassador
+  name: tiertwo 
+  external_url_suffix: stage.intelipoc.com
+  port: 80
+  issuedFor: tiertwo

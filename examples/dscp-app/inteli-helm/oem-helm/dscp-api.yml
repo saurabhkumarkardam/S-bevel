@@ -1,0 +1,43 @@
+fullNameOverride: oem-api
+config:
+  port: 80
+  externalNodeHost: "oem-member-1-node-substrate-node-0" # "member-1-substrate-node"
+  externalNodePort: 9944
+  logLevel: info  
+  externalIpfsHost: "dscp-ipfs-node-1-api" # "oem-ipfs-api" 
+  externalIpfsPort: 5001 
+  enableLivenessProbe: true
+  substrateStatusPollPeriodMs: 10000
+  substrateStatusTimeoutMs: 200000
+  ipfsStatusPollPeriodMs: 10000
+  ipfsStatusTimeoutMs: 200000
+  auth:
+    type: NONE
+    jwksUri: https://intelipoc.eu.auth0.com/.well-known/jwks.json
+    audience: https://intelipoc.com/api
+    issuer: https://intelipoc.eu.auth0.com/
+    tokenUrl: https://intelipoc.eu.auth0.com/oauth/token
+ingress:
+  enabled: false
+  className: "gce"
+  paths:
+    - /v3
+replicaCount: 1
+image:
+  repository: ghcr.io/digicatapult/dscp-api
+  pullPolicy: IfNotPresent
+  tag: 'v4.6.7'
+dscpNode:
+  enabled: false
+
+dscpIpfs:
+  enabled: false
+  dscpNode:
+    enabled: false
+vault:
+  alpineutils: ghcr.io/hyperledger/alpine-utils:1.0
+  address: http://inteli-vault.stage.intelipoc.com
+  secretprefix: secretsv4/data/oem/oem-member-1 # secretsv4/data/supplychain/substrate-node-member-1-keys
+  serviceaccountname: vault-auth
+  role: vault-role
+  authpath: oem # supplychain

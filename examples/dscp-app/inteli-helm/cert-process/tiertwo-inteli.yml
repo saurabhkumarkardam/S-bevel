@@ -1,0 +1,60 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: "tiertwo-inteliapi-cert"
+  namespace: "oem-subs"
+spec:
+  secretName: "tiertwo-inteliapi-cert"
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - tiertwo-inteli-api.stage.intelipoc.com
+
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: "acme-tiertwo-inteliapi"
+  namespace: "oem-subs"
+spec:
+  hostname: tiertwo-inteli-api.stage.intelipoc.com
+  prefix: /.well-known/acme-challenge/
+  rewrite: ""
+  service: "acme-tiertwo-inteliapi-svc"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "acme-tiertwo-inteliapi-svc"
+  namespace: "oem-subs"
+spec:
+  ports:
+  - port: 80
+    targetPort: 8089
+  selector:
+    acme.cert-manager.io/http01-solver: "true"
+
+---
+apiVersion: getambassador.io/v2
+kind: Host
+metadata:
+   name: tiertwo-inteli-host
+   namespace: ambassador
+spec:
+   acmeProvider:
+     authority: none
+   hostname: tiertwo-inteli-api.stage.intelipoc.com
+   requestPolicy:
+     insecure:
+       action: Route
+   tls:
+     min_tls_version: v1.2
+   tlsSecret:
+     name: tiertwo-inteliapi-cert
+     namespace: oem-subs
+
+# kubectl apply -f examples/dscp-app/inteli-helm/cert-process/tiertwo-inteli-api.yml
+# kubectl delete -f examples/dscp-app/inteli-helm/cert-process/tiertwo-inteli-api.yml
