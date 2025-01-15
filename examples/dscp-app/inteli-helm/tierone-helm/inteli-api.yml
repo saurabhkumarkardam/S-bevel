@@ -11,9 +11,9 @@ config:
   identityServicePort: 3001
   externalAddress: https://tierone-inteli-api.stage.intelipoc.com
   auth:
-    type: NONE
+    type: JWT # NONE | JWT
     jwksUri: https://intelipoc.eu.auth0.com/.well-known/jwks.json
-    audience: https://intelipoc.com/api
+    audience: https://intelipoc.eu.auth0.com/api/v2/ # https://intelipoc.com/api
     issuer: https://intelipoc.eu.auth0.com/
     tokenUrl: https://intelipoc.eu.auth0.com/oauth/token
 deployment:
