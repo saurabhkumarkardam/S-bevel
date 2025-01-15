@@ -1,0 +1,21 @@
+# The Watcher Helm chart uses a CronJob and requires a StorageClass named "standard."
+# Ensure the StorageClass is created with the following definition before installing the Watcher Helm
+
+allowedTopologies:
+- matchLabelExpressions:
+  - key: failure-domain.beta.kubernetes.io/zone
+    values:
+    - eu-west-1a
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+parameters:
+  kind: Managed
+  skuName: StandardSSD_LRS
+provisioner: disk.csi.azure.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+
+# kubectl apply -f build/inteli-helm/sc.yaml
+# kubectl delete -f build/inteli-helm/sc.yaml

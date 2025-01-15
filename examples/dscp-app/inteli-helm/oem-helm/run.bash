@@ -11,12 +11,11 @@ helm install oem-dscp-identity-service examples/dscp-app/charts/dscp-identity-se
 helm install oem-inteli-api examples/dscp-app/charts/inteli-api -f examples/dscp-app/inteli-helm/oem-helm/inteli-api.yml -n oem-subs
 
 kubectl create secret docker-registry regcred -n oem-subs --docker-server=ghcr.io --docker-username=<docker-username> --docker-password=<github_token> --docker-email=<docker-email>
-
 helm install oem-dscp-frontend examples/dscp-app/charts/dscp-frontend -f examples/dscp-app/inteli-helm/oem-helm/dscp-frontend.yml -n oem-subs
 
 vault kv put secretsv2/oem/gcpkey gcpkey="$(cat {{ org.kinaxis.keyPath }})"
 vault kv put secretsv4/oem/inteliAuth clientId="4QG5X9quHfzlqQq8n4E5v0MS6GCcMENP" clientSecret="V6RtbKCbw3SbmMyhIEa_i-ojWJGjM-bRiKnPS1ctKkGmWv05iaxB0avywPnuyX16"
-
+kubectl apply -f examples/dscp-app/inteli-helm/utils/storageClass.yaml
 helm install oem-chain-watcher examples/dscp-app/charts/dscp-chain-watcher -f examples/dscp-app/inteli-helm/oem-helm/chain-watcher.yml -n oem-subs
 
 # chmod +x build/inteli-helm/oem-helm/run.sh
