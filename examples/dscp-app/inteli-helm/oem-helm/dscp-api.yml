@@ -37,7 +37,7 @@ dscpIpfs:
 vault:
   alpineutils: ghcr.io/hyperledger/alpine-utils:1.0
   address: http://inteli-vault.stage.intelipoc.com
-  secretprefix: secretsv4/data/oem/oem-member-1 # secretsv4/data/supplychain/substrate-node-member-1-keys
+  secretprefix: secretsv2/data/oem/oem-member-1 # secretsv2/data/supplychain/substrate-node-member-1-keys
   serviceaccountname: vault-auth
   role: vault-role
   authpath: oem # supplychain

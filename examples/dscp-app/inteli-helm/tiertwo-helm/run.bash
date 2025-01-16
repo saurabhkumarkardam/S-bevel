@@ -15,7 +15,7 @@ kubectl create secret docker-registry regcred -n tiertwo-subs  --docker-server=g
 
 helm install tiertwo-dscp-frontend examples/dscp-app/charts/dscp-frontend -f examples/dscp-app/inteli-helm/tiertwo-helm/dscp-frontend.yml -n tiertwo-subs
 
-vault kv put secretsv4/tiertwo/inteliAuth clientId="4QG5X9quHfzlqQq8n4E5v0MS6GCcMENP" clientSecret="V6RtbKCbw3SbmMyhIEa_i-ojWJGjM-bRiKnPS1ctKkGmWv05iaxB0avywPnuyX16"
+vault kv put secretsv2/tiertwo/inteliAuth clientId="4QG5X9quHfzlqQq8n4E5v0MS6GCcMENP" clientSecret="V6RtbKCbw3SbmMyhIEa_i-ojWJGjM-bRiKnPS1ctKkGmWv05iaxB0avywPnuyX16"
 helm install tiertwo-chain-watcher examples/dscp-app/charts/dscp-chain-watcher -f examples/dscp-app/inteli-helm/tiertwo-helm/chain-watcher.yml -n tiertwo-subs
 
 

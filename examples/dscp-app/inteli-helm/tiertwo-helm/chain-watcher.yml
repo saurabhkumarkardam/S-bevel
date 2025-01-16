@@ -25,7 +25,7 @@ image:
 vault:
   alpineutils: ghcr.io/hyperledger/alpine-utils:1.0
   address: http://inteli-vault.stage.intelipoc.com
-  secretprefix: secretsv4/data/tiertwo
+  secretprefix: secretsv2/data/tiertwo
   serviceaccountname: vault-auth
   role: vault-role
   authpath: tiertwo

@@ -15,7 +15,7 @@ kubectl create secret docker-registry regcred -n tierone-subs  --docker-server=g
 
 helm install tierone-dscp-frontend examples/dscp-app/charts/dscp-frontend -f examples/dscp-app/inteli-helm/tierone-helm/dscp-frontend.yml -n tierone-subs
 
-vault kv put secretsv4/tierone/inteliAuth clientId="4QG5X9quHfzlqQq8n4E5v0MS6GCcMENP" clientSecret="V6RtbKCbw3SbmMyhIEa_i-ojWJGjM-bRiKnPS1ctKkGmWv05iaxB0avywPnuyX16"
+vault kv put secretsv2/tierone/inteliAuth clientId="4QG5X9quHfzlqQq8n4E5v0MS6GCcMENP" clientSecret="V6RtbKCbw3SbmMyhIEa_i-ojWJGjM-bRiKnPS1ctKkGmWv05iaxB0avywPnuyX16"
 helm install tierone-chain-watcher examples/dscp-app/charts/dscp-chain-watcher -f examples/dscp-app/inteli-helm/tierone-helm/chain-watcher.yml -n tierone-subs
 
 

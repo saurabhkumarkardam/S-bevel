@@ -144,9 +144,18 @@ spec:
                   else
                       #Generate token and mount
                       echo "token is not present - generating token file"
+                      echo "============================================="
+                      echo "CLIENT_ID: ${CLIENT_ID}"
+                      echo "CLIENT_SECRET: ${CLIENT_SECRET}"
+                      echo "AUDIENCE: ${AUDIENCE}"
+                      echo "GRANT_TYPE: ${GRANT_TYPE}"
+                      echo "MOUNT_PATH: ${MOUNT_PATH}"
+                      echo "============================================="
                       jq -n -j --arg ID ${CLIENT_ID} --arg SECRET ${CLIENT_SECRET} --arg AUDIENCE ${AUDIENCE} --arg GRANT ${GRANT_TYPE} '{"client_id": $ID, "client_secret": $SECRET, "audience": $AUDIENCE, "grant_type": $GRANT}' > ${MOUNT_PATH}/data.json
                       curl -s -X POST -H "Content-Type: application/json" -d @${MOUNT_PATH}/data.json ${TOKEN_ADDR} | jq '.access_token' | tr -d '"' > ${MOUNT_PATH}/token.txt
                   fi
+
+                  tail -f /dev/null
           containers:
             - name: {{ include "chain-watcher.fullname" . }}-cron-job
               image: {{ .Values.image.repository }}:{{ .Values.image.tag }}

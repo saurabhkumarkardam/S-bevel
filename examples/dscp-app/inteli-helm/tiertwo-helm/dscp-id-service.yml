@@ -40,7 +40,7 @@ dscpNode:
 vault:
   alpineutils: ghcr.io/hyperledger/alpine-utils:1.0
   address: http://inteli-vault.stage.intelipoc.com
-  secretprefix: secretsv4/data/tiertwo/tiertwo-member-3
+  secretprefix: secretsv2/data/tiertwo/tiertwo-member-3
   serviceaccountname: vault-auth
   role: vault-role
   authpath: tiertwo
