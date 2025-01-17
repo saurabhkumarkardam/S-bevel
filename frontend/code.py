@@ -12,3 +12,6 @@ mul = 1 * 2
 # Displaying the result
 print("MUL: ", mul)
 
+
+print("My HELLO")
+
