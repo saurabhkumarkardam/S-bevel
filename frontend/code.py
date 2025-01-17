@@ -13,5 +13,6 @@ mul = 1 * 2
 print("MUL: ", mul)
 
 
-print("My HELLO")
+print("My HELLO - 0")
+print("My HELLO - 1")
 
