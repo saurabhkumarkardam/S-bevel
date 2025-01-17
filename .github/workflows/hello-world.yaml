@@ -18,7 +18,7 @@ jobs:
       - name: Log Triggering User
         run: echo "Workflow triggered by user => ${{ github.actor }}"
       - name: Log Repository Owner
-        run: echo "Workflow triggered by repository_owner => ${{ github.repository_owner }}""
+        run: echo "Workflow triggered by repository_owner => ${{ github.repository_owner }}"
 
       # Log in to GitHub Container Registry
       - name: Log in to GHCR
