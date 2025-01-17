@@ -1,0 +1,20 @@
+name: Hello World Pipeline
+
+# Trigger the workflow on pushes to the "pipeline" branch
+on:
+  push:
+    branches:
+      - pipeline
+
+jobs:
+  hello-world-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code (optional for this workflow)
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Print "Hello world"
+      - name: Print Hello World
+        run: echo "Hello world"
