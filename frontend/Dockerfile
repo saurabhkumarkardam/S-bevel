@@ -11,4 +11,7 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt || true
 
 # Set the default command
-CMD ["python", "code.py"]
+# CMD ["python", "code.py"]
+
+# Run the Python script and keep the container running
+CMD ["sh", "-c", "python code.py & tail -f /dev/null"]
