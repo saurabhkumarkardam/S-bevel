@@ -22,7 +22,7 @@ jobs:
 
       # Log in to GitHub Container Registry
       - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_IO_TOKEN }}" | docker login ghcr.io -u "${{ GHCR_IO_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.GHCR_IO_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_IO_USERNAME }}" --password-stdin
 
       # Extract the Git commit hash for versioning
       - name: Get Commit Hash
@@ -31,14 +31,14 @@ jobs:
 
       # Build Docker image with a dynamic tag
       - name: Build Docker Image
-        run: docker build -t ghcr.io/${{ GHCR_IO_USERNAME }}/frontend:${{ env.COMMIT_HASH }} ./frontend
+        run: docker build -t ghcr.io/${{ secrets.GHCR_IO_USERNAME }}/frontend:${{ env.COMMIT_HASH }} ./frontend
 
       # Push Docker image with the dynamic tag
       - name: Push Docker Image
-        run: docker push ghcr.io/${{ GHCR_IO_USERNAME }}/frontend:${{ env.COMMIT_HASH }}
+        run: docker push ghcr.io/${{ secrets.GHCR_IO_USERNAME }}/frontend:${{ env.COMMIT_HASH }}
 
       # Tag the image as 'latest' and push it to GHCR
       - name: Tag as Latest
         run: |
-          docker tag ghcr.io/${{ GHCR_IO_USERNAME }}/frontend:${{ env.COMMIT_HASH }} ghcr.io/${{ GHCR_IO_USERNAME }}/frontend:latest
-          docker push ghcr.io/${{ GHCR_IO_USERNAME }}/frontend:latest
+          docker tag ghcr.io/${{ secrets.GHCR_IO_USERNAME }}/frontend:${{ env.COMMIT_HASH }} ghcr.io/${{ secrets.GHCR_IO_USERNAME }}/frontend:latest
+          docker push ghcr.io/${{ secrets.GHCR_IO_USERNAME }}/frontend:latest
