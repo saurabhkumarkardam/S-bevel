@@ -39,3 +39,9 @@ jobs:
       # Push Docker image with the dynamic tag
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ env.COMMIT_HASH }}
+
+      # Tag the image as 'latest' and push it to Docker Hub
+      - name: Tag as Latest
+        run: |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ env.COMMIT_HASH }} ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
