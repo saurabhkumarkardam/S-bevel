@@ -18,3 +18,7 @@ jobs:
       # Print "Hello world"
       - name: Print Hello World
         run: echo "Hello world"
+
+      # Display all files in the repository
+      - name: List all files
+        run: ls -al
